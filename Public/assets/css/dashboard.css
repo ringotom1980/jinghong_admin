@@ -1,0 +1,81 @@
+/*
+ * Path: Public/assets/css/dashboard.css
+ * 說明: 儀表板樣式（KPI 卡片/區塊排版）
+ * - KPI 採卡片化，後續接 API 後可直接把數字與趨勢塞進來
+ */
+
+.kpi-grid{
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+/* 12 欄：桌機 3 張一列（每張 4 欄），平板 2 張一列，手機 1 張 */
+.kpi-card{
+  grid-column: span 4;
+  background: rgba(255,255,255,.88);
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 18px;
+  box-shadow: 0 14px 34px rgba(2, 6, 23, .10);
+  padding: 14px 14px 12px 14px;
+  display: grid;
+  gap: 10px;
+  backdrop-filter: blur(8px);
+  transition: transform 140ms ease, box-shadow 160ms ease, border-color 140ms ease;
+}
+
+.kpi-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(15,23,42,.12);
+  box-shadow: 0 18px 44px rgba(2, 6, 23, .12);
+}
+
+.kpi-k{
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: rgba(15,23,42,.55);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.kpi-v{
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.kpi-s{
+  font-size: 13px;
+  color: rgba(15,23,42,.60);
+}
+
+/* 小提示：後續你要放趨勢箭頭/小字，可用這些 class */
+.kpi-meta{
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: rgba(15,23,42,.55);
+  font-size: 12px;
+}
+
+.kpi-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
+  font-size: 12px;
+}
+
+/* RWD */
+@media (max-width: 980px){
+  .kpi-card{ grid-column: span 6; }
+}
+
+@media (max-width: 640px){
+  .kpi-grid{ gap: 10px; }
+  .kpi-card{ grid-column: span 12; }
+  .kpi-v{ font-size: 24px; }
+}
