@@ -310,3 +310,27 @@ body.nav-pinned .page,
 body.nav-pinned .footer{
   margin-left: calc(var(--rail-w) + var(--drawer-w));
 }
+
+/* 品牌 Logo 對齊（Topbar / Sidenav）*/
+.brand__logo{
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  object-fit: contain;
+  display: block;
+}
+
+.sidenav__brand{
+  display: grid;
+  place-items: center;
+  margin: 10px 0 8px 0;
+}
+
+.sidenav__logo{
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  object-fit: contain;
+  display: block;
+  opacity: .92;
+}

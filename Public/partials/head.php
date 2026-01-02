@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-if (!isset($pageTitle)) $pageTitle = '境宏公司管理系統';
+if (!isset($pageTitle)) $pageTitle = '境宏工程有限公司管理系統';
 if (!isset($pageCss)) $pageCss = [];
 if (!isset($pageJs))  $pageJs  = [];
 
@@ -19,7 +19,7 @@ function asset(string $path): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= htmlspecialchars((string)$pageTitle, ENT_QUOTES) ?></title>
 
-  <link rel="icon" href="<?= asset('assets/img/brand/.gitkeep') ?>" />
+  <link rel="icon" type="image/png" href="<?= asset('assets/img/brand/JH_logo.png') ?>" />
 
   <!-- global -->
   <link rel="stylesheet" href="<?= asset('assets/css/app.css') ?>" />

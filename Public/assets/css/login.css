@@ -28,17 +28,15 @@
   padding: 8px 6px 14px 6px;
 }
 
-.auth-logo{
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  letter-spacing: .10em;
-  color: #0b1220;
-  background: rgba(76,167,113,.20);
+/* 登入頁 Logo 圖片版（取代原本的文字 JH 方塊）*/
+.auth-logo-img{
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  object-fit: contain;
+  display: block;
   border: 1px solid rgba(76,167,113,.35);
+  background: rgba(76,167,113,.12);
 }
 
 .auth-title{

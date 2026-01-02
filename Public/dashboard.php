@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$pageTitle = '儀表板｜境宏公司管理系統';
+$pageTitle = '儀表板｜境宏';
 $pageCss = ['assets/css/dashboard.css'];
 $pageJs  = ['assets/js/nav.js','assets/js/dashboard.js'];
 ?>
