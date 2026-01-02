@@ -1,12 +1,13 @@
+# Path: /public_html/jinghong_admin/Public/.htaccess
+# 說明: Public 內層備援路由（只處理直接打到 /jinghong_admin/Public/* 的情況）
+# - 實體檔案放行
+# - 其餘交給 Public/index.php
+
+Options -MultiViews
 RewriteEngine On
 
-# 因為目前網址實體就是 /jinghong_admin/Public/
-RewriteBase /jinghong_admin/Public/
-
-# 實體檔案或資料夾直接放行
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 其餘全部丟給 index.php
 RewriteRule ^ index.php [L]
