@@ -1,21 +1,25 @@
 RewriteEngine On
 
-# ===== 1) 靜態資源放行 =====
-# 你前端引用的是 /jinghong_admin/assets/...
-RewriteRule ^assets/ - [L]
+# =========================================================
+# 0) 先把 /assets/* 映射到 Public/assets/*
+#    因為你的檔案實際在 Public/assets/ 內
+# =========================================================
+RewriteRule ^assets/(.*)$ Public/assets/$1 [L,NC]
 
-# 若你有要讓外部直接取用車輛圖片（例如 <img src="/jinghong_admin/uploads/vehicles/...">）
-# 先預留一個公開路徑 uploads -> storage/uploads（下面第 2 段會做 rewrite）
-RewriteRule ^uploads/ - [L]
+# =========================================================
+# 1) （可選）把 /uploads/* 映射到 storage/uploads/*
+#    未來車輛圖片若要用 <img src="/jinghong_admin/uploads/...">
+# =========================================================
+RewriteRule ^uploads/(.*)$ storage/uploads/$1 [L,NC]
 
-# ===== 2) 讓 /uploads/* 對應到 storage/uploads/*（可選：車輛圖片用）=====
-RewriteCond %{REQUEST_URI} ^/jinghong_admin/uploads/ [NC]
-RewriteRule ^uploads/(.*)$ storage/uploads/$1 [L]
-
-# ===== 3) 放行實體檔案/資料夾 =====
+# =========================================================
+# 2) 已存在的實體檔案/資料夾 → 直接放行
+# =========================================================
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# ===== 4) 其餘全部交給 Public/index.php =====
+# =========================================================
+# 3) 其餘全部交給 Public/index.php（漂亮轉址 router）
+# =========================================================
 RewriteRule ^ Public/index.php [L]
