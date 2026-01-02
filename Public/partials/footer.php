@@ -1,0 +1,19 @@
+<?php
+/**
+ * Path: Public/partials/footer.php
+ * 說明: 全站 Footer（版號、版權/單位資訊）
+ * - 版號可先固定字串，後續可改讀 config/version.php 或 env
+ */
+
+declare(strict_types=1);
+
+$version = $version ?? 'v0.1.0';
+?>
+<footer class="footer" role="contentinfo">
+  <div class="footer__left">
+    <span class="footer__ver"><?= htmlspecialchars((string)$version, ENT_QUOTES) ?></span>
+  </div>
+  <div class="footer__right">
+    <span>© <?= date('Y') ?> 境宏公司｜內部管理系統</span>
+  </div>
+</footer>
