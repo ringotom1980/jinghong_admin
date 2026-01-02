@@ -1,0 +1,178 @@
+/*
+ * Path: Public/assets/css/motion.css
+ * 說明: 全站動畫規則（Toast / Modal / Dropdown / 進場淡入）
+ * - 禁用瀏覽器 alert/confirm：由自製 ui_toast / ui_modal 觸發並套用本檔 class
+ * - 目標：簡約、乾淨、有質感；避免花俏與過度晃動
+ * - JS 端通常只需要切換 class：
+ *   1) is-open / is-show / is-leave
+ *   2) data-motion="fade" / "slide-up" / "scale"
+ * - 支援 prefers-reduced-motion：使用者若偏好減少動態，則降低/取消動畫
+ */
+
+/* ===== Timing tokens ===== */
+:root{
+  --m-ease-out: cubic-bezier(.2, .9, .2, 1);
+  --m-ease: cubic-bezier(.2, .8, .2, 1);
+  --m-fast: 140ms;
+  --m-mid: 200ms;
+  --m-slow: 260ms;
+
+  --m-blur: 10px;
+}
+
+/* ===== Base motion utilities ===== */
+.motion-fade{
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
+}
+
+.motion-fade.is-show{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.motion-slide-up{
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
+}
+
+.motion-slide-up.is-show{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.motion-scale{
+  opacity: 0;
+  transform: translateY(6px) scale(.98);
+  transition: opacity var(--m-mid) var(--m-ease-out), transform var(--m-mid) var(--m-ease-out);
+}
+
+.motion-scale.is-show{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ===== Subtle hover micro-interactions ===== */
+.motion-hover{
+  transition: transform var(--m-fast) var(--m-ease), filter var(--m-fast) var(--m-ease);
+}
+
+.motion-hover:hover{
+  transform: translateY(-1px);
+}
+
+.motion-hover:active{
+  transform: translateY(0);
+}
+
+/* ===== Toast animations =====
+ * 建議 toast 容器套 .toast-wrap，單一 toast 套 .toast
+ */
+.toast-wrap{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2000;
+  display: grid;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast{
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(0);
+  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
+}
+
+.toast.is-show{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.is-leave{
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* ===== Modal animations =====
+ * 結構建議：
+ * .modal-backdrop (遮罩) + .modal-panel (內容)
+ * JS 切換 .is-open
+ */
+.modal-backdrop{
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--m-mid) var(--m-ease), visibility var(--m-mid) var(--m-ease);
+}
+
+.modal-backdrop.is-open{
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-panel{
+  opacity: 0;
+  transform: translateY(14px) scale(.985);
+  transition: opacity var(--m-mid) var(--m-ease-out), transform var(--m-mid) var(--m-ease-out);
+}
+
+.modal-backdrop.is-open .modal-panel{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-backdrop.is-leave{
+  opacity: 0;
+}
+
+/* ===== Dropdown/Menu animations =====
+ * 結構建議： .dropdown + .dropdown-menu
+ * JS 切換 .is-open
+ */
+.dropdown-menu{
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition: opacity var(--m-fast) var(--m-ease), transform var(--m-fast) var(--m-ease), visibility var(--m-fast) var(--m-ease);
+}
+
+.dropdown.is-open .dropdown-menu{
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+/* ===== Page enter (optional) =====
+ * 讓每個頁面 main 可以有一致進場
+ * 套用：<main class="page page-enter">
+ */
+.page-enter{
+  opacity: 0;
+  transform: translateY(6px);
+  animation: pageEnter var(--m-slow) var(--m-ease-out) forwards;
+}
+
+@keyframes pageEnter{
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Reduced motion support ===== */
+@media (prefers-reduced-motion: reduce){
+  :root{
+    --m-fast: 1ms;
+    --m-mid: 1ms;
+    --m-slow: 1ms;
+  }
+
+  .page-enter{ animation: none; opacity: 1; transform: none; }
+  .motion-fade, .motion-slide-up, .motion-scale,
+  .toast, .modal-panel, .dropdown-menu{
+    transition: none !important;
+    transform: none !important;
+  }
+}
