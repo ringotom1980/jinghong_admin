@@ -21,22 +21,22 @@ $base = base_url();
 
     <a class="rail__tab" data-nav="mat" data-drawer="drawer-mat" href="<?= htmlspecialchars($base . '/mat/issue', ENT_QUOTES) ?>" title="領退管理">
       <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></span>
-      <span class="tab__abbr">領退</span>
+      <span class="tab__abbr">領退管理</span>
     </a>
 
     <a class="rail__tab" data-nav="car" data-drawer="drawer-car" href="<?= htmlspecialchars($base . '/car/base', ENT_QUOTES) ?>" title="車輛管理">
       <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-car"></i></span>
-      <span class="tab__abbr">車輛</span>
+      <span class="tab__abbr">車輛管理</span>
     </a>
 
     <a class="rail__tab" data-nav="equ" data-drawer="drawer-equ" href="<?= htmlspecialchars($base . '/equ/repairs', ENT_QUOTES) ?>" title="工具管理">
       <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
-      <span class="tab__abbr">工具</span>
+      <span class="tab__abbr">工具管理</span>
     </a>
 
     <a class="rail__tab" data-nav="pole" data-drawer="drawer-pole" href="<?= htmlspecialchars($base . '/pole-map', ENT_QUOTES) ?>" title="電桿地圖（公開）" target="_blank" rel="noopener">
       <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
-      <span class="tab__abbr">電桿</span>
+      <span class="tab__abbr">電桿地圖</span>
     </a>
   </div>
 

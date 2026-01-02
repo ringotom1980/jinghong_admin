@@ -239,7 +239,7 @@
 
 /* ✅ 不要固定滿高：改成最大高度 + 自動捲動 */
 .drawer__nav{
-  padding: 10px 8px 10px 8px;
+  padding: 8px 10px 10px 10px;   /* 原本太鬆，縮緊 */
   max-height: 360px;
   overflow: auto;
 }
@@ -248,16 +248,18 @@
   display: block;
   color: var(--nav-text);
   text-decoration: none;
-  padding: 10px 10px;
-  border-radius: 14px;
-  margin: 4px 4px;
+  padding: 10px 12px;            /* 讓文字更靠左，不要留出一條空帶 */
+  border-radius: 12px;
+  margin: 2px 4px;               /* 原本 4px 會看起來「中間很空」 */
   border: 1px solid transparent;
-  background: rgba(255,255,255,.70);
+  background: transparent;       /* ✅ 拿掉白底，整體會更乾淨 */
 }
+
 .nav__item:hover{
-  background: rgba(255,255,255,.95);
-  border-color: rgba(15,23,42,.10);
+  background: rgba(37,99,235,.06);
+  border-color: rgba(37,99,235,.18);
 }
+
 .nav__item.is-active{
   background: rgba(37,99,235,.10);
   border-color: rgba(37,99,235,.22);
