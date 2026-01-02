@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# 確保 RewriteBase 正確（因為在子資料夾）
+RewriteBase /jinghong_admin/
+
+# 若請求的是實體檔案或資料夾，直接通過
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 將所有請求導到 index.php（前端控制器）
+RewriteRule ^ index.php [L]
