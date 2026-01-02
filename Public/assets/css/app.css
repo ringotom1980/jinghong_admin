@@ -188,3 +188,8 @@ input::placeholder, textarea::placeholder{ color: rgba(15,23,42,.40); }
 
 /* Footer base (layout handled by nav.css) */
 .footer{ background: transparent; }
+
+.footer__right{
+  margin: 0 auto;
+  text-align: center;
+}

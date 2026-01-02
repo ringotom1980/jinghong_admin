@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-$pageTitle = '儀錶板｜境宏工程有縣公司';
+$pageTitle = '儀錶板｜境宏工程有限公司';
 $pageCss   = ['assets/css/dashboard.css'];
 
 // ✅ 只放「本頁專屬」；nav.js 已由 scripts.php 全站載入

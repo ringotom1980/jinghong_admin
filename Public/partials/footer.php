@@ -13,6 +13,6 @@ $version = $version ?? 'v0.1.0';
     <span class="footer__ver"><?= htmlspecialchars((string)$version, ENT_QUOTES) ?></span>
   </div>
   <div class="footer__right">
-    <span>© <?= date('Y') ?> 境宏工程有限公司｜管理系統</span>
+    <span>© <?= date('Y') ?> 境宏工程有限公司｜Jinghong Engineering Co., Ltd.</span>
   </div>
 </footer>
