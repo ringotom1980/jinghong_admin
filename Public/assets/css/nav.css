@@ -162,11 +162,13 @@
   line-height: 1;
   color: rgba(15,23,42,.70);
 }
+
 .tab__abbr{
-  font-size: 12px;
-  letter-spacing: .04em;
-  font-weight: 750;
-  color: rgba(15,23,42,.66);
+  font-size: 14px;              /* ✅ 跟子選單一致 */
+  letter-spacing: .02em;        /* ✅ 字距小一點更扎實 */
+  font-weight: 800;             /* ✅ 視覺更有份量 */
+  color: rgba(15,23,42,.72);    /* ✅ 稍微更深 */
+  line-height: 1.1;
 }
 
 .rail__tab:hover{
@@ -251,21 +253,27 @@
   display: block;
   color: var(--nav-text);
   text-decoration: none;
-  padding: 10px 12px;            /* 讓文字更靠左，不要留出一條空帶 */
+  padding: 10px 12px;
   border-radius: 12px;
-  margin: 2px 4px;               /* 原本 4px 會看起來「中間很空」 */
+  margin: 2px 4px;
   border: 1px solid transparent;
-  background: transparent;       /* ✅ 拿掉白底，整體會更乾淨 */
+  background: transparent;
+
+  font-size: 14px;              /* ✅ 明確指定 */
+  font-weight: 800;             /* ✅ 跟 rail 同系統 */
+  letter-spacing: .02em;        /* ✅ 同步 */
 }
 
 .nav__item:hover{
   background: rgba(37,99,235,.06);
   border-color: rgba(37,99,235,.18);
+  color: rgba(15,23,42,.92);
 }
 
 .nav__item.is-active{
   background: rgba(37,99,235,.10);
   border-color: rgba(37,99,235,.22);
+  color: rgba(15,23,42,.96);
 }
 
 /* ===== Main content spacing helper ===== */
