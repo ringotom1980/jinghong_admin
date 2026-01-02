@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# 如果請求的是實體檔案或資料夾，直接放行（例如 README.md 或你之後放的 ping.txt）
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 其餘全部交給 Public/ 內的前端控制器
+RewriteRule ^ Public/index.php [L]
