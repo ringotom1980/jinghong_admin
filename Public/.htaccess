@@ -1,12 +1,12 @@
 RewriteEngine On
 
-# 確保 RewriteBase 正確（因為在子資料夾）
-RewriteBase /jinghong_admin/
+# 因為目前網址實體就是 /jinghong_admin/Public/
+RewriteBase /jinghong_admin/Public/
 
-# 若請求的是實體檔案或資料夾，直接通過
+# 實體檔案或資料夾直接放行
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 將所有請求導到 index.php（前端控制器）
+# 其餘全部丟給 index.php
 RewriteRule ^ index.php [L]
