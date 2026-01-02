@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-if (!isset($pageTitle)) $pageTitle = '境宏公司管理系統';
+if (!isset($pageTitle)) $pageTitle = '境宏工程有限公司管理系統';
 if (!isset($pageCss))   $pageCss   = [];
 if (!isset($pageJs))    $pageJs    = [];
 
