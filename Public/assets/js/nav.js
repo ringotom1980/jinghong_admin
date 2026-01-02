@@ -1,218 +1,244 @@
 /**
  * Path: Public/assets/js/nav.js
  * 說明: 導覽互動（側邊導覽：hover → 浮動小面板抽屜）
- * 重點：
- * - 抽屜不再全高
- * - hover 哪個 tab，就把抽屜 top 對齊到該 tab 附近（並做邊界 clamp）
+ * 修正重點：
+ * - 抽屜維持「浮動小面板」，不再全高
+ * - rail/host 都算 hover 區，移到子選單不會被當成離開
+ * - 不會回切 dashboard：以 lastDrawerId 為準
+ * - 抽屜定位對齊 tab（中心對齊），並做上下 clamp
  */
 
 (function () {
-    'use strict';
+  'use strict';
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function getPath() {
+    try { return window.location.pathname || ''; } catch (e) { return ''; }
+  }
+
+  function isInside(el, root) {
+    if (!el || !root) return false;
+    return root === el || root.contains(el);
+  }
+
+  function openHost(sidenav) {
+    if (!sidenav) return;
+    sidenav.classList.add('is-open');
+    var host = qs('#sidenavDrawerHost', sidenav);
+    if (host) host.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeHost(sidenav) {
+    if (!sidenav) return;
+    sidenav.classList.remove('is-open');
+    var host = qs('#sidenavDrawerHost', sidenav);
+    if (host) host.setAttribute('aria-hidden', 'true');
+  }
+
+  function showDrawer(drawerId, sidenav) {
+    if (!drawerId) return;
+    qsa('.drawerPanel', sidenav || document).forEach(function (p) {
+      p.classList.toggle('is-active', p.id === drawerId);
+    });
+  }
+
+  function applyActive(sidenav) {
+    var path = getPath();
+
+    var rules = [
+      { key: 'dashboard', match: ['/dashboard'] },
+
+      { key: 'mat_issue', match: ['/mat/issue'] },
+      { key: 'mat_edit', match: ['/mat/edit'] },
+      { key: 'mat_materials', match: ['/mat/materials'] },
+      { key: 'mat_stats', match: ['/mat/stats'] },
+      { key: 'mat', match: ['/mat/'] },
+
+      { key: 'car_base', match: ['/car/base'] },
+      { key: 'car_repairs', match: ['/car/repairs'] },
+      { key: 'car_stats', match: ['/car/stats'] },
+      { key: 'car', match: ['/car/'] },
+
+      { key: 'equ_repairs', match: ['/equ/repairs'] },
+      { key: 'equ_stats', match: ['/equ/stats'] },
+      { key: 'equ', match: ['/equ/'] },
+
+      { key: 'pole_map', match: ['/pole-map'] },
+      { key: 'pole', match: ['/pole-map'] },
+
+      { key: 'me_password', match: ['/me/password'] }
+    ];
+
+    function hit(rule) {
+      for (var i = 0; i < rule.match.length; i++) {
+        if (path.indexOf(rule.match[i]) !== -1) return true;
+      }
+      return false;
+    }
+
+    qsa('.rail__tab, .nav__item', sidenav).forEach(function (el) {
+      el.classList.remove('is-active');
+    });
+
+    var best = null;
+    for (var r = 0; r < rules.length; r++) {
+      if (hit(rules[r])) {
+        if (!best) best = rules[r];
+        else {
+          var a = (best.match[0] || '').length;
+          var b = (rules[r].match[0] || '').length;
+          if (b > a) best = rules[r];
+        }
+      }
+    }
+    if (!best) return null;
+
+    qsa('[data-nav="' + best.key + '"]', sidenav).forEach(function (el) {
+      el.classList.add('is-active');
+    });
+
+    // 群組亮
+    if (best.key.indexOf('mat_') === 0) qsa('[data-nav="mat"]', sidenav).forEach(function (el) { el.classList.add('is-active'); });
+    if (best.key.indexOf('car_') === 0) qsa('[data-nav="car"]', sidenav).forEach(function (el) { el.classList.add('is-active'); });
+    if (best.key.indexOf('equ_') === 0) qsa('[data-nav="equ"]', sidenav).forEach(function (el) { el.classList.add('is-active'); });
+    if (best.key.indexOf('pole') === 0) qsa('[data-nav="pole"]', sidenav).forEach(function (el) { el.classList.add('is-active'); });
+
+    // 對應 drawer
+    var drawerId = '';
+    if (best.key.indexOf('mat') === 0) drawerId = 'drawer-mat';
+    else if (best.key.indexOf('car') === 0) drawerId = 'drawer-car';
+    else if (best.key.indexOf('equ') === 0) drawerId = 'drawer-equ';
+    else if (best.key.indexOf('pole') === 0) drawerId = 'drawer-pole';
+    else drawerId = 'drawer-dashboard';
+
+    showDrawer(drawerId, sidenav);
+    return drawerId;
+  }
+
+  function positionHostToTab(sidenav, tab, host) {
+    if (!sidenav || !tab || !host) return;
+
+    // 先開（確保可量）
+    openHost(sidenav);
+
+    var rail = qs('.sidenav__rail', sidenav);
+    var railRect = rail ? rail.getBoundingClientRect() : sidenav.getBoundingClientRect();
+    var tabRect = tab.getBoundingClientRect();
+
+    // 目標：host 上緣對齊 tab「中心」- host 高度的一半（更自然）
+    // clamp：保持 host 在 rail 高度範圍內（留 pad）
+    var pad = 10;
+
+    // 先給一個暫時 top，讓 offsetHeight 有值（避免第一次 0）
+    host.style.top = pad + 'px';
+
+    window.requestAnimationFrame(function () {
+      var hostH = host.offsetHeight || 1;
+      var desiredTop = (tabRect.top - railRect.top) + (tabRect.height / 2) - (hostH / 2);
+
+      var minTop = pad;
+      var maxTop = railRect.height - hostH - pad;
+      if (maxTop < minTop) maxTop = minTop;
+
+      var t = desiredTop;
+      if (t < minTop) t = minTop;
+      if (t > maxTop) t = maxTop;
+
+      host.style.top = Math.round(t) + 'px';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var sidenav = qs('#sidenav');
+    if (!sidenav) return;
+
+    var rail = qs('.sidenav__rail', sidenav);
+    var host = qs('#sidenavDrawerHost', sidenav);
+    var railTabs = qsa('.rail__tab', sidenav);
+
+    // ===== state（唯一）=====
     var closeTimer = null;
     var lastDrawerId = '';
 
-    function qs(sel, root) { return (root || document).querySelector(sel); }
-    function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-    function getPath() {
-        try { return window.location.pathname || ''; } catch (e) { return ''; }
+    function clearCloseTimer() {
+      if (closeTimer) window.clearTimeout(closeTimer);
+      closeTimer = null;
     }
 
-    function openHost(sidenav) {
-        if (!sidenav) return;
-        sidenav.classList.add('is-open');
-        var host = qs('#sidenavDrawerHost');
-        if (host) host.setAttribute('aria-hidden', 'false');
+    function scheduleClose() {
+      clearCloseTimer();
+      closeTimer = window.setTimeout(function () {
+        closeHost(sidenav);
+      }, 180);
     }
 
-    function closeHost(sidenav) {
-        if (!sidenav) return;
-        sidenav.classList.remove('is-open');
-        var host = qs('#sidenavDrawerHost');
-        if (host) host.setAttribute('aria-hidden', 'true');
+    function openWithDrawer(drawerId, tabEl) {
+      if (drawerId) {
+        lastDrawerId = drawerId;
+        showDrawer(drawerId, sidenav);
+      } else if (lastDrawerId) {
+        showDrawer(lastDrawerId, sidenav);
+      }
+
+      openHost(sidenav);
+
+      if (tabEl) positionHostToTab(sidenav, tabEl, host);
     }
 
-    function showDrawer(drawerId) {
-        if (!drawerId) return;
-        qsa('.drawerPanel').forEach(function (p) {
-            p.classList.toggle('is-active', p.id === drawerId);
-        });
+    // 初始化 active 與預設 drawer
+    lastDrawerId = applyActive(sidenav) || '';
+
+    // 若頁面無 match（例如 /），仍給 dashboard 當預設
+    if (!lastDrawerId) lastDrawerId = 'drawer-dashboard';
+
+    // ===== hover 範圍：rail + host 都算 =====
+    if (rail) {
+      rail.addEventListener('pointerenter', function () {
+        clearCloseTimer();
+        openWithDrawer(lastDrawerId, null);
+      });
+
+      rail.addEventListener('pointerleave', function (e) {
+        var to = e.relatedTarget;
+        if (isInside(to, host)) return; // 移到抽屜不關
+        scheduleClose();
+      });
     }
 
-    function applyActive() {
-        var path = getPath();
-
-        var rules = [
-            { key: 'dashboard', match: ['/dashboard'] },
-
-            { key: 'mat_issue', match: ['/mat/issue'] },
-            { key: 'mat_edit', match: ['/mat/edit'] },
-            { key: 'mat_materials', match: ['/mat/materials'] },
-            { key: 'mat_stats', match: ['/mat/stats'] },
-            { key: 'mat', match: ['/mat/'] },
-
-            { key: 'car_base', match: ['/car/base'] },
-            { key: 'car_repairs', match: ['/car/repairs'] },
-            { key: 'car_stats', match: ['/car/stats'] },
-            { key: 'car', match: ['/car/'] },
-
-            { key: 'equ_repairs', match: ['/equ/repairs'] },
-            { key: 'equ_stats', match: ['/equ/stats'] },
-            { key: 'equ', match: ['/equ/'] },
-
-            { key: 'pole_map', match: ['/pole-map'] },
-            { key: 'pole', match: ['/pole-map'] },
-
-            { key: 'me_password', match: ['/me/password'] }
-        ];
-
-        function hit(rule) {
-            for (var i = 0; i < rule.match.length; i++) {
-                if (path.indexOf(rule.match[i]) !== -1) return true;
-            }
-            return false;
-        }
-
-        qsa('.rail__tab, .nav__item').forEach(function (el) {
-            el.classList.remove('is-active');
-        });
-
-        var best = null;
-        for (var r = 0; r < rules.length; r++) {
-            if (hit(rules[r])) {
-                if (!best) best = rules[r];
-                else {
-                    var a = (best.match[0] || '').length;
-                    var b = (rules[r].match[0] || '').length;
-                    if (b > a) best = rules[r];
-                }
-            }
-        }
-        if (!best) return;
-
-        qsa('[data-nav="' + best.key + '"]').forEach(function (el) {
-            el.classList.add('is-active');
-        });
-
-        if (best.key.indexOf('mat_') === 0) qsa('[data-nav="mat"]').forEach(function (el) { el.classList.add('is-active'); });
-        if (best.key.indexOf('car_') === 0) qsa('[data-nav="car"]').forEach(function (el) { el.classList.add('is-active'); });
-        if (best.key.indexOf('equ_') === 0) qsa('[data-nav="equ"]').forEach(function (el) { el.classList.add('is-active'); });
-        if (best.key.indexOf('pole') === 0) qsa('[data-nav="pole"]').forEach(function (el) { el.classList.add('is-active'); });
-
-        var drawerId = '';
-        if (best.key.indexOf('mat') === 0) drawerId = 'drawer-mat';
-        else if (best.key.indexOf('car') === 0) drawerId = 'drawer-car';
-        else if (best.key.indexOf('equ') === 0) drawerId = 'drawer-equ';
-        else if (best.key.indexOf('pole') === 0) drawerId = 'drawer-pole';
-        else drawerId = 'drawer-dashboard';
-
-        showDrawer(drawerId);
-    }
-
-    function positionHostToTab(sidenav, tab) {
-        var host = qs('#sidenavDrawerHost');
-        if (!sidenav || !tab || !host) return;
-
-        var sidenavRect = sidenav.getBoundingClientRect();
-        var tabRect = tab.getBoundingClientRect();
-
-        // 先讓 host 顯示（才能量高度）
+    if (host) {
+      host.addEventListener('pointerenter', function () {
+        clearCloseTimer();
         openHost(sidenav);
+        if (lastDrawerId) showDrawer(lastDrawerId, sidenav);
+      });
 
-        // 設定一個初值 top（以 tab 的 top 對齊）
-        var desiredTop = (tabRect.top - sidenavRect.top) + 6; // +6 微調
-        host.style.top = desiredTop + 'px';
-
-        // 下一個 frame 再做 clamp（量得到 host 高度）
-        window.requestAnimationFrame(function () {
-            var pad = 10;
-            var maxTop = sidenav.clientHeight - host.offsetHeight - pad;
-            if (maxTop < pad) maxTop = pad;
-
-            var t = desiredTop;
-            if (t < pad) t = pad;
-            if (t > maxTop) t = maxTop;
-
-            host.style.top = t + 'px';
-        });
+      host.addEventListener('pointerleave', function (e) {
+        var to = e.relatedTarget;
+        if (isInside(to, rail)) return; // 移回 rail 不關
+        scheduleClose();
+      });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var sidenav = qs('#sidenav');
-        var railTabs = qsa('.rail__tab');
-        var host = qs('#sidenavDrawerHost');
-
-        if (!sidenav) return;
-
-        // ===== 浮動抽屜：關閉延遲 + 取消關閉（避免移到子選單就關） =====
-        var closeTimer = null;
-        var lastDrawerId = '';
-
-        function scheduleClose() {
-            if (closeTimer) window.clearTimeout(closeTimer);
-            closeTimer = window.setTimeout(function () {
-                closeHost(sidenav);
-            }, 180); // 緩衝：讓滑鼠從 rail 移到抽屜不會觸發關閉
-        }
-
-        function cancelClose() {
-            if (closeTimer) window.clearTimeout(closeTimer);
-            closeTimer = null;
-        }
-
-        applyActive();
-
-        // ✅ 抽屜本體：進入取消關閉 / 離開才排程關閉
-        if (host) {
-            host.addEventListener('mouseenter', cancelClose);
-            host.addEventListener('mouseleave', scheduleClose);
-        }
-
-        // hover 進入：顯示目前 active 的 drawer（且位置對齊 active tab）
-        sidenav.addEventListener('mouseenter', function () {
-            cancelClose();
-
-            var activeTab = qs('.rail__tab.is-active');
-            var id = activeTab ? (activeTab.getAttribute('data-drawer') || '') : '';
-
-            // 記住最後抽屜，避免回到預設（儀表板）
-            if (id) lastDrawerId = id;
-
-            if (id) showDrawer(id);
-
-            if (activeTab) {
-                positionHostToTab(sidenav, activeTab);
-            } else {
-                openHost(sidenav);
-            }
-        });
-
-        // ✅ 不要立刻關：改成延遲關閉（避免移到子選單就關）
-        sidenav.addEventListener('mouseleave', function () {
-            scheduleClose();
-        });
-
-        // hover tab：切換 drawer + 把浮動面板對齊到該 tab
-        railTabs.forEach(function (tab) {
-            tab.addEventListener('mouseenter', function () {
-                cancelClose();
-
-                var id = tab.getAttribute('data-drawer') || '';
-                if (id) {
-                    lastDrawerId = id;
-                    showDrawer(id);
-                }
-                positionHostToTab(sidenav, tab);
-            });
-        });
-
-        // ✅ 安全補丁：如果抽屜被 showDrawer 切換時，host 仍沒打開，這裡確保開啟
-        // （避免某些情況只有 showDrawer 沒 openHost）
-        sidenav.addEventListener('mousemove', function () {
-            if (!sidenav.classList.contains('is-open') && lastDrawerId) {
-                openHost(sidenav);
-                showDrawer(lastDrawerId);
-            }
-        });
+    // hover tab：切換 drawer + 定位
+    railTabs.forEach(function (tab) {
+      tab.addEventListener('pointerenter', function () {
+        clearCloseTimer();
+        var id = tab.getAttribute('data-drawer') || '';
+        openWithDrawer(id, tab);
+      });
     });
+
+    // 保底：真的離開 rail+host 才關
+    sidenav.addEventListener('pointerleave', function (e) {
+      var to = e.relatedTarget;
+      if (isInside(to, rail) || isInside(to, host)) return;
+      scheduleClose();
+    });
+
+    sidenav.addEventListener('pointerenter', function () {
+      clearCloseTimer();
+    });
+  });
 })();

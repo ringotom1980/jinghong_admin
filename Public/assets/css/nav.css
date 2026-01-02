@@ -121,8 +121,8 @@
   z-index: 40;
   pointer-events: none;
 
-  /* ✅ 不再用 grid 兩欄拉整條，改成 rail + 浮動面板 */
-  width: calc(var(--rail-w) + var(--drawer-w) + 16px);
+  /* ✅ 只包 rail，避免透明大區塊 */
+  width: var(--rail-w);
 }
 
 .sidenav__rail{
@@ -187,7 +187,7 @@
 
   /* ✅ 浮動在 rail 旁邊，不吃全高 */
   position: absolute;
-  left: calc(var(--rail-w) + 10px);
+  left: calc(var(--rail-w) + 6px);
   top: 10px;
 
   width: var(--drawer-w);
