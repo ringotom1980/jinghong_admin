@@ -1,40 +1,21 @@
 /**
  * Path: Public/assets/js/nav.js
- * 說明: 導覽互動（側邊導覽：hover 開啟對應抽屜 + pin 固定 + active 高亮）
- * - 依你的規格：每個選單是獨立抽屜（hover 某個 rail tab → 開啟該 drawerPanel）
- * - pinned：固定展開「最後一次開啟」的 drawer
+ * 說明: 導覽互動（側邊導覽：hover 開啟對應抽屜 + active 高亮｜定版）
+ * 定版重點：
+ * - ✅ 無 pin：不使用 localStorage、不切 body class、不保留 pin DOM
+ * - hover rail tab → 開啟 host 並顯示對應 drawerPanel
+ * - 滑鼠離開 sidenav → 關閉抽屜
  * - 不做業務請求；只處理 UI 狀態
  */
 
 (function () {
   'use strict';
 
-  var STORAGE_PIN = 'jh_sidenav_pinned';
-  var STORAGE_LAST = 'jh_sidenav_last_drawer';
-
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function getPath() {
     try { return window.location.pathname || ''; } catch (e) { return ''; }
-  }
-
-  function setPinned(isPinned) {
-    try { localStorage.setItem(STORAGE_PIN, isPinned ? '1' : '0'); } catch (e) {}
-    document.body.classList.toggle('nav-pinned', !!isPinned);
-  }
-
-  function getPinned() {
-    try { return localStorage.getItem(STORAGE_PIN) === '1'; } catch (e) { return false; }
-  }
-
-  function setLastDrawer(id) {
-    if (!id) return;
-    try { localStorage.setItem(STORAGE_LAST, id); } catch (e) {}
-  }
-
-  function getLastDrawer() {
-    try { return localStorage.getItem(STORAGE_LAST) || ''; } catch (e) { return ''; }
   }
 
   function openHost(sidenav) {
@@ -46,7 +27,6 @@
 
   function closeHost(sidenav) {
     if (!sidenav) return;
-    if (document.body.classList.contains('nav-pinned')) return; // pinned 不關
     sidenav.classList.remove('is-open');
     var host = qs('#sidenavDrawerHost');
     if (host) host.setAttribute('aria-hidden', 'true');
@@ -57,7 +37,6 @@
     qsa('.drawerPanel').forEach(function (p) {
       p.classList.toggle('is-active', p.id === drawerId);
     });
-    setLastDrawer(drawerId);
   }
 
   function applyActive() {
@@ -94,7 +73,7 @@
       return false;
     }
 
-    // 清除
+    // 清除 active
     qsa('.rail__tab, .nav__item').forEach(function (el) {
       el.classList.remove('is-active');
     });
@@ -123,7 +102,7 @@
     if (best.key.indexOf('equ_') === 0) qsa('[data-nav="equ"]').forEach(function (el) { el.classList.add('is-active'); });
     if (best.key.indexOf('pole') === 0) qsa('[data-nav="pole"]').forEach(function (el) { el.classList.add('is-active'); });
 
-    // 順便決定預設抽屜（未 pinned 時也能 hover 打開；pinned 時可直接顯示）
+    // 預設抽屜面板（避免 hover 開啟時是空的）
     var drawerId = '';
     if (best.key.indexOf('mat') === 0) drawerId = 'drawer-mat';
     else if (best.key.indexOf('car') === 0) drawerId = 'drawer-car';
@@ -136,38 +115,25 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var sidenav = qs('#sidenav');
-    var pinBtn = qs('#sidenavPin');
     var railTabs = qsa('.rail__tab');
 
     if (!sidenav) return;
 
-    // 初始 pinned
-    var pinned = getPinned();
-    setPinned(pinned);
-
-    // 先套 active（會同時決定 drawer）
+    // 先套 active（同時決定預設 drawer）
     applyActive();
 
-    // 若 pinned：直接開 host，並顯示最後 drawer（沒有就用目前 active 推導出來的）
-    if (pinned) {
-      openHost(sidenav);
-      var last = getLastDrawer();
-      if (last) showDrawer(last);
-    }
-
-    // Hover sidenav 區塊：開/關 host
     sidenav.addEventListener('mouseenter', function () {
       openHost(sidenav);
-      // 進入時若有 last drawer，就顯示它（避免空）
-      var last = getLastDrawer();
-      if (last) showDrawer(last);
+
+      var activeTab = qs('.rail__tab.is-active');
+      var id = activeTab ? (activeTab.getAttribute('data-drawer') || '') : '';
+      if (id) showDrawer(id);
     });
 
     sidenav.addEventListener('mouseleave', function () {
       closeHost(sidenav);
     });
 
-    // Hover 每個 tab：切換對應 drawer（獨立抽屜）
     railTabs.forEach(function (tab) {
       tab.addEventListener('mouseenter', function () {
         var id = tab.getAttribute('data-drawer') || '';
@@ -177,15 +143,5 @@
         }
       });
     });
-
-    // pin 切換
-    if (pinBtn) {
-      pinBtn.addEventListener('click', function () {
-        var next = !document.body.classList.contains('nav-pinned');
-        setPinned(next);
-        if (next) openHost(sidenav);
-        else closeHost(sidenav);
-      });
-    }
   });
 })();

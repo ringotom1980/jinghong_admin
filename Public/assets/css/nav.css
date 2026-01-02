@@ -1,28 +1,31 @@
 /*
  * Path: Public/assets/css/nav.css
- * 說明: 導覽與側邊抽屜樣式（Topbar + Sidenav，多抽屜版本）
- * - 上方不放選單（header.php 已移除）
- * - 側邊：hover tab 顯示對應 drawerPanel（每個選單獨立抽屜）
- * - icon：Font Awesome（CDN），此檔只管大小/顏色，不做載入
+ * 說明: 導覽與側邊抽屜樣式（Topbar + Sidenav｜淡粉/白系定版）
+ * 設計目標：
+ * - ✅ 不用深色系：以淡粉、白、霧面陰影做層次
+ * - Logo 強調色（紅/藍）只做 accent，不把整體壓暗
+ * - ✅ 無 pin：不提供釘選樣式與留白
  */
 
+/* ===== 色票（淡粉系 + 紅/藍強調） ===== */
 :root{
-  /* 依你的 Logo 主色：黑 / 紅 / 藍 → 導覽系統配色 */
-  --nav-bg: #070b12;      /* 更黑 */
-  --nav-bg-2: #0b1630;    /* 深藍黑 */
-  --nav-text: rgba(255,255,255,.92);
-  --nav-sub: rgba(255,255,255,.72);
-  --nav-line: rgba(255,255,255,.10);
+  --nav-bg: #fff7fb;          /* 淡粉底 */
+  --nav-bg-2: #ffffff;        /* 白 */
+  --nav-panel: rgba(255,255,255,.92);
 
-  --nav-accent-red: #e11d48;   /* 紅 */
-  --nav-accent-blue: #2563eb;  /* 藍 */
+  --nav-text: #0f172a;
+  --nav-sub: rgba(15,23,42,.62);
+  --nav-line: rgba(15,23,42,.10);
+
+  --nav-accent-red: #e11d48;  /* 紅：狀態點、重點 */
+  --nav-accent-blue: #2563eb; /* 藍：active、主互動 */
 
   --topbar-h: 56px;
-  --rail-w: 64px;
-  --drawer-w: 260px;
+  --rail-w: 92px;             /* 中文縮寫需要更寬 */
+  --drawer-w: 280px;
 
-  --radius: 14px;
-  --shadow: 0 10px 30px rgba(0,0,0,.28);
+  --radius: 16px;
+  --shadow: 0 18px 46px rgba(2,6,23,.10);
 }
 
 /* ===== Topbar ===== */
@@ -54,15 +57,15 @@
   border-radius: 10px;
   object-fit: contain;
   display: block;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(225,29,72,.06);
+  border: 1px solid rgba(15,23,42,.10);
 }
 
 .brand__text{
-  font-weight: 750;
+  font-weight: 800;
   letter-spacing: .06em;
   font-size: 14px;
-  opacity: .95;
+  opacity: .98;
 }
 
 .topbar__right{
@@ -80,8 +83,8 @@
   font-size: 13px;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.70);
 }
 
 .user__dot{
@@ -89,7 +92,7 @@
   height: 8px;
   border-radius: 999px;
   background: var(--nav-accent-red);
-  box-shadow: 0 0 0 4px rgba(225,29,72,.18);
+  box-shadow: 0 0 0 4px rgba(225,29,72,.14);
 }
 
 .topbar__actions .btn{
@@ -101,27 +104,21 @@
   border-radius: 12px;
   text-decoration: none;
   font-size: 13px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(15,23,42,.12);
 }
 
 .btn--ghost{
   color: var(--nav-text);
-  background: rgba(255,255,255,.04);
+  background: rgba(255,255,255,.60);
 }
-
-.btn--ghost:hover{
-  background: rgba(255,255,255,.08);
-}
+.btn--ghost:hover{ background: rgba(255,255,255,.92); }
 
 .btn--primary{
-  color: #0b1220;
+  color: #ffffff;
   background: var(--nav-accent-blue);
   border-color: rgba(0,0,0,0);
 }
-
-.btn--primary:hover{
-  filter: brightness(1.05);
-}
+.btn--primary:hover{ filter: brightness(1.03); }
 
 /* ===== Sidenav (Rail + DrawerHost) ===== */
 .sidenav{
@@ -136,10 +133,11 @@
   pointer-events: none;
 }
 
+/* Rail：收合狀態（icon + 中文縮寫） */
 .sidenav__rail{
   pointer-events: auto;
   width: var(--rail-w);
-  background: linear-gradient(180deg, var(--nav-bg-2), var(--nav-bg));
+  background: linear-gradient(180deg, rgba(255,247,251,.95), rgba(255,255,255,.92));
   border-right: 1px solid var(--nav-line);
   padding: 10px 8px;
   display: flex;
@@ -147,25 +145,12 @@
   gap: 8px;
 }
 
-.sidenav__pin{
-  width: 100%;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  color: var(--nav-text);
-  cursor: pointer;
-}
-
-.sidenav__pin i{ font-size: 14px; }
-.sidenav__pin:hover{ background: rgba(255,255,255,.08); }
-
 .rail__tab{
   display: grid;
   grid-template-columns: 1fr;
   place-items: center;
   gap: 4px;
-  height: 52px;
+  height: 62px;
   border-radius: 16px;
   text-decoration: none;
   color: var(--nav-sub);
@@ -177,31 +162,37 @@
 .rail__tab .tab__icon i{
   font-size: 16px;
   line-height: 1;
+  color: rgba(15,23,42,.70);
+}
+
+/* 中文縮寫 */
+.tab__abbr{
+  font-size: 12px;
+  letter-spacing: .06em;
+  font-weight: 750;
+  color: rgba(15,23,42,.66);
 }
 
 .rail__tab:hover{
   color: var(--nav-text);
-  background: rgba(37,99,235,.10);
+  background: rgba(37,99,235,.08);
   border-color: rgba(37,99,235,.22);
 }
+.rail__tab:hover .tab__icon i{ color: var(--nav-accent-blue); }
 
 .rail__tab.is-active{
   color: var(--nav-text);
-  background: rgba(225,29,72,.12);
-  border-color: rgba(225,29,72,.28);
+  background: rgba(225,29,72,.08);
+  border-color: rgba(225,29,72,.24);
 }
+.rail__tab.is-active .tab__icon i{ color: var(--nav-accent-red); }
+.rail__tab.is-active .tab__abbr{ color: rgba(15,23,42,.86); }
 
-.tab__abbr{
-  font-size: 11px;
-  letter-spacing: .08em;
-  opacity: .9;
-}
-
-/* Drawer Host（多抽屜容器） */
+/* Drawer Host */
 .sidenav__drawerHost{
   pointer-events: auto;
   width: var(--drawer-w);
-  background: rgba(11,22,48,.96);
+  background: var(--nav-panel);
   border-right: 1px solid var(--nav-line);
   box-shadow: var(--shadow);
   transform: translateX(-10px);
@@ -220,33 +211,28 @@
   visibility: visible;
 }
 
-/* 單一抽屜面板（只顯示 .is-active） */
+/* Drawer panel */
 .drawerPanel{
   display: none;
   height: 100%;
 }
-
-.drawerPanel.is-active{
-  display: block;
-}
+.drawerPanel.is-active{ display: block; }
 
 .drawer__head{
   padding: 14px 14px 10px 14px;
-  border-bottom: 1px solid var(--nav-line);
+  border-bottom: 1px solid rgba(15,23,42,.10);
+  background: linear-gradient(180deg, rgba(255,247,251,.70), rgba(255,255,255,.0));
 }
 
 .drawer__title{
   color: var(--nav-text);
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: .06em;
   display: inline-flex;
   align-items: center;
   gap: 10px;
 }
-
-.drawer__title i{
-  color: var(--nav-accent-blue);
-}
+.drawer__title i{ color: var(--nav-accent-blue); }
 
 .drawer__hint{
   margin-top: 4px;
@@ -268,16 +254,17 @@
   border-radius: 14px;
   margin: 4px 4px;
   border: 1px solid transparent;
+  background: rgba(255,255,255,.55);
 }
 
 .nav__item:hover{
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.92);
+  border-color: rgba(15,23,42,.10);
 }
 
 .nav__item.is-active{
-  background: rgba(37,99,235,.14);
-  border-color: rgba(37,99,235,.26);
+  background: rgba(37,99,235,.10);
+  border-color: rgba(37,99,235,.22);
 }
 
 /* ===== Main content spacing helper ===== */
@@ -289,15 +276,9 @@
 .footer{
   margin-left: var(--rail-w);
   padding: 14px 18px 18px 18px;
-  border-top: 1px solid rgba(0,0,0,.06);
-  color: rgba(0,0,0,.55);
+  border-top: 1px solid rgba(15,23,42,.08);
+  color: rgba(15,23,42,.55);
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-/* pin 展開時主內容讓出 drawer */
-body.nav-pinned .page,
-body.nav-pinned .footer{
-  margin-left: calc(var(--rail-w) + var(--drawer-w));
 }

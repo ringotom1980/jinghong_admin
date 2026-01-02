@@ -1,9 +1,19 @@
 <?php
+/**
+ * Path: Public/dashboard.php
+ * 說明: 儀錶板（KPI 佔位版，後續接 /api/dashboard/kpi 聚合）
+ * - CSS/JS 皆為外掛（不內嵌）
+ * - 依全站 Layout：載入 header + sidebar + footer
+ * - JS 載入定版：統一由 partials/scripts.php 管理（不再散落 <script>）
+ */
+
 declare(strict_types=1);
 
-$pageTitle = '儀表板｜境宏';
-$pageCss = ['assets/css/dashboard.css'];
-$pageJs  = ['assets/js/nav.js','assets/js/dashboard.js'];
+$pageTitle = '儀錶板｜境宏';
+$pageCss   = ['assets/css/dashboard.css'];
+
+// ✅ 只放「本頁專屬」；nav.js 已由 scripts.php 全站載入
+$pageJs    = ['assets/js/dashboard.js'];
 ?>
 <!doctype html>
 <html lang="zh-Hant">
@@ -13,9 +23,9 @@ $pageJs  = ['assets/js/nav.js','assets/js/dashboard.js'];
 <?php require __DIR__ . '/partials/header.php'; ?>
 <?php require __DIR__ . '/partials/sidebar.php'; ?>
 
-<main class="page">
+<main class="page page-enter">
   <div class="page-head">
-    <h1>儀表板</h1>
+    <h1>儀錶板</h1>
     <div class="page-sub">KPI 概覽（目前為佔位，下一步接 API）</div>
   </div>
 
@@ -35,12 +45,6 @@ $pageJs  = ['assets/js/nav.js','assets/js/dashboard.js'];
 </main>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>
-
-<script src="<?= '/jinghong_admin/assets/js/api.js' ?>"></script>
-<script src="<?= '/jinghong_admin/assets/js/ui_toast.js' ?>"></script>
-<script src="<?= '/jinghong_admin/assets/js/ui_modal.js' ?>"></script>
-<?php foreach ($pageJs as $js): ?>
-  <script src="<?= '/jinghong_admin/' . ltrim($js, '/') ?>"></script>
-<?php endforeach; ?>
+<?php require __DIR__ . '/partials/scripts.php'; ?>
 </body>
 </html>

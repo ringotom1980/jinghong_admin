@@ -2,7 +2,6 @@
 /**
  * Path: Public/partials/footer.php
  * 說明: 全站 Footer（版號、版權/單位資訊）
- * - 版號可先固定字串，後續可改讀 config/version.php 或 env
  */
 
 declare(strict_types=1);

@@ -13,7 +13,7 @@
 /* 12 欄：桌機 3 張一列（每張 4 欄），平板 2 張一列，手機 1 張 */
 .kpi-card{
   grid-column: span 4;
-  background: rgba(255,255,255,.88);
+  background: rgba(255,255,255,.90);
   border: 1px solid rgba(15,23,42,.08);
   border-radius: 18px;
   box-shadow: 0 14px 34px rgba(2, 6, 23, .10);
@@ -26,21 +26,21 @@
 
 .kpi-card:hover{
   transform: translateY(-2px);
-  border-color: rgba(15,23,42,.12);
+  border-color: rgba(37,99,235,.22);
   box-shadow: 0 18px 44px rgba(2, 6, 23, .12);
 }
 
 .kpi-k{
   font-size: 12px;
   letter-spacing: .14em;
-  color: rgba(15,23,42,.55);
-  font-weight: 800;
+  color: rgba(15,23,42,.56);
+  font-weight: 820;
   text-transform: uppercase;
 }
 
 .kpi-v{
   font-size: 26px;
-  font-weight: 900;
+  font-weight: 920;
   letter-spacing: .02em;
 }
 
@@ -64,8 +64,8 @@
   gap: 6px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(15,23,42,.04);
-  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(37,99,235,.08);
+  border: 1px solid rgba(37,99,235,.16);
   font-size: 12px;
 }
 
