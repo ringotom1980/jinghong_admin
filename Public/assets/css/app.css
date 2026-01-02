@@ -1,15 +1,14 @@
 /*
  * Path: Public/assets/css/app.css
  * 說明: 全站基底樣式（字體/背景/排版/通用元件）
- * - 設計目標：簡約、漂亮、耐看；作為所有頁面的基礎
- * - 版型：topbar 固定、sidenav 固定，主內容由 nav.css 的 .page 控制 left margin/padding
+ * - 設計：淡灰/白/淡藍，不用粉紅、不用深色
  * - 注意：本檔不再定義 .page 的 margin-left，避免與 nav.css 打架
  */
 
 :root{
-  /* ===== Base palette（淡粉/白，不深色） ===== */
-  --bg: #fff7fb;                 /* 整體淡粉底 */
-  --bg-2: #ffffff;               /* 白底 */
+  /* ===== Base palette (no pink) ===== */
+  --bg: #f6f7fb;
+  --bg-2: #ffffff;
   --panel: #ffffff;
   --panel-2: rgba(255,255,255,.88);
 
@@ -20,10 +19,10 @@
   --line: rgba(15,23,42,.10);
   --line-2: rgba(15,23,42,.06);
 
-  /* ===== Accents（不綁死 logo，但可用於互動） ===== */
-  --accent: #2563eb;             /* 主互動：藍（與 nav.css 一致） */
-  --accent-2: #e11d48;           /* 警示/重點：紅 */
+  /* accents */
+  --accent: #2563eb;
   --accent-soft: rgba(37,99,235,.12);
+  --danger: #e11d48;
   --danger-soft: rgba(225,29,72,.12);
 
   --radius: 16px;
@@ -43,10 +42,10 @@ body{
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif;
 
-  /* 淡粉霧面背景：不深色、但有層次 */
+  /* ✅ no pink: soft blue + neutral haze */
   background:
-    radial-gradient(1200px circle at 10% -10%, rgba(225,29,72,.08), transparent 45%),
-    radial-gradient(1200px circle at 90% -15%, rgba(37,99,235,.08), transparent 50%),
+    radial-gradient(1200px circle at 10% -10%, rgba(37,99,235,.10), transparent 45%),
+    radial-gradient(1100px circle at 90% -15%, rgba(14,165,233,.08), transparent 55%),
     radial-gradient(900px circle at 30% 120%, rgba(15,23,42,.04), transparent 55%),
     var(--bg);
 
@@ -63,7 +62,6 @@ img{ max-width: 100%; display: block; }
   margin: 0 auto;
 }
 
-/* 內容寬度容器：給頁內區塊用（不碰 nav 的 left margin） */
 .content{
   max-width: var(--maxw);
   margin-left: auto;
@@ -75,11 +73,9 @@ h1, h2, h3{
   margin: 0;
   letter-spacing: .02em;
 }
-
 h1{ font-size: 22px; font-weight: 760; }
 h2{ font-size: 18px; font-weight: 730; }
 h3{ font-size: 15px; font-weight: 700; }
-
 p{ margin: 0; }
 
 /* ===== Cards / Panels ===== */
@@ -89,14 +85,11 @@ p{ margin: 0; }
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
 }
-
 .card--flat{ box-shadow: none; }
-
 .card__head{
   padding: 14px 16px 10px 16px;
   border-bottom: 1px solid var(--line-2);
 }
-
 .card__body{ padding: 16px; }
 
 /* ===== Buttons ===== */
@@ -136,7 +129,6 @@ p{ margin: 0; }
   color: #ffffff;
   box-shadow: 0 10px 22px rgba(37,99,235,.18);
 }
-
 .btn--primary:hover{ filter: brightness(1.03); }
 
 .btn--ghost{ background: transparent; }
@@ -152,11 +144,7 @@ p{ margin: 0; }
   outline: none;
   transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
-
-input::placeholder, textarea::placeholder{
-  color: rgba(15,23,42,.40);
-}
-
+input::placeholder, textarea::placeholder{ color: rgba(15,23,42,.40); }
 .input:focus, input:focus, select:focus, textarea:focus{
   border-color: rgba(37,99,235,.45);
   box-shadow: 0 0 0 4px rgba(37,99,235,.14);
@@ -173,21 +161,18 @@ input::placeholder, textarea::placeholder{
   border-radius: var(--radius);
   overflow: hidden;
 }
-
 .table th, .table td{
   padding: 10px 12px;
   font-size: 14px;
   border-bottom: 1px solid var(--line-2);
   vertical-align: middle;
 }
-
 .table th{
   text-align: left;
   color: rgba(15,23,42,.72);
   font-weight: 760;
   background: rgba(15,23,42,.03);
 }
-
 .table tr:last-child td{ border-bottom: 0; }
 
 /* ===== Page header ===== */
@@ -196,13 +181,10 @@ input::placeholder, textarea::placeholder{
   gap: 4px;
   margin: 16px 0 14px 0;
 }
-
 .page-sub{
   color: var(--muted);
   font-size: 13px;
 }
 
-/* ===== Footer（由 nav.css 主控外框，這裡只留底色） ===== */
-.footer{
-  background: transparent;
-}
+/* Footer base (layout handled by nav.css) */
+.footer{ background: transparent; }
