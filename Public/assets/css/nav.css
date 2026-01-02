@@ -1,30 +1,28 @@
 /*
  * Path: Public/assets/css/nav.css
- * 說明: 導覽與側邊抽屜樣式（Topbar + Sidenav｜淡灰/白/淡藍系）
- * 定版重點：
- * - 不用深色系
- * - 不用粉紅
- * - 修正 topbar 三欄（left/center/right）版面跑掉
- * - 公司名稱字體加大
- * - logo 不要網底色（透明）
+ * 說明: 導覽與側邊抽屜樣式（Topbar + Sidenav｜抽屜改成「浮動小面板」）
+ * 重點：
+ * - 抽屜不再全高，不再整條拉出
+ * - 抽屜只在選單旁出現，寬度更窄
  */
 
 :root{
-  /* ===== Neutral + soft blue (no pink) ===== */
   --nav-bg: #ffffff;
   --nav-bg-2: #f6f7fb;
-  --nav-panel: rgba(255,255,255,.94);
+  --nav-panel: rgba(255,255,255,.96);
 
   --nav-text: #0f172a;
   --nav-sub: rgba(15,23,42,.62);
   --nav-line: rgba(15,23,42,.10);
 
-  --nav-accent-blue: #2563eb; /* 主互動 */
-  --nav-accent-red: #e11d48;  /* 只做狀態點（可保留，不當背景色用） */
+  --nav-accent-blue: #2563eb;
+  --nav-accent-red: #e11d48;
 
   --topbar-h: 56px;
   --rail-w: 92px;
-  --drawer-w: 280px;
+
+  /* ✅ 抽屜面板改成浮動小面板：不要太寬 */
+  --drawer-w: 220px;
 
   --radius: 16px;
   --shadow: 0 18px 46px rgba(2,6,23,.10);
@@ -36,40 +34,18 @@
   top: 0;
   z-index: 50;
   height: var(--topbar-h);
-
-  /* ✅ 改 flex，對齊 header.php 的 left/center/right 三欄 */
   display: flex;
   align-items: center;
   gap: 12px;
-
   padding: 0 14px;
   background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
   border-bottom: 1px solid var(--nav-line);
 }
 
-/* left */
-.topbar__left{
-  display: flex;
-  align-items: center;
-  min-width: 0; /* allow text truncate */
-}
+.topbar__left{ display:flex; align-items:center; min-width:0; }
+.topbar__center{ flex:1 1 auto; min-width:0; }
+.topbar__right{ display:inline-flex; align-items:center; gap:12px; flex:0 0 auto; }
 
-/* center（你 header.php 有這個 div，給它吃掉剩餘空間避免右側擠壓） */
-.topbar__center{
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* right */
-.topbar__right{
-  display: inline-flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
-}
-
-/* brand */
 .topbar__brand{
   display: inline-flex;
   align-items: center;
@@ -85,29 +61,20 @@
   border-radius: 10px;
   object-fit: contain;
   display: block;
-
-  /* ✅ 不要網底色 */
   background: transparent;
   border: 0;
 }
 
 .brand__text{
   font-weight: 800;
-
-  /* ✅ 中文可讀性：不要太誇張 letter spacing */
   letter-spacing: .02em;
-
-  /* ✅ 放大公司名稱 */
   font-size: 16px;
   line-height: 1.1;
-
-  /* 長名稱不爆版 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* user pill */
 .topbar__user{
   display: inline-flex;
   align-items: center;
@@ -119,7 +86,6 @@
   border: 1px solid rgba(15,23,42,.10);
   background: rgba(255,255,255,.78);
 }
-
 .user__dot{
   width: 8px;
   height: 8px;
@@ -128,7 +94,6 @@
   box-shadow: 0 0 0 4px rgba(225,29,72,.12);
 }
 
-/* buttons (reuse .btn from app.css; here only tighten height) */
 .topbar__actions .btn{
   height: 34px;
   padding: 0 12px;
@@ -136,40 +101,39 @@
   font-size: 13px;
   border: 1px solid rgba(15,23,42,.12);
 }
-
-/* make sure .btn--primary from app.css doesn't get overridden badly */
 .topbar__actions .btn--primary{
   background: var(--nav-accent-blue);
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
-
 .topbar__actions .btn--ghost{
   background: rgba(255,255,255,.60);
   color: var(--nav-text);
 }
 .topbar__actions .btn--ghost:hover{ background: rgba(255,255,255,.92); }
 
-/* ===== Sidenav (Rail + DrawerHost) ===== */
+/* ===== Sidenav ===== */
 .sidenav{
   position: fixed;
   top: var(--topbar-h);
   left: 0;
   bottom: 0;
   z-index: 40;
-  display: grid;
-  grid-template-columns: var(--rail-w) 0px;
-  align-items: stretch;
   pointer-events: none;
+
+  /* ✅ 不再用 grid 兩欄拉整條，改成 rail + 浮動面板 */
+  width: calc(var(--rail-w) + var(--drawer-w) + 16px);
 }
 
 .sidenav__rail{
   pointer-events: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+
   width: var(--rail-w);
-
-  /* ✅ no pink */
   background: linear-gradient(180deg, rgba(246,247,251,.96), rgba(255,255,255,.94));
-
   border-right: 1px solid var(--nav-line);
   padding: 10px 8px;
   display: flex;
@@ -179,7 +143,6 @@
 
 .rail__tab{
   display: grid;
-  grid-template-columns: 1fr;
   place-items: center;
   gap: 4px;
   height: 62px;
@@ -196,7 +159,6 @@
   line-height: 1;
   color: rgba(15,23,42,.70);
 }
-
 .tab__abbr{
   font-size: 12px;
   letter-spacing: .04em;
@@ -211,7 +173,6 @@
 }
 .rail__tab:hover .tab__icon i{ color: var(--nav-accent-blue); }
 
-/* active：用藍，不用粉紅 */
 .rail__tab.is-active{
   color: var(--nav-text);
   background: rgba(37,99,235,.10);
@@ -220,21 +181,29 @@
 .rail__tab.is-active .tab__icon i{ color: var(--nav-accent-blue); }
 .rail__tab.is-active .tab__abbr{ color: rgba(15,23,42,.86); }
 
-/* Drawer Host */
+/* ===== DrawerHost: 浮動小面板 ===== */
 .sidenav__drawerHost{
   pointer-events: auto;
+
+  /* ✅ 浮動在 rail 旁邊，不吃全高 */
+  position: absolute;
+  left: calc(var(--rail-w) + 10px);
+  top: 10px;
+
   width: var(--drawer-w);
+  max-height: calc(100vh - var(--topbar-h) - 20px);
+
   background: var(--nav-panel);
-  border-right: 1px solid var(--nav-line);
+  border: 1px solid var(--nav-line);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  transform: translateX(-10px);
+
+  overflow: hidden;
+
+  transform: translateX(-6px);
   opacity: 0;
   visibility: hidden;
   transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
-}
-
-.sidenav.is-open{
-  grid-template-columns: var(--rail-w) var(--drawer-w);
 }
 
 .sidenav.is-open .sidenav__drawerHost{
@@ -243,21 +212,15 @@
   visibility: visible;
 }
 
-/* Drawer panel */
-.drawerPanel{
-  display: none;
-  height: 100%;
-}
+/* drawer panel（內容自己撐高） */
+.drawerPanel{ display: none; }
 .drawerPanel.is-active{ display: block; }
 
 .drawer__head{
-  padding: 14px 14px 10px 14px;
+  padding: 12px 12px 10px 12px;
   border-bottom: 1px solid rgba(15,23,42,.10);
-
-  /* ✅ no pink */
   background: linear-gradient(180deg, rgba(246,247,251,.90), rgba(255,255,255,.0));
 }
-
 .drawer__title{
   color: var(--nav-text);
   font-weight: 900;
@@ -274,10 +237,11 @@
   font-size: 12px;
 }
 
+/* ✅ 不要固定滿高：改成最大高度 + 自動捲動 */
 .drawer__nav{
-  padding: 12px 10px 14px 10px;
+  padding: 10px 8px 10px 8px;
+  max-height: 360px;
   overflow: auto;
-  height: calc(100vh - var(--topbar-h) - 62px);
 }
 
 .nav__item{
@@ -288,14 +252,12 @@
   border-radius: 14px;
   margin: 4px 4px;
   border: 1px solid transparent;
-  background: rgba(255,255,255,.62);
+  background: rgba(255,255,255,.70);
 }
-
 .nav__item:hover{
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.95);
   border-color: rgba(15,23,42,.10);
 }
-
 .nav__item.is-active{
   background: rgba(37,99,235,.10);
   border-color: rgba(37,99,235,.22);
@@ -306,7 +268,6 @@
   margin-left: var(--rail-w);
   padding: 18px 18px 64px 18px;
 }
-
 .footer{
   margin-left: var(--rail-w);
   padding: 14px 18px 18px 18px;
@@ -317,9 +278,11 @@
   align-items: center;
 }
 
-/* ===== RWD: 標題稍縮，避免小寬度擠壓右側 ===== */
 @media (max-width: 720px){
   .brand__text{ font-size: 15px; }
   .topbar{ padding: 0 10px; }
-  .topbar__user{ display: none; } /* 手機先隱藏使用者 pill，避免擠爆 */
+  .topbar__user{ display: none; }
+
+  /* 小螢幕抽屜再窄一點 */
+  :root{ --drawer-w: 200px; }
 }
