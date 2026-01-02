@@ -1,9 +1,21 @@
 RewriteEngine On
 
-# 如果請求的是實體檔案或資料夾，直接放行（例如 README.md 或你之後放的 ping.txt）
+# ===== 1) 靜態資源放行 =====
+# 你前端引用的是 /jinghong_admin/assets/...
+RewriteRule ^assets/ - [L]
+
+# 若你有要讓外部直接取用車輛圖片（例如 <img src="/jinghong_admin/uploads/vehicles/...">）
+# 先預留一個公開路徑 uploads -> storage/uploads（下面第 2 段會做 rewrite）
+RewriteRule ^uploads/ - [L]
+
+# ===== 2) 讓 /uploads/* 對應到 storage/uploads/*（可選：車輛圖片用）=====
+RewriteCond %{REQUEST_URI} ^/jinghong_admin/uploads/ [NC]
+RewriteRule ^uploads/(.*)$ storage/uploads/$1 [L]
+
+# ===== 3) 放行實體檔案/資料夾 =====
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 其餘全部交給 Public/ 內的前端控制器
+# ===== 4) 其餘全部交給 Public/index.php =====
 RewriteRule ^ Public/index.php [L]
