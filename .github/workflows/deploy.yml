@@ -1,0 +1,57 @@
+name: Deploy to FTP
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 避免把敏感檔案帶上（即使 .gitignore 沒上版控，仍加一道保險）
+      - name: Remove sensitive files (safety)
+        run: |
+          rm -f .env
+          rm -f .env.local
+          rm -f .env.production
+          rm -f .env.staging
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          port: 21
+
+          # ✅ 你的 FTP 帳號根目錄已是 /home/.../public_html
+          # ✅ 部署到 public_html/jinghong_admin/
+          # ⚠️ 用相對路徑，不要寫 /public_html 或 /home/...
+          server-dir: jinghong_admin/
+
+          # ✅ 整包部署（jinghong_admin 專案根目錄）
+          local-dir: ./
+
+          # ✅ 排除：Git/CI/編輯器垃圾、敏感檔、以及「不能覆蓋」的 storage
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.vscode/**
+            **/.idea/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.log
+
+            # 不上傳任何 .env（只保留 .env.example 進 repo 即可）
+            **/.env
+            **/.env.*
+            
+            # 不要覆蓋伺服器上的車輛圖片與匯入暫存
+            storage/uploads/**
+            storage/import/**
