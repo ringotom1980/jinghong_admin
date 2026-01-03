@@ -49,7 +49,7 @@ if (isset($_GET['return'])) {
 
     <!-- 公開入口：不登入也可用 -->
     <div class="auth-public">
-      <a class="btn-secondary" href="<?= base_url() ?>/pole-map">前往公開電桿地圖</a>
+      <a class="btn btn--secondary" href="<?= base_url() ?>/pole-map">前往公開電桿地圖</a>
     </div>
 
     <form id="loginForm" class="auth-form" method="post" action="javascript:void(0)">
@@ -67,7 +67,7 @@ if (isset($_GET['return'])) {
 
       <div id="loginMessage" class="auth-msg"></div>
 
-      <button type="submit" class="btn-primary">登入</button>
+      <button type="submit" class="btn btn--primary">登入</button>
     </form>
 
     <div class="auth-foot">v0.1.0</div>
