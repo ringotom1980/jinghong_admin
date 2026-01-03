@@ -101,12 +101,10 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: rgba(255, 255, 255, 0.78);
 }
+
+/* ✅ user dot：目前無狀態意義，先隱藏（保留 DOM 以便未來擴充） */
 .user__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--nav-accent-red);
-  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.12);
+  display: none;
 }
 
 .topbar__actions .btn {
