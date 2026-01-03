@@ -3,7 +3,7 @@
  * - Leaflet + Carto Positron
  * - autocomplete >=2、debounce 300ms、最多 10
  * - 點選後 setView zoom=17 + marker
- * - 一鍵 Google Maps 導航（URL）
+ * - 「用 Google 導航」：選到點才顯示
  */
 
 (function () {
@@ -44,26 +44,22 @@
   var infoEl = qs('#polePickedInfo');
 
   // --- Map
-  var map = L.map('map', {
-    zoomControl: true
-  });
+  var map = L.map('map', { zoomControl: true });
 
-  // Carto Positron tiles
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 20,
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
   }).addTo(map);
 
-  // Default view（台灣中部附近，之後可改成你公司常用中心點）
   map.setView([23.9, 121.0], 8);
 
-  var picked = {
-    lat: null,
-    lng: null,
-    label: ''
-  };
-
+  var picked = { lat: null, lng: null, label: '' };
   var marker = null;
+
+  function setNavVisible(visible) {
+    if (!navBtn) return;
+    navBtn.hidden = !visible;
+  }
 
   function setPicked(item) {
     if (!item || typeof item.lat !== 'number' || typeof item.lng !== 'number') return;
@@ -72,15 +68,14 @@
     picked.lng = item.lng;
     picked.label = item.label || '';
 
-    // marker
     if (marker) map.removeLayer(marker);
     marker = L.marker([picked.lat, picked.lng]).addTo(map);
 
     map.setView([picked.lat, picked.lng], 17, { animate: true });
 
     // UI
-    navBtn.disabled = false;
-    infoEl.textContent = picked.label ? ('已選：' + picked.label) : '已選定位點';
+    setNavVisible(true);
+    if (infoEl) infoEl.textContent = picked.label ? ('已選：' + picked.label) : '已選定位點';
     hideSuggest();
   }
 
@@ -108,7 +103,6 @@
       var lat = (typeof it.lat === 'number') ? it.lat : null;
       var lng = (typeof it.lng === 'number') ? it.lng : null;
 
-      // 用 data-* 存座標與 label（避免閉包亂掉）
       html += ''
         + '<li class="pole-suggest__item" role="option" tabindex="0"'
         + ' data-lat="' + escapeHtml(lat) + '"'
@@ -128,16 +122,13 @@
 
   function fetchSuggest(q) {
     var url = apiUrl('/api/public/pole/suggest') + '?q=' + encodeURIComponent(q);
-
     return fetch(url, { method: 'GET', credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (!j || j.success !== true || !Array.isArray(j.data)) return [];
         return j.data.slice(0, 10);
       })
-      .catch(function () {
-        return [];
-      });
+      .catch(function () { return []; });
   }
 
   var onInput = debounce(function () {
@@ -149,6 +140,10 @@
     fetchSuggest(q).then(showSuggest);
   }, 300);
 
+  // 初始：未選點不顯示導航
+  setNavVisible(false);
+  if (infoEl) infoEl.textContent = '';
+
   if (inputEl) {
     inputEl.addEventListener('input', onInput);
     inputEl.addEventListener('focus', onInput);
@@ -158,14 +153,18 @@
     clearEl.addEventListener('click', function () {
       if (inputEl) inputEl.value = '';
       hideSuggest();
-      navBtn.disabled = true;
-      infoEl.textContent = '';
+
+      // reset picked
       picked.lat = picked.lng = null;
       picked.label = '';
-      if (marker) {
-        map.removeLayer(marker);
-        marker = null;
-      }
+
+      // UI
+      setNavVisible(false);
+      if (infoEl) infoEl.textContent = '';
+
+      // marker
+      if (marker) { map.removeLayer(marker); marker = null; }
+
       if (inputEl) inputEl.focus();
     });
   }
@@ -181,11 +180,9 @@
       var label = li.getAttribute('data-label') || '';
 
       if (!isFinite(lat) || !isFinite(lng)) return;
-
       setPicked({ lat: lat, lng: lng, label: label });
     });
 
-    // 鍵盤 Enter 也可選
     listEl.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
       var li = e.target && e.target.classList && e.target.classList.contains('pole-suggest__item') ? e.target : null;
@@ -196,12 +193,11 @@
       var label = li.getAttribute('data-label') || '';
 
       if (!isFinite(lat) || !isFinite(lng)) return;
-
       setPicked({ lat: lat, lng: lng, label: label });
     });
   }
 
-  // 導航按鈕
+  // 導航按鈕（只在 setPicked 後顯示）
   if (navBtn) {
     navBtn.addEventListener('click', function () {
       if (!isFinite(picked.lat) || !isFinite(picked.lng)) return;
