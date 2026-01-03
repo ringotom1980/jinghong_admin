@@ -2,6 +2,7 @@
 /**
  * Path: Public/partials/head.php
  * 說明: 全站 <head> 共用資源載入
+ * - 提供 window.BASE_URL 給前端組 API URL（避免部署在 /jinghong_admin 時打到站台根 /api）
  */
 
 declare(strict_types=1);
@@ -15,20 +16,25 @@ if (!isset($pageJs))    $pageJs    = [];
  */
 function asset(string $path): string
 {
-    $base = base_url();
-    $path = ltrim($path, '/');
+  $base = base_url();
+  $path = ltrim($path, '/');
 
-    $full = __DIR__ . '/../' . $path;
-    $v = is_file($full) ? (string)filemtime($full) : (string)time();
+  $full = __DIR__ . '/../' . $path;
+  $v = is_file($full) ? (string)filemtime($full) : (string)time();
 
-    $prefix = ($base !== '') ? rtrim($base, '/') . '/' : '/';
-    return $prefix . $path . '?v=' . $v;
+  $prefix = ($base !== '') ? rtrim($base, '/') . '/' : '/';
+  return $prefix . $path . '?v=' . $v;
 }
 ?>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= htmlspecialchars((string)$pageTitle, ENT_QUOTES) ?></title>
+
+  <!-- 提供前端使用：API / 連結 base（例：/jinghong_admin 或空字串） -->
+  <script>
+    window.BASE_URL = "<?= htmlspecialchars(base_url(), ENT_QUOTES) ?>";
+  </script>
 
   <link rel="icon" type="image/png" href="<?= asset('assets/img/brand/JH_logo.png') ?>" />
 
