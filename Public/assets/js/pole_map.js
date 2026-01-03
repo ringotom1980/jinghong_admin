@@ -3,7 +3,7 @@
  * - Leaflet + Carto Positron
  * - autocomplete >=2、debounce 300ms、最多 10
  * - 點選後 setView zoom=17 + marker
- * - 「用 Google 導航」：選到點才顯示
+ * - 一鍵 Google Maps 導航（URL）
  */
 
 (function () {
@@ -41,7 +41,6 @@
   var wrapEl = qs('#poleSuggestWrap');
   var listEl = qs('#poleSuggestList');
   var navBtn = qs('#poleNavBtn');
-  var infoEl = qs('#polePickedInfo');
 
   // --- Map
   var map = L.map('map', { zoomControl: true });
@@ -58,8 +57,15 @@
 
   function setNavVisible(visible) {
     if (!navBtn) return;
-    navBtn.hidden = !visible;
+    if (visible) {
+      navBtn.hidden = false;
+    } else {
+      navBtn.hidden = true;
+    }
   }
+
+  // 初始：導覽按鈕不顯示
+  setNavVisible(false);
 
   function setPicked(item) {
     if (!item || typeof item.lat !== 'number' || typeof item.lng !== 'number') return;
@@ -73,9 +79,9 @@
 
     map.setView([picked.lat, picked.lng], 17, { animate: true });
 
-    // UI
+    // ✅ 選到點後才顯示「用 Google 導航」
     setNavVisible(true);
-    if (infoEl) infoEl.textContent = picked.label ? ('已選：' + picked.label) : '已選定位點';
+
     hideSuggest();
   }
 
@@ -122,6 +128,7 @@
 
   function fetchSuggest(q) {
     var url = apiUrl('/api/public/pole/suggest') + '?q=' + encodeURIComponent(q);
+
     return fetch(url, { method: 'GET', credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
@@ -140,10 +147,6 @@
     fetchSuggest(q).then(showSuggest);
   }, 300);
 
-  // 初始：未選點不顯示導航
-  setNavVisible(false);
-  if (infoEl) infoEl.textContent = '';
-
   if (inputEl) {
     inputEl.addEventListener('input', onInput);
     inputEl.addEventListener('focus', onInput);
@@ -154,22 +157,20 @@
       if (inputEl) inputEl.value = '';
       hideSuggest();
 
-      // reset picked
+      // ✅ 清除後：導覽按鈕回到不顯示
+      setNavVisible(false);
+
       picked.lat = picked.lng = null;
       picked.label = '';
 
-      // UI
-      setNavVisible(false);
-      if (infoEl) infoEl.textContent = '';
-
-      // marker
-      if (marker) { map.removeLayer(marker); marker = null; }
-
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
       if (inputEl) inputEl.focus();
     });
   }
 
-  // 點選建議項
   if (listEl) {
     listEl.addEventListener('click', function (e) {
       var li = e.target && e.target.closest ? e.target.closest('.pole-suggest__item') : null;
@@ -197,7 +198,6 @@
     });
   }
 
-  // 導航按鈕（只在 setPicked 後顯示）
   if (navBtn) {
     navBtn.addEventListener('click', function () {
       if (!isFinite(picked.lat) || !isFinite(picked.lng)) return;
@@ -210,6 +210,5 @@
     });
   }
 
-  // 點地圖空白 → 收合建議
   map.on('click', function () { hideSuggest(); });
 })();
