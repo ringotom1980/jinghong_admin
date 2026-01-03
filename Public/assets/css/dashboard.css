@@ -31,7 +31,7 @@
 }
 
 .kpi-k{
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: .14em;
   color: rgba(15,23,42,.56);
   font-weight: 820;
@@ -39,13 +39,13 @@
 }
 
 .kpi-v{
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 920;
   letter-spacing: .02em;
 }
 
 .kpi-s{
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(15,23,42,.60);
 }
 
