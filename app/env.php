@@ -12,15 +12,13 @@
  * - 只解析 KEY=VALUE
  * - 忽略空行與 # 開頭註解
  * - 支援 "value" 雙引號包住
- * - 已存在的環境變數不覆蓋（避免外部注入被改寫）
+ * - 預設不覆蓋既有環境變數；但「既有為空字串」視同未設定，允許覆蓋
+ * - 可透過 $force=true 強制覆蓋
  */
 
 declare(strict_types=1);
 
-/**
- * 載入指定 env 檔案
- */
-function load_env_file(string $envPath): void
+function load_env_file(string $envPath, bool $force = false): void
 {
     if (!is_file($envPath)) {
         return;
@@ -40,18 +38,19 @@ function load_env_file(string $envPath): void
         [$k, $v] = explode('=', $line, 2);
         $k = trim((string)$k);
         $v = trim((string)$v);
-
         if ($k === '') continue;
-
-        // 不覆蓋既有環境變數
-        $already = getenv($k);
-        if ($already !== false) {
-            continue;
-        }
 
         // 去掉 "..."
         if (($v[0] ?? '') === '"' && substr($v, -1) === '"') {
             $v = substr($v, 1, -1);
+        }
+
+        if (!$force) {
+            $existing = getenv($k);
+            // 注意：existing === '' 視同未設定（允許覆蓋）
+            if ($existing !== false && (string)$existing !== '') {
+                continue;
+            }
         }
 
         putenv($k . '=' . $v);
@@ -62,8 +61,8 @@ function load_env_file(string $envPath): void
  * 專案預設：載入根目錄 /.env
  * - 此檔位於 app/，所以 root = dirname(__DIR__)
  */
-function load_project_env(): void
+function load_project_env(bool $force = false): void
 {
     $root = dirname(__DIR__);
-    load_env_file($root . '/.env');
+    load_env_file($root . '/.env', $force);
 }
