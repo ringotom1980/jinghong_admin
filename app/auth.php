@@ -1,11 +1,10 @@
 <?php
-
 /**
  * Path: app/auth.php
  * 說明: 身分驗證與登入狀態工具
- * - current_user_id(): 取得目前登入者 ID
- * - require_login(): 未登入自動導向 /login（頁面）或回 401（API）
- * - login_user() / logout_user(): Session 控制
+ * - current_user_id()
+ * - require_login()
+ * - login_user() / logout_user()
  */
 
 declare(strict_types=1);
@@ -20,8 +19,8 @@ function current_user_id(): ?int
 
 /**
  * 要求必須登入
- * - 頁面：導向 /login?return=原路徑
- * - API：回傳 JSON 401
+ * - API：JSON 401
+ * - Page：redirect 到 {BASE_URL}/login?return=原路徑
  */
 function require_login(): void
 {
@@ -31,17 +30,16 @@ function require_login(): void
 
     $uri = parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
 
-    // API 請求 → JSON
-    if (strpos($uri, '/api/') === 0) {
+    // API
+    if (str_starts_with($uri, '/api/')) {
         json_error('未登入', 401);
     }
 
-    // 頁面請求 → redirect（需帶上 base，避免 /jinghong_admin 部署時導到站台根 /login）
-    $base = function_exists('base_url') ? base_url() : '';
+    // Page
+    $base = base_url();
     $loginPath = rtrim($base, '/') . '/login';
 
-    // 避免已在 /login 又被加 return 造成混亂
-    $return = ($uri !== '/login' && $uri !== rtrim($base, '/') . '/login')
+    $return = ($uri !== '/login')
         ? '?return=' . rawurlencode($uri)
         : '';
 
@@ -50,7 +48,7 @@ function require_login(): void
 }
 
 /**
- * 登入：寫入 Session
+ * 登入
  */
 function login_user(int $userId): void
 {
@@ -58,7 +56,7 @@ function login_user(int $userId): void
 }
 
 /**
- * 登出：清除 Session
+ * 登出
  */
 function logout_user(): void
 {
