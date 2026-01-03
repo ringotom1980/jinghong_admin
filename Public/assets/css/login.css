@@ -29,7 +29,7 @@
   padding: 8px 6px 14px 6px;
 }
 
-/* 登入頁 Logo 圖片版 */
+/* 登入頁 Logo 圖片版（浮起、有質感） */
 .auth-logo-img{
   width: 64px;
   height: 64px;
@@ -37,9 +37,27 @@
   object-fit: contain;
   display: block;
 
-  /* ✅ 不用粉紅：改成中性淡灰框 + 透明白底 */
+  /* 中性淡灰框 + 透明白底 */
   border: 1px solid rgba(15,23,42,.10);
-  background: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.78);
+
+  /* ✅ 立體浮起感（核心） */
+  box-shadow:
+    0 12px 32px rgba(2, 6, 23, 0.18),
+    0 4px 10px rgba(2, 6, 23, 0.08);
+
+  /* ✅ 與全站動效一致 */
+  transition:
+    box-shadow 240ms cubic-bezier(.2,.8,.2,1),
+    transform 240ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* 微互動：更有「浮起來」的感覺（不晃、不廉價） */
+.auth-logo-img:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 42px rgba(2, 6, 23, 0.22),
+    0 6px 14px rgba(2, 6, 23, 0.10);
 }
 
 .auth-title{
