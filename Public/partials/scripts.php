@@ -19,6 +19,7 @@ $globalJs = [
   'assets/js/ui_toast.js',
   'assets/js/ui_modal.js',
   'assets/js/nav.js',
+  'assets/js/auth_me.js',
 ];
 
 // 合併去重（避免頁面又塞一次 nav.js）
