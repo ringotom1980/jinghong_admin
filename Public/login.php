@@ -49,7 +49,7 @@ if (isset($_GET['return'])) {
 
     <!-- 公開入口：不登入也可用 -->
     <div class="auth-public">
-      <a class="btn btn--secondary" href="<?= base_url() ?>/pole-map">前往公開電桿地圖</a>
+      <a class="btn btn--secondary" href="<?= base_url() ?>/pole-map">前往公開電桿地圖(不須登入)</a>
     </div>
 
     <form id="loginForm" class="auth-form" method="post" action="javascript:void(0)">
