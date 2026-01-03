@@ -217,3 +217,7 @@ body.public-page.pole-map-page {
 .leaflet-top.leaflet-left {
   top: 72px;
 }
+/* ✅ 只修這顆：避免被 .btn{display:inline-flex} 蓋掉 */
+#poleNavBtn[hidden] {
+  display: none !important;
+}
