@@ -110,8 +110,7 @@
         if (best.key.indexOf('mat') === 0) drawerId = 'drawer-mat';
         else if (best.key.indexOf('car') === 0) drawerId = 'drawer-car';
         else if (best.key.indexOf('equ') === 0) drawerId = 'drawer-equ';
-        else if (best.key.indexOf('pole') === 0) drawerId = 'drawer-pole';
-        else drawerId = 'drawer-dashboard';
+        else drawerId = 'drawer-dashboard'; // ✅ pole-map 也走 dashboard，避免不存在的 drawer-pole
 
         showDrawer(drawerId, sidenav);
         return drawerId;

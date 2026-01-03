@@ -1,7 +1,9 @@
 <?php
 /**
  * Path: Public/pole_map.php
- * 說明: 公開電桿地圖（不需登入）
+ * 說明: 電桿地圖（公開 URL）
+ * - 未登入：公開殼（public_header），不載 sidebar
+ * - 已登入：管理殼（header + sidebar + footer 都在）
  */
 
 declare(strict_types=1);
@@ -20,13 +22,21 @@ $pageJs    = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'assets/js/pole_map.js',
 ];
+
+$isAuthed = function_exists('current_user_id') && current_user_id();
 ?>
 <!doctype html>
 <html lang="zh-Hant">
 <?php require __DIR__ . '/partials/head.php'; ?>
-<body class="public-page pole-map-page">
+<body class="<?= $isAuthed ? 'app-page pole-map-page' : 'public-page pole-map-page' ?>">
 
-<?php require __DIR__ . '/partials/public_header.php'; ?>
+<?php if ($isAuthed): ?>
+  <?php require __DIR__ . '/partials/header.php'; ?>
+  <?php require __DIR__ . '/partials/sidebar.php'; ?>
+  <div class="page">
+<?php else: ?>
+  <?php require __DIR__ . '/partials/public_header.php'; ?>
+<?php endif; ?>
 
 <main class="pole-map">
   <section class="pole-map__panel">
@@ -68,6 +78,11 @@ $pageJs    = [
 </main>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>
+
+<?php if ($isAuthed): ?>
+  </div><!-- /.page -->
+<?php endif; ?>
+
 <?php require __DIR__ . '/partials/scripts.php'; ?>
 </body>
 </html>

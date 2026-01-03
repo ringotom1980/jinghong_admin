@@ -26,5 +26,13 @@ $globalJs = [
 $all = array_values(array_unique(array_merge($globalJs, array_map('strval', $pageJs))));
 
 foreach ($all as $js) {
-  echo '<script src="' . htmlspecialchars(asset((string)$js), ENT_QUOTES) . '" defer></script>' . PHP_EOL;
+  $src = (string)$js;
+
+  // 外部 CDN：不走 asset()
+  if (preg_match('#^https?://#i', $src)) {
+    echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
+    continue;
+  }
+
+  echo '<script src="' . htmlspecialchars(asset($src), ENT_QUOTES) . '" defer></script>' . PHP_EOL;
 }

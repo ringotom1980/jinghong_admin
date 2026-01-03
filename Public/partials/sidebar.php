@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/partials/sidebar.php
  * 說明: 左側動態側導覽（獨立抽屜版本｜定版）
@@ -25,39 +26,39 @@ $u = function (string $path) use ($base): string {
 <aside class="sidenav" id="sidenav" aria-label="側邊導覽">
     <div class="sidenav__rail" aria-hidden="false">
         <a class="rail__tab" data-nav="dashboard" data-drawer="drawer-dashboard"
-           href="<?= htmlspecialchars($u('/dashboard'), ENT_QUOTES) ?>">
+            href="<?= htmlspecialchars($u('/dashboard'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-gauge-high"></i></span>
             <span class="tab__abbr">儀錶板</span>
         </a>
 
         <a class="rail__tab" data-nav="mat" data-drawer="drawer-mat"
-           href="<?= htmlspecialchars($u('/mat/issue'), ENT_QUOTES) ?>">
+            href="<?= htmlspecialchars($u('/mat/issue'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></span>
             <span class="tab__abbr">領退管理</span>
         </a>
 
         <a class="rail__tab" data-nav="car" data-drawer="drawer-car"
-           href="<?= htmlspecialchars($u('/car/base'), ENT_QUOTES) ?>">
+            href="<?= htmlspecialchars($u('/car/base'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-car"></i></span>
             <span class="tab__abbr">車輛管理</span>
         </a>
 
         <a class="rail__tab" data-nav="equ" data-drawer="drawer-equ"
-           href="<?= htmlspecialchars($u('/equ/repairs'), ENT_QUOTES) ?>">
+            href="<?= htmlspecialchars($u('/equ/repairs'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span>
             <span class="tab__abbr">工具管理</span>
         </a>
 
-        <!-- 公開頁：不走 drawer（避免 nav.js 誤判），新分頁開啟 -->
+        <!-- 公開 URL，但登入狀態下仍走同一個 layout；不需要新分頁 -->
         <a class="rail__tab"
-           data-nav="pole_map"
-           data-no-drawer="1"
-           aria-haspopup="false"
-           href="<?= htmlspecialchars($u('/pole-map'), ENT_QUOTES) ?>"
-           target="_blank" rel="noopener">
+            data-nav="pole_map"
+            data-no-drawer="1"
+            aria-haspopup="false"
+            href="<?= htmlspecialchars($u('/pole-map'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
             <span class="tab__abbr">電桿地圖</span>
         </a>
+
     </div>
 
     <div class="sidenav__drawerHost" id="sidenavDrawerHost" aria-hidden="true">

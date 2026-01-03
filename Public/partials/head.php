@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/partials/head.php
  * 說明: 全站 <head> 共用資源載入
@@ -26,6 +27,7 @@ function asset(string $path): string
   return $prefix . $path . '?v=' . $v;
 }
 ?>
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -39,8 +41,8 @@ function asset(string $path): string
   <link rel="icon" type="image/png" href="<?= asset('assets/img/brand/JH_logo.png') ?>" />
 
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        referrerpolicy="no-referrer" />
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    referrerpolicy="no-referrer" />
 
   <link rel="stylesheet" href="<?= asset('assets/css/app.css') ?>" />
   <link rel="stylesheet" href="<?= asset('assets/css/nav.css') ?>" />
@@ -49,6 +51,12 @@ function asset(string $path): string
   <link rel="stylesheet" href="<?= asset('assets/css/ui_modal.css') ?>" />
 
   <?php foreach ($pageCss as $css): ?>
-    <link rel="stylesheet" href="<?= asset((string)$css) ?>" />
+    <?php $href = (string)$css; ?>
+    <?php if (preg_match('#^https?://#i', $href)): ?>
+      <link rel="stylesheet" href="<?= htmlspecialchars($href, ENT_QUOTES) ?>" />
+    <?php else: ?>
+      <link rel="stylesheet" href="<?= asset($href) ?>" />
+    <?php endif; ?>
   <?php endforeach; ?>
+
 </head>
