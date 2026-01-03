@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/auth.php
  * 說明: 身分驗證與登入狀態工具
@@ -14,7 +15,7 @@ declare(strict_types=1);
  */
 function current_user_id(): ?int
 {
-  return isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+    return isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
 }
 
 /**
@@ -24,22 +25,28 @@ function current_user_id(): ?int
  */
 function require_login(): void
 {
-  if (current_user_id()) {
-    return;
-  }
+    if (current_user_id()) {
+        return;
+    }
 
-  $uri = parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+    $uri = parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
 
-  // API 請求 → JSON
-  if (strpos($uri, '/api/') === 0) {
-    json_error('未登入', 401);
-  }
+    // API 請求 → JSON
+    if (strpos($uri, '/api/') === 0) {
+        json_error('未登入', 401);
+    }
 
-  // 頁面請求 → redirect
-  $login = '/login';
-  $return = ($uri !== '/login') ? '?return=' . urlencode($uri) : '';
-  header('Location: ' . $login . $return);
-  exit;
+    // 頁面請求 → redirect（需帶上 base，避免 /jinghong_admin 部署時導到站台根 /login）
+    $base = function_exists('base_url') ? base_url() : '';
+    $loginPath = rtrim($base, '/') . '/login';
+
+    // 避免已在 /login 又被加 return 造成混亂
+    $return = ($uri !== '/login' && $uri !== rtrim($base, '/') . '/login')
+        ? '?return=' . rawurlencode($uri)
+        : '';
+
+    header('Location: ' . $loginPath . $return);
+    exit;
 }
 
 /**
@@ -47,7 +54,7 @@ function require_login(): void
  */
 function login_user(int $userId): void
 {
-  $_SESSION['user_id'] = $userId;
+    $_SESSION['user_id'] = $userId;
 }
 
 /**
@@ -55,20 +62,20 @@ function login_user(int $userId): void
  */
 function logout_user(): void
 {
-  $_SESSION = [];
+    $_SESSION = [];
 
-  if (ini_get('session.use_cookies')) {
-    $params = session_get_cookie_params();
-    setcookie(
-      session_name(),
-      '',
-      time() - 42000,
-      $params['path'],
-      $params['domain'],
-      $params['secure'],
-      $params['httponly']
-    );
-  }
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
+    }
 
-  session_destroy();
+    session_destroy();
 }
