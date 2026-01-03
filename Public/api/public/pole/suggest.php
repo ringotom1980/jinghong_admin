@@ -45,7 +45,6 @@ $like   = '%' . $esc . '%';
 $prefix = $esc . '%';
 
 try {
-    // 先把 DB env 值記到 log（你要的是「不要我猜」：這裡就直接記錄）
     pole_api_log('ENV DB_HOST='.(string)getenv('DB_HOST').' DB_NAME='.(string)getenv('DB_NAME').' DB_USER='.(string)getenv('DB_USER').' DB_PASS_LEN='.strlen((string)getenv('DB_PASS')));
 
     $pdo = db();
@@ -55,8 +54,8 @@ try {
         FROM poles
         WHERE (map_ref LIKE :like1 ESCAPE '\\\\' OR pole_no LIKE :like2 ESCAPE '\\\\')
         ORDER BY
-          (map_ref = :q) DESC,
-          (pole_no = :q) DESC,
+          (map_ref = :q1) DESC,
+          (pole_no = :q2) DESC,
           (map_ref LIKE :prefix ESCAPE '\\\\') DESC,
           map_ref ASC
         LIMIT 10
@@ -67,7 +66,8 @@ try {
         ':like1'  => $like,
         ':like2'  => $like,
         ':prefix' => $prefix,
-        ':q'      => $q,
+        ':q1'     => $q,
+        ':q2'     => $q,
     ]);
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
