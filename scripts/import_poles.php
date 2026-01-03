@@ -60,9 +60,6 @@ $tmpPath = $csvDir . '/all.csv.tmp';
 
 @mkdir($csvDir, 0775, true);
 
-$pdo = db();
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
 // 1) 下載 CSV（原子替換）
 echo "[INFO] Downloading CSV...\n";
 download_file($csvUrl, $tmpPath);
@@ -73,6 +70,9 @@ if (!is_file($tmpPath) || filesize($tmpPath) < 100) {
 }
 @rename($tmpPath, $csvPath);
 echo "[OK] Saved: {$csvPath} (" . filesize($csvPath) . " bytes)\n";
+// ✅ 下載完成後再連 DB（避免 MySQL idle timeout）
+$pdo = db();
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // 2) 串流讀取 CSV（自動偵測分隔符：逗號/Tab）
 $fh = fopen($csvPath, 'rb');
@@ -92,7 +92,7 @@ rewind($fh);
 // 偵測 delimiter：逗號分欄太少就用 tab
 $delim = (substr_count($firstLine, ',') >= 3) ? ',' : "\t";
 
-$header = fgetcsv($fh, 0, $delim);
+$header = fgetcsv($fh, 0, $delim, '"', '\\');
 if (!$header) {
   fwrite(STDERR, "[ERR] cannot read header\n");
   exit(1);
@@ -147,7 +147,7 @@ $badCoord = 0;
 $batch = 0;
 $pdo->beginTransaction();
 
-while (($row = fgetcsv($fh, 0, $delim)) !== false) {
+while (($row = fgetcsv($fh, 0, $delim, '"', '\\')) !== false) {
   $mapRef = trim((string)($row[$colMapRef] ?? ''));
   if ($mapRef === '') { $skipped++; continue; }
 
