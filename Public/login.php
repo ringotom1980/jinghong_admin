@@ -18,7 +18,7 @@ if (current_user_id()) {
   exit;
 }
 
-$pageTitle = '登入｜境宏';
+$pageTitle = '登入｜境宏工程有限公司';
 $pageCss   = ['assets/css/login.css'];
 $pageJs    = ['assets/js/login.js'];
 

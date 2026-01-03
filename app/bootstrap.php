@@ -1,37 +1,37 @@
 <?php
 /**
  * Path: app/bootstrap.php
- * 說明: 全站核心啟動檔（正式版）
- * - session
- * - timezone
- * - error handling（prod / dev）
- * - BASE_URL（可由 env 或自動推導）
+ * 說明: 全站初始化（env / session / 共用函式）
  */
 
 declare(strict_types=1);
 
-// 時區
-date_default_timezone_set('Asia/Taipei');
-
-// Session（一定要最早）
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
-// 基本錯誤模式（可依 APP_ENV 調整）
-$env = getenv('APP_ENV') ?: 'production';
-if ($env === 'development') {
-  ini_set('display_errors', '1');
-  error_reporting(E_ALL);
-} else {
-  ini_set('display_errors', '0');
-  error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
-}
-
-// BASE_URL（不強制寫死）
-if (!defined('BASE_URL')) {
-  $base = getenv('BASE_URL');
-  if (is_string($base) && trim($base) !== '') {
-    define('BASE_URL', rtrim($base, '/'));
+/* 載入 .env（簡單版，避免外部套件） */
+$envFile = dirname(__DIR__) . '/.env';
+if (is_file($envFile)) {
+  foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+    if ($line[0] === '#' || !str_contains($line, '=')) continue;
+    [$k, $v] = explode('=', $line, 2);
+    $v = trim($v);
+    if (($v[0] ?? '') === '"' && str_ends_with($v, '"')) {
+      $v = substr($v, 1, -1);
+    }
+    putenv(trim($k) . '=' . $v);
   }
 }
+
+/* Session */
+session_name(getenv('SESSION_NAME') ?: 'jinghong_admin_session');
+session_set_cookie_params([
+  'lifetime' => (int)(getenv('SESSION_LIFETIME') ?: 7200),
+  'path'     => '/',
+  'secure'   => isset($_SERVER['HTTPS']),
+  'httponly' => true,
+  'samesite' => 'Lax',
+]);
+session_start();
+
+/* 共用模組 */
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/response.php';
