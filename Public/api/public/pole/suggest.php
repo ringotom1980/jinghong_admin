@@ -53,7 +53,7 @@ try {
     $sql = "
         SELECT map_ref, pole_no, address, lat, lng
         FROM poles
-        WHERE (map_ref LIKE :like ESCAPE '\\\\' OR pole_no LIKE :like ESCAPE '\\\\')
+        WHERE (map_ref LIKE :like1 ESCAPE '\\\\' OR pole_no LIKE :like2 ESCAPE '\\\\')
         ORDER BY
           (map_ref = :q) DESC,
           (pole_no = :q) DESC,
@@ -64,7 +64,8 @@ try {
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':like'   => $like,
+        ':like1'  => $like,
+        ':like2'  => $like,
         ':prefix' => $prefix,
         ':q'      => $q,
     ]);
