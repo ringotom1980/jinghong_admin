@@ -2,13 +2,19 @@
 /**
  * Path: Public/api/public/pole/suggest.php
  * 說明: 公開電桿地圖 autocomplete（不需登入）
+ *
+ * 規則（定版）：
+ * - 查詢欄位：map_ref / pole_no
+ * - q >= 2 才查；否則回空陣列
+ * - 最多 10 筆
+ * - 回傳 lat/lng 供前端定位
  */
 
 declare(strict_types=1);
 
-// 1) 載入 env（強制覆蓋空值，避免 DB_USER='' 或未載入）
+// 1) 載入 env（不啟 session）
 require_once __DIR__ . '/../../../../app/env.php';
-load_project_env(true);
+load_project_env(true); // 強制覆蓋一次，避免 PHP-FPM 環境殘值干擾
 
 // 2) 載入 db() 與 json_ok/json_error
 require_once __DIR__ . '/../../../../app/db.php';
@@ -22,18 +28,11 @@ function pole_api_log(string $msg): void
     @file_put_contents($logDir . '/pole_api.log', '[' . date('Y-m-d H:i:s') . '] ' . $msg . "\n", FILE_APPEND);
 }
 
-// 3) 先把 DB env 檢查掉（避免你又看到 SERVER_ERROR）
-$required = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS'];
-foreach ($required as $k) {
-    $v = getenv($k);
-    if ($v === false || trim((string)$v) === '') {
-        pole_api_log("ENV_MISSING {$k}");
-        json_error('ENV_MISSING:' . $k, 500);
-    }
-}
+$debug = (isset($_GET['debug']) && (string)$_GET['debug'] === '1');
 
 $q = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
 $len = function_exists('mb_strlen') ? mb_strlen($q, 'UTF-8') : strlen($q);
+
 if ($q === '' || $len < 2) {
     json_ok([]);
 }
@@ -46,6 +45,9 @@ $like   = '%' . $esc . '%';
 $prefix = $esc . '%';
 
 try {
+    // 先把 DB env 值記到 log（你要的是「不要我猜」：這裡就直接記錄）
+    pole_api_log('ENV DB_HOST='.(string)getenv('DB_HOST').' DB_NAME='.(string)getenv('DB_NAME').' DB_USER='.(string)getenv('DB_USER').' DB_PASS_LEN='.strlen((string)getenv('DB_PASS')));
+
     $pdo = db();
 
     $sql = "
@@ -95,5 +97,9 @@ try {
     json_ok($items);
 } catch (Throwable $e) {
     pole_api_log('EXCEPTION ' . get_class($e) . ' | ' . $e->getMessage());
+
+    if ($debug) {
+        json_error('SERVER_ERROR: ' . $e->getMessage(), 500);
+    }
     json_error('SERVER_ERROR', 500);
 }
