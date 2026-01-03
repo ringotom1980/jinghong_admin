@@ -14,7 +14,7 @@ if (!$uid) {
 }
 
 $stmt = db()->prepare(
-  'SELECT id, username, display_name FROM users WHERE id = ? LIMIT 1'
+  'SELECT id, username, name, role FROM users WHERE id = ? LIMIT 1'
 );
 $stmt->execute([$uid]);
 $user = $stmt->fetch();
