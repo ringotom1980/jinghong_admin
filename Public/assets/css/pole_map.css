@@ -131,3 +131,85 @@
     min-height: 460px;
   }
 }
+/* ===== Public pole map top bar layout ===== */
+.pole-top{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 14px;
+  border-radius: 18px;
+}
+
+.pole-top__left,
+.pole-top__right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 0 0 auto;
+}
+
+.pole-top__center{
+  flex: 1 1 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width: 260px;
+}
+
+.pole-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+}
+
+.pole-brand__logo{
+  width:28px;
+  height:28px;
+  border-radius: 10px;
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.10);
+}
+
+.pole-brand__text{
+  font-weight: 760;
+  letter-spacing: .02em;
+}
+
+.pole-top__login{
+  height: 36px;
+}
+
+.pole-search{
+  width: min(760px, 100%);
+}
+
+.pole-suggest{
+  width: min(760px, 100%);
+  margin-top: 8px;
+}
+
+.pole-picked{
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* RWD：窄螢幕改成上下排 */
+@media (max-width: 980px){
+  .pole-top{
+    flex-wrap:wrap;
+    align-items:stretch;
+  }
+  .pole-top__left{
+    width:100%;
+    justify-content:space-between;
+  }
+  .pole-top__center{
+    width:100%;
+    align-items:stretch;
+  }
+  .pole-top__right{
+    width:100%;
+    justify-content:flex-end;
+  }
+}
