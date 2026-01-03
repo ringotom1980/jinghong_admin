@@ -22,7 +22,7 @@
   --rail-w: 92px;
 
   /* ✅ 抽屜面板改成浮動小面板：不要太寬 */
-  --drawer-w: 160px;
+  --drawer-w: 140px;
 
   --radius: 16px;
   --shadow: 0 18px 46px rgba(2,6,23,.10);
@@ -255,6 +255,7 @@
   overflow: auto;
 }
 
+/*子選單文字*/
 .nav__item{
   display: flex;                 /* ✅ 用 flex 置中更穩 */
   align-items: center;
@@ -269,7 +270,7 @@
   border: 1px solid transparent;
   background: transparent;
 
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: .02em;
   text-align: center;            /* ✅ 多一層保底 */
