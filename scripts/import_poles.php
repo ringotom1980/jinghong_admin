@@ -19,7 +19,33 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../app/db.php'; // 只需要 db()，不引 bootstrap（避免 CLI 開 session）
+/**
+ * ✅ CLI 需自行載入 .env（因為不走 app/bootstrap.php）
+ * - 直接沿用你 app/bootstrap.php 的讀法
+ * - 不啟 session（避免 cron/CLI 帶出 session 檔案）
+ */
+$envFile = dirname(__DIR__) . '/.env';
+if (is_file($envFile)) {
+  foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+    $line = (string)$line;
+    if ($line === '') continue;
+    if (($line[0] ?? '') === '#') continue;
+    if (strpos($line, '=') === false) continue;
+
+    [$k, $v] = explode('=', $line, 2);
+    $k = trim((string)$k);
+    $v = trim((string)$v);
+
+    if ($k === '') continue;
+
+    if (($v[0] ?? '') === '"' && substr($v, -1) === '"') {
+      $v = substr($v, 1, -1);
+    }
+    putenv($k . '=' . $v);
+  }
+}
+
+require_once __DIR__ . '/../app/db.php';
 
 $csvUrl = (string)(getenv('POLE_CSV_URL') ?: '');
 if ($csvUrl === '') {
