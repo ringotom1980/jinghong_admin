@@ -22,7 +22,7 @@
   --rail-w: 92px;
 
   /* ✅ 抽屜面板改成浮動小面板：不要太寬 */
-  --drawer-w: 220px;
+  --drawer-w: 180px;
 
   --radius: 16px;
   --shadow: 0 18px 46px rgba(2,6,23,.10);
@@ -250,18 +250,24 @@
 }
 
 .nav__item{
-  display: block;
+  display: flex;                 /* ✅ 用 flex 置中更穩 */
+  align-items: center;
+  justify-content: center;       /* ✅ 文字置中 */
+
   color: var(--nav-text);
   text-decoration: none;
-  padding: 10px 12px;
+
+  padding: 10px 10px;            /* ✅ 左右縮一點，避免白邊感 */
   border-radius: 12px;
-  margin: 2px 4px;
+  margin: 2px 6px;               /* ✅ 讓左右留白一致、乾淨 */
   border: 1px solid transparent;
   background: transparent;
 
-  font-size: 14px;              /* ✅ 明確指定 */
-  font-weight: 800;             /* ✅ 跟 rail 同系統 */
-  letter-spacing: .02em;        /* ✅ 同步 */
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-align: center;            /* ✅ 多一層保底 */
+  white-space: nowrap;           /* ✅ 避免換行造成看起來歪 */
 }
 
 .nav__item:hover{
