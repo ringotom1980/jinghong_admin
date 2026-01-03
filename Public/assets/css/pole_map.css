@@ -1,0 +1,133 @@
+/* Path: Public/assets/css/pole_map.css
+ * 說明: 公開電桿地圖頁（只放「本頁差異」；按全站 app.css tokens/btn/input）
+ */
+
+.pole-map-page {
+  background: var(--bg);
+}
+
+/* 版面：上方面板 + 下方地圖 */
+.pole-map {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: calc(100vh - 60px); /* public_header 大概高度；不足再微調 */
+}
+
+.pole-map__panel {
+  position: relative;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+
+.pole-map__map {
+  position: relative;
+}
+
+/* 地圖高度：讓地圖撐滿剩餘空間 */
+.map-canvas {
+  width: 100%;
+  height: calc(100vh - 60px - 126px); /* header + panel 粗估；如你 header 不同再調 */
+  min-height: 520px;
+}
+
+/* 搜尋列：用全域 input + btn，只做排版 */
+.pole-search {
+  max-width: 820px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.pole-search__left {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.pole-search__clear {
+  height: 34px;
+  padding: 0 10px;
+}
+
+/* 建議清單：只做容器與 hover */
+.pole-suggest {
+  max-width: 820px;
+  margin: 10px auto 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pole-suggest__list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.pole-suggest__item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.pole-suggest__item:hover,
+.pole-suggest__item.is-active {
+  background: var(--info-soft);
+}
+
+.pole-suggest__title {
+  font-weight: 760;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.pole-suggest__meta {
+  font-weight: 650;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* 導航區 */
+.pole-actions {
+  max-width: 820px;
+  margin: 10px auto 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.pole-picked {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 手機 */
+@media (max-width: 720px) {
+  .pole-map__panel {
+    padding: 10px 10px;
+  }
+  .map-canvas {
+    height: calc(100vh - 60px - 168px);
+    min-height: 460px;
+  }
+}

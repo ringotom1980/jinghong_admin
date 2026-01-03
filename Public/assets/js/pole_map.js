@@ -1,0 +1,219 @@
+/* Path: Public/assets/js/pole_map.js
+ * 說明: 公開電桿地圖控制器（搜尋 / 建議 / 定位 / 導航）
+ * - Leaflet + Carto Positron
+ * - autocomplete >=2、debounce 300ms、最多 10
+ * - 點選後 setView zoom=17 + marker
+ * - 一鍵 Google Maps 導航（URL）
+ */
+
+(function () {
+  'use strict';
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function escapeHtml(s) {
+    return String(s || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function debounce(fn, wait) {
+    var t = null;
+    return function () {
+      var args = arguments;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(null, args); }, wait);
+    };
+  }
+
+  function apiUrl(path) {
+    var base = (window.BASE_URL || '').replace(/\/+$/, '');
+    path = String(path || '');
+    if (!path.startsWith('/')) path = '/' + path;
+    return base + path;
+  }
+
+  // --- DOM
+  var inputEl = qs('#poleSearchInput');
+  var clearEl = qs('#poleSearchClear');
+  var wrapEl = qs('#poleSuggestWrap');
+  var listEl = qs('#poleSuggestList');
+  var navBtn = qs('#poleNavBtn');
+  var infoEl = qs('#polePickedInfo');
+
+  // --- Map
+  var map = L.map('map', {
+    zoomControl: true
+  });
+
+  // Carto Positron tiles
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 20,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  }).addTo(map);
+
+  // Default view（台灣中部附近，之後可改成你公司常用中心點）
+  map.setView([23.9, 121.0], 8);
+
+  var picked = {
+    lat: null,
+    lng: null,
+    label: ''
+  };
+
+  var marker = null;
+
+  function setPicked(item) {
+    if (!item || typeof item.lat !== 'number' || typeof item.lng !== 'number') return;
+
+    picked.lat = item.lat;
+    picked.lng = item.lng;
+    picked.label = item.label || '';
+
+    // marker
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([picked.lat, picked.lng]).addTo(map);
+
+    map.setView([picked.lat, picked.lng], 17, { animate: true });
+
+    // UI
+    navBtn.disabled = false;
+    infoEl.textContent = picked.label ? ('已選：' + picked.label) : '已選定位點';
+    hideSuggest();
+  }
+
+  function hideSuggest() {
+    if (!wrapEl) return;
+    wrapEl.hidden = true;
+    if (listEl) listEl.innerHTML = '';
+  }
+
+  function showSuggest(items) {
+    if (!wrapEl || !listEl) return;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      hideSuggest();
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i] || {};
+      var label = String(it.label || '');
+      var mapRef = String(it.map_ref || '');
+      var poleNo = String(it.pole_no || '');
+      var addr = String(it.address || '');
+      var lat = (typeof it.lat === 'number') ? it.lat : null;
+      var lng = (typeof it.lng === 'number') ? it.lng : null;
+
+      // 用 data-* 存座標與 label（避免閉包亂掉）
+      html += ''
+        + '<li class="pole-suggest__item" role="option" tabindex="0"'
+        + ' data-lat="' + escapeHtml(lat) + '"'
+        + ' data-lng="' + escapeHtml(lng) + '"'
+        + ' data-label="' + escapeHtml(label) + '">'
+        +   '<div class="pole-suggest__title">' + escapeHtml(mapRef || label) + '</div>'
+        +   '<div class="pole-suggest__meta">'
+        +     (poleNo ? ('桿號：' + escapeHtml(poleNo) + '　') : '')
+        +     (addr ? ('地址：' + escapeHtml(addr)) : '')
+        +   '</div>'
+        + '</li>';
+    }
+
+    listEl.innerHTML = html;
+    wrapEl.hidden = false;
+  }
+
+  function fetchSuggest(q) {
+    var url = apiUrl('/api/public/pole/suggest') + '?q=' + encodeURIComponent(q);
+
+    return fetch(url, { method: 'GET', credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || j.success !== true || !Array.isArray(j.data)) return [];
+        return j.data.slice(0, 10);
+      })
+      .catch(function () {
+        return [];
+      });
+  }
+
+  var onInput = debounce(function () {
+    var q = (inputEl && inputEl.value) ? String(inputEl.value).trim() : '';
+    if (q.length < 2) {
+      hideSuggest();
+      return;
+    }
+    fetchSuggest(q).then(showSuggest);
+  }, 300);
+
+  if (inputEl) {
+    inputEl.addEventListener('input', onInput);
+    inputEl.addEventListener('focus', onInput);
+  }
+
+  if (clearEl) {
+    clearEl.addEventListener('click', function () {
+      if (inputEl) inputEl.value = '';
+      hideSuggest();
+      navBtn.disabled = true;
+      infoEl.textContent = '';
+      picked.lat = picked.lng = null;
+      picked.label = '';
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      if (inputEl) inputEl.focus();
+    });
+  }
+
+  // 點選建議項
+  if (listEl) {
+    listEl.addEventListener('click', function (e) {
+      var li = e.target && e.target.closest ? e.target.closest('.pole-suggest__item') : null;
+      if (!li) return;
+
+      var lat = Number(li.getAttribute('data-lat'));
+      var lng = Number(li.getAttribute('data-lng'));
+      var label = li.getAttribute('data-label') || '';
+
+      if (!isFinite(lat) || !isFinite(lng)) return;
+
+      setPicked({ lat: lat, lng: lng, label: label });
+    });
+
+    // 鍵盤 Enter 也可選
+    listEl.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var li = e.target && e.target.classList && e.target.classList.contains('pole-suggest__item') ? e.target : null;
+      if (!li) return;
+
+      var lat = Number(li.getAttribute('data-lat'));
+      var lng = Number(li.getAttribute('data-lng'));
+      var label = li.getAttribute('data-label') || '';
+
+      if (!isFinite(lat) || !isFinite(lng)) return;
+
+      setPicked({ lat: lat, lng: lng, label: label });
+    });
+  }
+
+  // 導航按鈕
+  if (navBtn) {
+    navBtn.addEventListener('click', function () {
+      if (!isFinite(picked.lat) || !isFinite(picked.lng)) return;
+
+      var url = 'https://www.google.com/maps/dir/?api=1'
+        + '&destination=' + encodeURIComponent(picked.lat + ',' + picked.lng)
+        + '&travelmode=driving';
+
+      window.open(url, '_blank', 'noopener');
+    });
+  }
+
+  // 點地圖空白 → 收合建議
+  map.on('click', function () { hideSuggest(); });
+})();
