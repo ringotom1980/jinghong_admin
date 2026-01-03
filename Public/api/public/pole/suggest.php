@@ -37,7 +37,7 @@ if ($q === '' || $len < 2) {
     json_ok([]);
 }
 
-// LIKE escape
+// LIKE escape（保留 ESCAPE 行為）
 $esc = str_replace('\\', '\\\\', $q);
 $esc = str_replace('%', '\%', $esc);
 $esc = str_replace('_', '\_', $esc);
@@ -49,25 +49,26 @@ try {
 
     $pdo = db();
 
+    // ✅ 改用位置參數 ?，徹底避免 HY093（命名參數重複）問題
     $sql = "
         SELECT map_ref, pole_no, address, lat, lng
         FROM poles
-        WHERE (map_ref LIKE :like1 ESCAPE '\\\\' OR pole_no LIKE :like2 ESCAPE '\\\\')
+        WHERE (map_ref LIKE ? ESCAPE '\\\\' OR pole_no LIKE ? ESCAPE '\\\\')
         ORDER BY
-          (map_ref = :q1) DESC,
-          (pole_no = :q2) DESC,
-          (map_ref LIKE :prefix ESCAPE '\\\\') DESC,
+          (map_ref = ?) DESC,
+          (pole_no = ?) DESC,
+          (map_ref LIKE ? ESCAPE '\\\\') DESC,
           map_ref ASC
         LIMIT 10
     ";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':like1'  => $like,
-        ':like2'  => $like,
-        ':prefix' => $prefix,
-        ':q1'     => $q,
-        ':q2'     => $q,
+        $like,    // map_ref LIKE ?
+        $like,    // pole_no LIKE ?
+        $q,       // map_ref = ?
+        $q,       // pole_no = ?
+        $prefix,  // map_ref LIKE ?
     ]);
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -82,8 +83,8 @@ try {
         $displayMapRef  = ($mapRef !== '') ? $mapRef : '無';
         $displayPoleNo  = ($poleNo !== '') ? $poleNo : '無';
 
-        $lat = isset($r['lat']) ? (float)$r['lat'] : null;
-        $lng = isset($r['lng']) ? (float)$r['lng'] : null;
+        $lat = array_key_exists('lat', $r) && $r['lat'] !== null ? (float)$r['lat'] : null;
+        $lng = array_key_exists('lng', $r) && $r['lng'] !== null ? (float)$r['lng'] : null;
 
         $items[] = [
             'label'   => $displayMapRef . '｜桿號:' . $displayPoleNo . '｜' . $displayAddress,
