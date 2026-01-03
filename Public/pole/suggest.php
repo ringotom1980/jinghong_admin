@@ -13,7 +13,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../../../app/bootstrap.php'; // 會載入 response.php（json_ok/json_error）
+// ✅ 公開 API 不應啟 session：不要引 bootstrap.php
+require_once __DIR__ . '/../../../../app/db.php';
+require_once __DIR__ . '/../../../../app/response.php';
 
 $q = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
 
@@ -40,6 +42,7 @@ try {
     WHERE (map_ref LIKE :like ESCAPE '\\\\' OR pole_no LIKE :like ESCAPE '\\\\')
     ORDER BY
       (map_ref = :q) DESC,
+      (pole_no IS NOT NULL) DESC,
       (pole_no = :q) DESC,
       (map_ref LIKE :prefix ESCAPE '\\\\') DESC,
       map_ref ASC
@@ -69,15 +72,13 @@ try {
     $lat = isset($r['lat']) ? (float)$r['lat'] : null;
     $lng = isset($r['lng']) ? (float)$r['lng'] : null;
 
-    // autocomplete 顯示字串（你前端可以直接用 label 顯示）
+    // autocomplete 顯示字串
     $label = $displayMapRef . '｜桿號:' . $displayPoleNo . '｜' . $displayAddress;
 
     $items[] = [
       'label'   => $label,
       'lat'     => $lat,
       'lng'     => $lng,
-
-      // 資訊卡顯示
       'address' => $displayAddress,
       'map_ref' => $displayMapRef,
       'pole_no' => $displayPoleNo,
@@ -86,6 +87,5 @@ try {
 
   json_ok($items);
 } catch (Throwable $e) {
-  // 不回傳敏感錯誤細節（定版安全做法）
   json_error('SERVER_ERROR', 500);
 }

@@ -11,13 +11,13 @@ RewriteRule ^assets/(.*)$ /jinghong_admin/Public/assets/$1 [L,NC]
 # 2) 上傳檔案
 RewriteRule ^uploads/(.*)$ /jinghong_admin/storage/uploads/$1 [L,NC]
 
-# 2.5) 【新增】dev 測試檔（僅測試用）
-RewriteRule ^dev/(.*)$ /jinghong_admin/Public/dev/$1 [L,NC]
-
 # 3) 實體檔案 / 資料夾直接放行
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+# 3.5) API：把 /api/* 映射到 Public/api/*
+RewriteRule ^api/(.*)$ /jinghong_admin/Public/api/$1 [L,NC]
 
 # 4) 其餘全部交給 router
 RewriteRule ^ /jinghong_admin/Public/index.php [L]
