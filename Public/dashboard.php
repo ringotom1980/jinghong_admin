@@ -8,7 +8,8 @@
  */
 
 declare(strict_types=1);
-
+require_once __DIR__ . '/../app/bootstrap.php';
+require_login();
 $pageTitle = '儀錶板｜境宏工程有限公司';
 $pageCss   = ['assets/css/dashboard.css'];
 
