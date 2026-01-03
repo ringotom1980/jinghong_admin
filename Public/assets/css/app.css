@@ -169,14 +169,20 @@ p {
   font-weight: 650;
   letter-spacing: 0.02em;
   user-select: none;
-  transition: transform 120ms ease, filter 120ms ease, background 120ms ease,
-    border-color 120ms ease, box-shadow 160ms ease;
+  transition:
+  background-color 180ms ease,
+  border-color 180ms ease,
+  color 180ms ease,
+  box-shadow 220ms ease,
+  transform 220ms ease,
+  filter 220ms ease;
+
 }
 
 .btn:hover {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(15, 23, 42, 0.14);
-  transform: translateY(-1px);
+  transform: translateY(-0.5px);
 }
 
 .btn:active {
@@ -196,49 +202,103 @@ p {
 
 /* ===== Button variants (semantic) ===== */
 
-/* Primary */
+/* Primary：確定 / 儲存 / 送出（實心） */
 .btn--primary{
   background: var(--primary);
   border-color: transparent;
   color: #fff;
   box-shadow: 0 10px 22px rgba(47,63,122,.18);
 }
-.btn--primary:hover{ filter: brightness(1.04); }
+.btn--primary:hover,
+.btn--primary:focus-visible{
+  color:#fff;
+  filter: brightness(1.05);
+  box-shadow: 0 12px 26px rgba(47,63,122,.20);
+}
+.btn--primary:active{
+  color:#fff;
+  transform: translateY(0);
+  filter: brightness(.98);
+}
 
-/* Secondary */
+/* Secondary：取消 / 返回（淡色） */
 .btn--secondary{
   background: var(--secondary-soft);
   border-color: rgba(100,116,139,.25);
   color: #334155;
 }
-.btn--secondary:hover{ background: rgba(100,116,139,.20); }
+.btn--secondary:hover,
+.btn--secondary:focus-visible{
+  background: rgba(100,116,139,.20);
+  border-color: rgba(100,116,139,.30);
+  color: #1f2937;
+}
+.btn--secondary:active{
+  background: rgba(100,116,139,.24);
+}
 
-/* Info */
+/* Info：查詢 / 檢視（淡色） */
 .btn--info{
   background: var(--info-soft);
   border-color: rgba(37,99,235,.25);
   color: #1e3a8a;
 }
+.btn--info:hover,
+.btn--info:focus-visible{
+  background: rgba(37,99,235,.16);
+  border-color: rgba(37,99,235,.30);
+  color: #1e3a8a;
+}
+.btn--info:active{
+  background: rgba(37,99,235,.20);
+}
 
-/* Success */
+/* Success：完成 / 更新（淡色） */
 .btn--success{
   background: var(--success-soft);
   border-color: rgba(21,128,61,.28);
   color: #065f46;
 }
+.btn--success:hover,
+.btn--success:focus-visible{
+  background: rgba(21,128,61,.16);
+  border-color: rgba(21,128,61,.32);
+  color: #065f46;
+}
+.btn--success:active{
+  background: rgba(21,128,61,.20);
+}
 
-/* Warning */
+/* Warning：重設 / 覆蓋（淡色） */
 .btn--warning{
   background: var(--warning-soft);
   border-color: rgba(180,83,9,.28);
   color: #78350f;
 }
+.btn--warning:hover,
+.btn--warning:focus-visible{
+  background: rgba(180,83,9,.18);
+  border-color: rgba(180,83,9,.32);
+  color: #78350f;
+}
+.btn--warning:active{
+  background: rgba(180,83,9,.22);
+}
 
-/* Danger */
+/* Danger：刪除 / 停用（淡色） */
 .btn--danger{
   background: var(--danger-soft);
   border-color: rgba(190,18,60,.30);
   color: #881337;
+}
+.btn--danger:hover,
+.btn--danger:focus-visible{
+  background: rgba(190,18,60,.18);
+  border-color: rgba(190,18,60,.34);
+  color: #881337;
+}
+.btn--danger:active{
+  background: rgba(190,18,60,.22);
 }
 
 /* ===== Inputs ===== */
