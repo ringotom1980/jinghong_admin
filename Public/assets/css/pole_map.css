@@ -201,3 +201,7 @@
     width: 100%;
   }
 }
+/* ====== 避開左上品牌：Leaflet 控制下移 ====== */
+.pole-map--public .leaflet-top.leaflet-left {
+  top: 88px; /* 視覺上剛好避開 logo + 按鈕 */
+}
