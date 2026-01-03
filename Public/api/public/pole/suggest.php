@@ -22,7 +22,7 @@ require_once __DIR__ . '/../../../../app/response.php';
 
 function pole_api_log(string $msg): void
 {
-    $root = dirname(__DIR__, 4); // .../jinghong_admin
+    $root = dirname(__DIR__, 5); // .../jinghong_admin
     $logDir = $root . '/storage/logs';
     @mkdir($logDir, 0775, true);
     @file_put_contents($logDir . '/pole_api.log', '[' . date('Y-m-d H:i:s') . '] ' . $msg . "\n", FILE_APPEND);
