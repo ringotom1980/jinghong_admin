@@ -197,7 +197,6 @@
         if (rail) {
             rail.addEventListener('pointerenter', function () {
                 clearCloseTimer();
-                openWithDrawer(lastDrawerId, null);
             });
 
             rail.addEventListener('pointerleave', function (e) {
@@ -222,17 +221,24 @@
         }
 
         // hover tab：切換 drawer + 定位
-        tab.addEventListener('pointerenter', function () {
-            clearCloseTimer();
+        railTabs.forEach(function (tab) {
+            tab.addEventListener('pointerenter', function () {
+                clearCloseTimer();
 
-            // ✅ no-drawer：例如「電桿地圖」只要點擊直達，不要浮出抽屜
-            if (tab.getAttribute('data-no-drawer') === '1') {
-                closeHost(sidenav);
-                return;
-            }
+                // ✅ no-drawer：例如「電桿地圖」只要點擊直達，不要浮出抽屜
+                if (tab.getAttribute('data-no-drawer') === '1') {
+                    closeHost(sidenav);
+                    return;
+                }
 
-            var id = tab.getAttribute('data-drawer') || '';
-            openWithDrawer(id, tab);
+                var id = tab.getAttribute('data-drawer') || '';
+                if (!id) {
+                    closeHost(sidenav);
+                    return;
+                }
+
+                openWithDrawer(id, tab);
+            });
         });
 
         // 保底：真的離開 rail+host 才關
