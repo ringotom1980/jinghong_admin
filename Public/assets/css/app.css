@@ -161,7 +161,7 @@ p {
   padding: 0 14px;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   color: var(--text);
   text-decoration: none;
   cursor: pointer;
@@ -169,18 +169,13 @@ p {
   font-weight: 650;
   letter-spacing: 0.02em;
   user-select: none;
-  transition:
-  background-color 180ms ease,
-  border-color 180ms ease,
-  color 180ms ease,
-  box-shadow 220ms ease,
-  transform 220ms ease,
-  filter 220ms ease;
-
+  transition: background-color 220ms ease, border-color 220ms ease,
+    color 220ms ease, box-shadow 260ms ease, transform 260ms ease,
+    filter 260ms ease;
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.92);
+  background-color: rgba(255, 255, 255, 0.92);
   border-color: rgba(15, 23, 42, 0.14);
   transform: translateY(-0.5px);
 }
@@ -190,115 +185,132 @@ p {
   filter: brightness(0.98);
 }
 
-.btn--ghost{
+.btn--ghost {
   background: transparent;
-  border-color: rgba(15,23,42,.14);
-  color: rgba(15,23,42,.78);
+  border-color: rgba(15, 23, 42, 0.14);
+  color: rgba(15, 23, 42, 0.78);
 }
-.btn--ghost:hover{
-  background: rgba(15,23,42,.04);
-  border-color: rgba(15,23,42,.18);
+.btn--ghost:hover {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.18);
 }
 
 /* ===== Button variants (semantic) ===== */
 
 /* Primary：確定 / 儲存 / 送出（實心） */
-.btn--primary{
-  background: var(--primary);
+.btn--primary {
+  background-color: var(--primary);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 10px 22px rgba(47,63,122,.18);
+  box-shadow: 0 10px 22px rgba(47, 63, 122, 0.18);
 }
 .btn--primary:hover,
-.btn--primary:focus-visible{
-  color:#fff;
-  filter: brightness(1.05);
-  box-shadow: 0 12px 26px rgba(47,63,122,.20);
+.btn--primary:focus-visible {
+  background-color: #3a4a86; /* ✅ hover 明確鎖底色，避免被 .btn:hover 蓋掉 */
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(47, 63, 122, 0.22);
+  transform: translateY(-1px);
 }
-.btn--primary:active{
-  color:#fff;
+.btn--primary:active {
+  background-color: #2b396f;
+  color: #fff;
   transform: translateY(0);
-  filter: brightness(.98);
+  filter: brightness(0.99);
 }
 
 /* Secondary：取消 / 返回（淡色） */
-.btn--secondary{
-  background: var(--secondary-soft);
-  border-color: rgba(100,116,139,.25);
+.btn--secondary {
+  background-color: var(--secondary-soft);
+  border-color: rgba(100, 116, 139, 0.25);
   color: #334155;
 }
 .btn--secondary:hover,
-.btn--secondary:focus-visible{
-  background: rgba(100,116,139,.20);
-  border-color: rgba(100,116,139,.30);
+.btn--secondary:focus-visible {
+  background-color: rgba(100, 116, 139, 0.2);
+  border-color: rgba(100, 116, 139, 0.3);
   color: #1f2937;
+  transform: translateY(-1px);
 }
-.btn--secondary:active{
-  background: rgba(100,116,139,.24);
+.btn--secondary:active {
+  background-color: rgba(100, 116, 139, 0.24);
+  color: #111827;
+  transform: translateY(0);
 }
 
 /* Info：查詢 / 檢視（淡色） */
-.btn--info{
-  background: var(--info-soft);
-  border-color: rgba(37,99,235,.25);
+.btn--info {
+  background-color: var(--info-soft);
+  border-color: rgba(37, 99, 235, 0.25);
   color: #1e3a8a;
 }
 .btn--info:hover,
-.btn--info:focus-visible{
-  background: rgba(37,99,235,.16);
-  border-color: rgba(37,99,235,.30);
+.btn--info:focus-visible {
+  background-color: rgba(37, 99, 235, 0.16);
+  border-color: rgba(37, 99, 235, 0.32);
   color: #1e3a8a;
+  transform: translateY(-1px);
 }
-.btn--info:active{
-  background: rgba(37,99,235,.20);
+.btn--info:active {
+  background-color: rgba(37, 99, 235, 0.2);
+  color: #1e3a8a;
+  transform: translateY(0);
 }
 
 /* Success：完成 / 更新（淡色） */
-.btn--success{
-  background: var(--success-soft);
-  border-color: rgba(21,128,61,.28);
+.btn--success {
+  background-color: var(--success-soft);
+  border-color: rgba(21, 128, 61, 0.28);
   color: #065f46;
 }
 .btn--success:hover,
-.btn--success:focus-visible{
-  background: rgba(21,128,61,.16);
-  border-color: rgba(21,128,61,.32);
+.btn--success:focus-visible {
+  background-color: rgba(21, 128, 61, 0.16);
+  border-color: rgba(21, 128, 61, 0.34);
   color: #065f46;
+  transform: translateY(-1px);
 }
-.btn--success:active{
-  background: rgba(21,128,61,.20);
+.btn--success:active {
+  background-color: rgba(21, 128, 61, 0.2);
+  color: #064e3b;
+  transform: translateY(0);
 }
 
 /* Warning：重設 / 覆蓋（淡色） */
-.btn--warning{
-  background: var(--warning-soft);
-  border-color: rgba(180,83,9,.28);
+.btn--warning {
+  background-color: var(--warning-soft);
+  border-color: rgba(180, 83, 9, 0.28);
   color: #78350f;
 }
 .btn--warning:hover,
-.btn--warning:focus-visible{
-  background: rgba(180,83,9,.18);
-  border-color: rgba(180,83,9,.32);
+.btn--warning:focus-visible {
+  background-color: rgba(180, 83, 9, 0.18);
+  border-color: rgba(180, 83, 9, 0.34);
   color: #78350f;
+  transform: translateY(-1px);
 }
-.btn--warning:active{
-  background: rgba(180,83,9,.22);
+.btn--warning:active {
+  background-color: rgba(180, 83, 9, 0.22);
+  color: #6b2f0a;
+  transform: translateY(0);
 }
 
 /* Danger：刪除 / 停用（淡色） */
-.btn--danger{
-  background: var(--danger-soft);
-  border-color: rgba(190,18,60,.30);
+.btn--danger {
+  background-color: var(--danger-soft);
+  border-color: rgba(190, 18, 60, 0.3);
   color: #881337;
 }
 .btn--danger:hover,
-.btn--danger:focus-visible{
-  background: rgba(190,18,60,.18);
-  border-color: rgba(190,18,60,.34);
+.btn--danger:focus-visible {
+  background-color: rgba(190, 18, 60, 0.18);
+  border-color: rgba(190, 18, 60, 0.36);
   color: #881337;
+  transform: translateY(-1px);
 }
-.btn--danger:active{
-  background: rgba(190,18,60,.22);
+.btn--danger:active {
+  background-color: rgba(190, 18, 60, 0.22);
+  color: #7f1d1d;
+  transform: translateY(0);
 }
 
 /* ===== Inputs ===== */
