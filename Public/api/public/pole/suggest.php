@@ -12,7 +12,8 @@
  */
 
 declare(strict_types=1);
-
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 // ✅ 公開 API 不應啟 session：不要引 bootstrap.php
 require_once __DIR__ . '/../../../../app/db.php';
 require_once __DIR__ . '/../../../../app/response.php';
@@ -87,5 +88,5 @@ try {
 
   json_ok($items);
 } catch (Throwable $e) {
-  json_error('SERVER_ERROR', 500);
+  json_error('SERVER_ERROR: ' . $e->getMessage(), 500);
 }
