@@ -12,39 +12,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/auth.php';
 
-$base = base_url();
-
-/**
- * 組站內路徑（避免 $base 為空或含尾斜線時出現 //）
- * - $path 需以 / 開頭
- */
-$u = function (string $path) use ($base): string {
-  $b = rtrim((string)$base, '/');
-  $p = '/' . ltrim($path, '/');
-  return ($b !== '' ? $b : '') . $p;
-};
-
-/**
- * asset() fallback（避免本頁 body 依賴 head.php 的實作細節）
- * head.php 若已宣告 asset()，此段不會覆蓋
- */
-if (!function_exists('asset')) {
-  function asset(string $path): string
-  {
-    $base = function_exists('base_url') ? base_url() : '';
-    $path = ltrim($path, '/');
-
-    $full = __DIR__ . '/' . $path; // Public/ + assets/...
-    $v = is_file($full) ? (string)filemtime($full) : (string)time();
-
-    $prefix = ($base !== '') ? rtrim($base, '/') . '/' : '/';
-    return $prefix . $path . '?v=' . $v;
-  }
-}
+$base = base_url(); // ✅ 統一用 base_url()
 
 // 已登入 → 導到 dashboard
 if (current_user_id()) {
-  header('Location: ' . $u('/dashboard'));
+  header('Location: ' . $base . '/dashboard');
   exit;
 }
 
@@ -70,7 +42,7 @@ if (isset($_GET['return'])) {
   <section class="auth-card">
     <div class="auth-brand">
       <img class="auth-logo-img"
-           src="<?= htmlspecialchars(asset('assets/img/brand/JH_logo.png'), ENT_QUOTES, 'UTF-8') ?>"
+           src="<?= asset('assets/img/brand/JH_logo.png') ?>"
            alt="境宏工程有限公司"
            width="64" height="64" />
       <div class="auth-title">境宏工程有限公司管理系統</div>
@@ -79,7 +51,7 @@ if (isset($_GET['return'])) {
 
     <!-- 公開入口：不登入也可用 -->
     <div class="auth-public">
-      <a class="btn btn--secondary" href="<?= htmlspecialchars($u('/pole-map'), ENT_QUOTES, 'UTF-8') ?>">
+      <a class="btn btn--secondary" href="<?= htmlspecialchars($base . '/pole-map', ENT_QUOTES) ?>">
         前往公開電桿地圖(不須登入)
       </a>
     </div>
