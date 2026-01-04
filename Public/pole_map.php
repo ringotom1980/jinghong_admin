@@ -44,65 +44,64 @@ $u = function (string $path) use ($base): string {
         <?php endif; ?>
 
         <!-- 公開版：頂部浮動工具列（不要白底大面板、不要 topbar/footer） -->
-        <?php if (!$isAuthed): ?>
-            <div class="pole-top" role="banner" aria-label="電桿地圖工具列">
-                <!-- Left: 底部 Dock（未登入才顯示品牌+登入；導覽鍵兩種狀態都保留） -->
-                <div class="pole-top__left">
-                    <?php if (!$isAuthed): ?>
-                        <div class="pole-brand" aria-label="境宏工程有限公司">
-                            <img class="pole-brand__logo" src="<?= asset('assets/img/brand/JH_logo.png') ?>" alt="境宏" width="28" height="28" />
-                            <span class="pole-brand__text">境宏工程有限公司</span>
-                        </div>
+        <!-- 工具列：登入/未登入都要（差別只在左下品牌/登入是否顯示） -->
+        <div class="pole-top" role="banner" aria-label="電桿地圖工具列">
+            <!-- Left: 底部 Dock（未登入才顯示品牌+登入；導覽鍵兩種狀態都保留） -->
+            <div class="pole-top__left">
+                <?php if (!$isAuthed): ?>
+                    <div class="pole-brand" aria-label="境宏工程有限公司">
+                        <img class="pole-brand__logo" src="<?= asset('assets/img/brand/JH_logo.png') ?>" alt="境宏" width="28" height="28" />
+                        <span class="pole-brand__text">境宏工程有限公司</span>
+                    </div>
 
-                        <a class="pole-login btn btn--secondary" href="<?= htmlspecialchars($u('/login'), ENT_QUOTES) ?>">
-                            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
-                            登入管理系統
-                        </a>
-                    <?php endif; ?>
+                    <a class="pole-login btn btn--secondary" href="<?= htmlspecialchars($u('/login'), ENT_QUOTES) ?>">
+                        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                        登入管理系統
+                    </a>
+                <?php endif; ?>
 
-                    <button id="poleNavBtn" class="btn btn--info pole-nav" type="button" hidden>
-                        <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
-                        用 Google 導航
+                <button id="poleNavBtn" class="btn btn--info pole-nav" type="button" hidden>
+                    <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
+                    用 Google 導航
+                </button>
+            </div>
+
+            <!-- Center: Search（登入/未登入都要） -->
+            <div class="pole-top__center" aria-label="搜尋">
+                <div class="pole-search" role="search">
+                    <div class="pole-search__icon" aria-hidden="true">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <input
+                        id="poleSearchInput"
+                        class="pole-search__input"
+                        type="search"
+                        placeholder="輸入圖號座標 / 桿號（例：K7694）"
+                        autocomplete="off"
+                        spellcheck="false" />
+
+                    <button id="poleSearchClear" class="pole-search__clear" type="button" aria-label="清除">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <!-- Center: Search -->
-                <div class="pole-top__center" aria-label="搜尋">
-                    <div class="pole-search" role="search">
-                        <div class="pole-search__icon" aria-hidden="true">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </div>
-
-                        <input
-                            id="poleSearchInput"
-                            class="pole-search__input"
-                            type="search"
-                            placeholder="輸入圖號座標 / 桿號（例：K7694）"
-                            autocomplete="off"
-                            spellcheck="false" />
-
-                        <button id="poleSearchClear" class="pole-search__clear" type="button" aria-label="清除">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                <div id="polePickedMeta" class="pole-picked" hidden>
+                    <div class="pole-picked__row">
+                        <span class="pole-picked__k">桿號</span>
+                        <span id="polePickedPoleNo" class="pole-picked__v"></span>
                     </div>
-
-                    <div id="polePickedMeta" class="pole-picked" hidden>
-                        <div class="pole-picked__row">
-                            <span class="pole-picked__k">桿號</span>
-                            <span id="polePickedPoleNo" class="pole-picked__v"></span>
-                        </div>
-                        <div class="pole-picked__row">
-                            <span class="pole-picked__k">地址</span>
-                            <span id="polePickedAddr" class="pole-picked__v"></span>
-                        </div>
-                    </div>
-
-                    <div id="poleSuggestWrap" class="pole-suggest" hidden>
-                        <ul id="poleSuggestList" class="pole-suggest__list" role="listbox" aria-label="搜尋建議"></ul>
+                    <div class="pole-picked__row">
+                        <span class="pole-picked__k">地址</span>
+                        <span id="polePickedAddr" class="pole-picked__v"></span>
                     </div>
                 </div>
+
+                <div id="poleSuggestWrap" class="pole-suggest" hidden>
+                    <ul id="poleSuggestList" class="pole-suggest__list" role="listbox" aria-label="搜尋建議"></ul>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
 
         <!-- Map（滿版） -->
         <div class="pole-map">
