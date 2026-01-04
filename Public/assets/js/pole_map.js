@@ -7,208 +7,214 @@
  */
 
 (function () {
-  'use strict';
+    'use strict';
 
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-  function escapeHtml(s) {
-    return String(s || '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
-  }
-
-  function debounce(fn, wait) {
-    var t = null;
-    return function () {
-      var args = arguments;
-      clearTimeout(t);
-      t = setTimeout(function () { fn.apply(null, args); }, wait);
-    };
-  }
-
-  function apiUrl(path) {
-    var base = (window.BASE_URL || '').replace(/\/+$/, '');
-    path = String(path || '');
-    if (!path.startsWith('/')) path = '/' + path;
-    return base + path;
-  }
-
-  // --- DOM
-  var inputEl = qs('#poleSearchInput');
-  var clearEl = qs('#poleSearchClear');
-  var wrapEl = qs('#poleSuggestWrap');
-  var listEl = qs('#poleSuggestList');
-  var navBtn = qs('#poleNavBtn');
-
-  // --- Map
-  var map = L.map('map', { zoomControl: true });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 20,
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-  }).addTo(map);
-
-  map.setView([23.9, 121.0], 8);
-
-  var picked = { lat: null, lng: null, label: '' };
-  var marker = null;
-
-  function setNavVisible(visible) {
-    if (!navBtn) return;
-    if (visible) {
-      navBtn.hidden = false;
-    } else {
-      navBtn.hidden = true;
-    }
-  }
-
-  // 初始：導覽按鈕不顯示
-  setNavVisible(false);
-
-  function setPicked(item) {
-    if (!item || typeof item.lat !== 'number' || typeof item.lng !== 'number') return;
-
-    picked.lat = item.lat;
-    picked.lng = item.lng;
-    picked.label = item.label || '';
-
-    if (marker) map.removeLayer(marker);
-    marker = L.marker([picked.lat, picked.lng]).addTo(map);
-
-    map.setView([picked.lat, picked.lng], 17, { animate: true });
-
-    // ✅ 選到點後才顯示「用 Google 導航」
-    setNavVisible(true);
-
-    hideSuggest();
-  }
-
-  function hideSuggest() {
-    if (!wrapEl) return;
-    wrapEl.hidden = true;
-    if (listEl) listEl.innerHTML = '';
-  }
-
-  function showSuggest(items) {
-    if (!wrapEl || !listEl) return;
-
-    if (!Array.isArray(items) || items.length === 0) {
-      hideSuggest();
-      return;
+    function qs(sel, root) { return (root || document).querySelector(sel); }
+    function escapeHtml(s) {
+        return String(s || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
     }
 
-    var html = '';
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i] || {};
-      var label = String(it.label || '');
-      var mapRef = String(it.map_ref || '');
-      var poleNo = String(it.pole_no || '');
-      var addr = String(it.address || '');
-      var lat = (typeof it.lat === 'number') ? it.lat : null;
-      var lng = (typeof it.lng === 'number') ? it.lng : null;
-
-      html += ''
-        + '<li class="pole-suggest__item" role="option" tabindex="0"'
-        + ' data-lat="' + escapeHtml(lat) + '"'
-        + ' data-lng="' + escapeHtml(lng) + '"'
-        + ' data-label="' + escapeHtml(label) + '">'
-        +   '<div class="pole-suggest__title">' + escapeHtml(mapRef || label) + '</div>'
-        +   '<div class="pole-suggest__meta">'
-        +     (poleNo ? ('桿號：' + escapeHtml(poleNo) + '　') : '')
-        +     (addr ? ('地址：' + escapeHtml(addr)) : '')
-        +   '</div>'
-        + '</li>';
+    function debounce(fn, wait) {
+        var t = null;
+        return function () {
+            var args = arguments;
+            clearTimeout(t);
+            t = setTimeout(function () { fn.apply(null, args); }, wait);
+        };
     }
 
-    listEl.innerHTML = html;
-    wrapEl.hidden = false;
-  }
-
-  function fetchSuggest(q) {
-    var url = apiUrl('/api/public/pole/suggest') + '?q=' + encodeURIComponent(q);
-
-    return fetch(url, { method: 'GET', credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j || j.success !== true || !Array.isArray(j.data)) return [];
-        return j.data.slice(0, 10);
-      })
-      .catch(function () { return []; });
-  }
-
-  var onInput = debounce(function () {
-    var q = (inputEl && inputEl.value) ? String(inputEl.value).trim() : '';
-    if (q.length < 2) {
-      hideSuggest();
-      return;
+    function apiUrl(path) {
+        var base = (window.BASE_URL || '').replace(/\/+$/, '');
+        path = String(path || '');
+        if (!path.startsWith('/')) path = '/' + path;
+        return base + path;
     }
-    fetchSuggest(q).then(showSuggest);
-  }, 300);
 
-  if (inputEl) {
-    inputEl.addEventListener('input', onInput);
-    inputEl.addEventListener('focus', onInput);
-  }
+    // --- DOM
+    var inputEl = qs('#poleSearchInput');
+    var clearEl = qs('#poleSearchClear');
+    var wrapEl = qs('#poleSuggestWrap');
+    var listEl = qs('#poleSuggestList');
+    var navBtn = qs('#poleNavBtn');
 
-  if (clearEl) {
-    clearEl.addEventListener('click', function () {
-      if (inputEl) inputEl.value = '';
-      hideSuggest();
+    // --- Map
+    var map = L.map('map', { zoomControl: true });
 
-      // ✅ 清除後：導覽按鈕回到不顯示
-      setNavVisible(false);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(map);
 
-      picked.lat = picked.lng = null;
-      picked.label = '';
+    map.setView([23.9, 121.0], 8);
 
-      if (marker) {
-        map.removeLayer(marker);
-        marker = null;
-      }
-      if (inputEl) inputEl.focus();
-    });
-  }
+    var picked = { lat: null, lng: null, label: '' };
+    var marker = null;
 
-  if (listEl) {
-    listEl.addEventListener('click', function (e) {
-      var li = e.target && e.target.closest ? e.target.closest('.pole-suggest__item') : null;
-      if (!li) return;
+    function setNavVisible(visible) {
+        if (!navBtn) return;
+        if (visible) {
+            navBtn.hidden = false;
+        } else {
+            navBtn.hidden = true;
+        }
+    }
 
-      var lat = Number(li.getAttribute('data-lat'));
-      var lng = Number(li.getAttribute('data-lng'));
-      var label = li.getAttribute('data-label') || '';
+    // 初始：導覽按鈕不顯示
+    setNavVisible(false);
 
-      if (!isFinite(lat) || !isFinite(lng)) return;
-      setPicked({ lat: lat, lng: lng, label: label });
-    });
+    function setPicked(item) {
+        if (!item || typeof item.lat !== 'number' || typeof item.lng !== 'number') return;
 
-    listEl.addEventListener('keydown', function (e) {
-      if (e.key !== 'Enter') return;
-      var li = e.target && e.target.classList && e.target.classList.contains('pole-suggest__item') ? e.target : null;
-      if (!li) return;
+        picked.lat = item.lat;
+        picked.lng = item.lng;
+        picked.label = item.label || '';
 
-      var lat = Number(li.getAttribute('data-lat'));
-      var lng = Number(li.getAttribute('data-lng'));
-      var label = li.getAttribute('data-label') || '';
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([picked.lat, picked.lng]).addTo(map);
 
-      if (!isFinite(lat) || !isFinite(lng)) return;
-      setPicked({ lat: lat, lng: lng, label: label });
-    });
-  }
+        map.setView([picked.lat, picked.lng], 17, { animate: true });
+        // ✅ 選到項目後：回填輸入框顯示文字
+        if (inputEl) {
+            inputEl.value = String(item.display || item.label || '').trim();
+        }
 
-  if (navBtn) {
-    navBtn.addEventListener('click', function () {
-      if (!isFinite(picked.lat) || !isFinite(picked.lng)) return;
+        // ✅ 選到點後才顯示「用 Google 導航」
+        setNavVisible(true);
 
-      var url = 'https://www.google.com/maps/dir/?api=1'
-        + '&destination=' + encodeURIComponent(picked.lat + ',' + picked.lng)
-        + '&travelmode=driving';
+        hideSuggest();
+    }
 
-      window.open(url, '_blank', 'noopener');
-    });
-  }
+    function hideSuggest() {
+        if (!wrapEl) return;
+        wrapEl.hidden = true;
+        if (listEl) listEl.innerHTML = '';
+    }
 
-  map.on('click', function () { hideSuggest(); });
+    function showSuggest(items) {
+        if (!wrapEl || !listEl) return;
+
+        if (!Array.isArray(items) || items.length === 0) {
+            hideSuggest();
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i] || {};
+            var label = String(it.label || '');
+            var mapRef = String(it.map_ref || '');
+            var poleNo = String(it.pole_no || '');
+            var addr = String(it.address || '');
+            var lat = (typeof it.lat === 'number') ? it.lat : null;
+            var lng = (typeof it.lng === 'number') ? it.lng : null;
+            var displayText = String(mapRef || poleNo || label || '');
+
+            html += ''
+                + '<li class="pole-suggest__item" role="option" tabindex="0"'
+                + ' data-lat="' + escapeHtml(lat) + '"'
+                + ' data-lng="' + escapeHtml(lng) + '"'
+                + ' data-label="' + escapeHtml(label) + '"'
+                + ' data-display="' + escapeHtml(displayText) + '">'
+                + '<div class="pole-suggest__title">' + escapeHtml(mapRef || label) + '</div>'
+                + '<div class="pole-suggest__meta">'
+                + (poleNo ? ('桿號：' + escapeHtml(poleNo) + '　') : '')
+                + (addr ? ('地址：' + escapeHtml(addr)) : '')
+                + '</div>'
+                + '</li>';
+        }
+
+        listEl.innerHTML = html;
+        wrapEl.hidden = false;
+    }
+
+    function fetchSuggest(q) {
+        var url = apiUrl('/api/public/pole/suggest') + '?q=' + encodeURIComponent(q);
+
+        return fetch(url, { method: 'GET', credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                if (!j || j.success !== true || !Array.isArray(j.data)) return [];
+                return j.data.slice(0, 10);
+            })
+            .catch(function () { return []; });
+    }
+
+    var onInput = debounce(function () {
+        var q = (inputEl && inputEl.value) ? String(inputEl.value).trim() : '';
+        if (q.length < 2) {
+            hideSuggest();
+            return;
+        }
+        fetchSuggest(q).then(showSuggest);
+    }, 300);
+
+    if (inputEl) {
+        inputEl.addEventListener('input', onInput);
+        inputEl.addEventListener('focus', onInput);
+    }
+
+    if (clearEl) {
+        clearEl.addEventListener('click', function () {
+            if (inputEl) inputEl.value = '';
+            hideSuggest();
+
+            // ✅ 清除後：導覽按鈕回到不顯示
+            setNavVisible(false);
+
+            picked.lat = picked.lng = null;
+            picked.label = '';
+
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            if (inputEl) inputEl.focus();
+        });
+    }
+
+    if (listEl) {
+        listEl.addEventListener('click', function (e) {
+            var li = e.target && e.target.closest ? e.target.closest('.pole-suggest__item') : null;
+            if (!li) return;
+
+            var lat = Number(li.getAttribute('data-lat'));
+            var lng = Number(li.getAttribute('data-lng'));
+            var label = li.getAttribute('data-label') || '';
+            var display = li.getAttribute('data-display') || label;
+            if (!isFinite(lat) || !isFinite(lng)) return;
+            setPicked({ lat: lat, lng: lng, label: label, display: display });
+        });
+
+        listEl.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            var li = e.target && e.target.classList && e.target.classList.contains('pole-suggest__item') ? e.target : null;
+            if (!li) return;
+
+            var lat = Number(li.getAttribute('data-lat'));
+            var lng = Number(li.getAttribute('data-lng'));
+            var label = li.getAttribute('data-label') || '';
+            var display = li.getAttribute('data-display') || label;
+            if (!isFinite(lat) || !isFinite(lng)) return;
+            setPicked({ lat: lat, lng: lng, label: label, display: display });
+        });
+    }
+
+    if (navBtn) {
+        navBtn.addEventListener('click', function () {
+            if (!isFinite(picked.lat) || !isFinite(picked.lng)) return;
+
+            var url = 'https://www.google.com/maps/dir/?api=1'
+                + '&destination=' + encodeURIComponent(picked.lat + ',' + picked.lng)
+                + '&travelmode=driving';
+
+            window.open(url, '_blank', 'noopener');
+        });
+    }
+
+    map.on('click', function () { hideSuggest(); });
 })();
