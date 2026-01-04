@@ -283,3 +283,32 @@ body.public-page.pole-map-page {
 .leaflet-control-attribution{
   margin-bottom: 120px; /* dock 高度不同可微調 */
 }
+/* ===== Authed（管理殼）版：滿版地圖 + 工具列避開 topbar/rail ===== */
+body.app-page.pole-map-page .page{
+  /* nav.css 預設 page 有 padding，會把地圖縮小；這頁要拿掉 */
+  padding: 0 !important;
+  height: calc(100vh - var(--topbar-h)) !important;
+  overflow: hidden;
+}
+
+body.app-page.pole-map-page .pole-map{
+  height: 100% !important; /* 不用 100vh，避免被 topbar 影響 */
+}
+
+/* 工具列：往下避開 topbar，往右避開 rail */
+body.app-page.pole-map-page .pole-top{
+  top: calc(var(--topbar-h) + 12px);
+  left: calc(var(--rail-w) + 12px);
+  right: 12px;
+}
+
+/* 底部 dock 同樣避開 rail */
+body.app-page.pole-map-page .pole-top__left{
+  left: calc(var(--rail-w) + 12px);
+  right: 12px;
+}
+
+/* 導航鍵置中：中心點要以內容區（扣掉 rail）為準 */
+body.app-page.pole-map-page #poleNavBtn{
+  left: calc(50% + (var(--rail-w) / 2));
+}
