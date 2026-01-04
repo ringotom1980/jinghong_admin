@@ -19,11 +19,12 @@ body.public-page.pole-map-page {
   overflow: hidden;
 }
 
-/* 地圖容器滿版 */
+:root { --vh: 1vh; } /* ★新增：放在檔案前段也可 */
+
 .pole-map {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: calc(var(--vh) * 100); /* ★取代 100vh，避免 iOS 鍵盤 bug */
 }
 
 .map-canvas {
@@ -145,7 +146,7 @@ body.public-page.pole-map-page {
   border: 0;
   outline: 0;
   background: transparent;
-  font-size: 14px;
+  font-size: 16px; /* ★iOS 必要：避免 focus 自動 zoom */
   font-weight: 650;
   color: rgba(15,23,42,.92);
 }

@@ -44,6 +44,17 @@
     var pickedMetaEl = qs('#polePickedMeta');
     var pickedPoleEl = qs('#polePickedPoleNo');
     var pickedAddrEl = qs('#polePickedAddr');
+    // --- iOS keyboard viewport fix (avoid 100vh stuck)
+    function setVhVar() {
+        var h = window.innerHeight || document.documentElement.clientHeight || 0;
+        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+    }
+    setVhVar();
+    window.addEventListener('resize', setVhVar);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', setVhVar);
+        window.visualViewport.addEventListener('scroll', setVhVar);
+    }
 
     // --- Map
     var map = L.map('map', { zoomControl: true });
@@ -170,7 +181,22 @@
 
     if (inputEl) {
         inputEl.addEventListener('input', onInput);
-        inputEl.addEventListener('focus', onInput);
+
+        inputEl.addEventListener('focus', function () {
+            setVhVar();
+            onInput();
+            // iOS 有時會把頁面推一下，先記住
+            inputEl._prevScrollY = window.scrollY || 0;
+        });
+
+        inputEl.addEventListener('blur', function () {
+            // 鍵盤收起後 iOS viewport 會延遲更新，稍等再修復
+            setTimeout(function () {
+                setVhVar();
+                window.scrollTo(0, inputEl._prevScrollY || 0);
+                map.invalidateSize(true);
+            }, 150);
+        });
     }
 
     if (clearEl) {
