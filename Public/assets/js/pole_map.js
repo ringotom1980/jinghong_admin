@@ -81,6 +81,16 @@
     ).addTo(map);
 
     map.setView([23.9, 121.0], 8);
+    // --- Auto geolocation (mobile) + fallback + pulsing logo marker
+    if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
+        window.PoleGeolocate.init({
+            map: map,
+            L: L,
+            fallback: { lat: 24.581150658613517, lng: 120.83267165030942 },
+            zoom: 15,
+            logoUrl: (window.POLE_LOGO_URL || '')
+        });
+    }
 
     var picked = { lat: null, lng: null, label: '' };
     var marker = null;

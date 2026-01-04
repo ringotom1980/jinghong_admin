@@ -15,11 +15,13 @@ $pageTitle = '電桿地圖｜境宏工程有限公司';
 
 $pageCss = [
     'assets/css/pole_map.css',
+    'assets/css/pole_geolocate.css',
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
 ];
 
 $pageJs = [
     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+    'assets/js/pole_geolocate.js',
     'assets/js/pole_map.js',
 ];
 
@@ -112,7 +114,9 @@ $u = function (string $path) use ($base): string {
             <?php require __DIR__ . '/partials/footer.php'; ?>
         </div><!-- /.page -->
     <?php endif; ?>
-
+    <script>
+        window.POLE_LOGO_URL = <?= json_encode(asset('assets/img/brand/JH_logo.png')) ?>;
+    </script>
     <?php require __DIR__ . '/partials/scripts.php'; ?>
 </body>
 
