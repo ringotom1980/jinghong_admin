@@ -41,12 +41,13 @@
         },
 
         _tryGeolocation: function () {
+            var self = this;
+
             if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
-                // 不支援 → 保持 fallback
+                // 不支援 → 直接使用 fallback（含 marker）
+                self._applyFallback();
                 return;
             }
-
-            var self = this;
 
             navigator.geolocation.getCurrentPosition(
                 function (pos) {
