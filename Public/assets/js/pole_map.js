@@ -77,7 +77,7 @@
     L.control.layers(
         { 'Voyager': baseVoyager, 'Positron': basePositron },
         null,
-        { position: 'topright' }
+        { position: 'topleft' }
     ).addTo(map);
 
     map.setView([23.9, 121.0], 8);
