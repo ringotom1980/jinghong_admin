@@ -80,7 +80,7 @@
         { position: 'topleft' }
     ).addTo(map);
     // ✅ fallback（桌機永遠用；只有真正手機才嘗試定位）
-    var FALLBACK = { lat: 24.58114245439582, lng: 120.83265811755125 };
+    var FALLBACK = { lat: 24.581154760722175, lng: 120.8326942049064 };
     var FALLBACK_ZOOM = 15;
 
     // ✅ 僅用 UA 判斷「真手機」：避免觸控筆電/平板模式誤判
