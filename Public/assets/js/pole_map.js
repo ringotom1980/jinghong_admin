@@ -244,33 +244,73 @@
     if (inputEl) {
         inputEl.addEventListener('input', onInput);
 
+        // iOS Safari: focus 時會自行縮放/位移 viewport（即使 overflow:hidden）
+        // 解法：focus 暫時鎖 meta viewport + 用 visualViewport 把 pageTop 拉回 0；blur 還原
+        var _vpMeta = document.querySelector('meta[name="viewport"]');
+        var _vpOrig = _vpMeta ? (_vpMeta.getAttribute('content') || '') : '';
+        var _vvTimer = null;
+
+        function _lockViewportForIOS() {
+            if (!_vpMeta) return;
+            // focus 才鎖，避免影響平常 pinch-zoom（地圖操作）
+            _vpMeta.setAttribute(
+                'content',
+                'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
+            );
+        }
+
+        function _restoreViewport() {
+            if (!_vpMeta) return;
+            _vpMeta.setAttribute('content', _vpOrig);
+        }
+
+        function _startVVGuard() {
+            if (!window.visualViewport) return;
+            if (_vvTimer) return;
+
+            _vvTimer = window.setInterval(function () {
+                // iOS 會把 visual viewport 往下推（pageTop > 0），這時把它拉回去
+                // 注意：scrollY 可能仍是 0，所以要看 visualViewport.pageTop
+                var vt = window.visualViewport.pageTop || 0;
+                if (vt > 0) {
+                    window.scrollTo(0, 0);
+                }
+            }, 50);
+        }
+
+        function _stopVVGuard() {
+            if (_vvTimer) {
+                window.clearInterval(_vvTimer);
+                _vvTimer = null;
+            }
+        }
+
         inputEl.addEventListener('focus', function () {
             setVhVar();
             onInput();
 
-            // ===== iOS 專用：鎖住 body，避免 Safari 自動捲動聚焦 =====
+            // 記住原本位置（雖然這頁通常 scrollY=0，但保留）
             inputEl._prevScrollY = window.scrollY || 0;
 
-            document.body.style.position = 'fixed';
-            document.body.style.top = '-' + inputEl._prevScrollY + 'px';
-            document.body.style.left = '0';
-            document.body.style.right = '0';
-            document.body.style.width = '100%';
+            // 只對 iOS 做 viewport lock（避免影響 Android/桌機）
+            var ua = String(navigator.userAgent || '');
+            var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+            if (isIOS) {
+                _lockViewportForIOS();
+                _startVVGuard();
+            }
         });
 
         inputEl.addEventListener('blur', function () {
-            // 鍵盤收起後 iOS viewport 會延遲更新，稍等再修復
             setTimeout(function () {
                 setVhVar();
 
-                // ===== 還原 body 狀態 =====
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.left = '';
-                document.body.style.right = '';
-                document.body.style.width = '';
+                // 還原 viewport（恢復 pinch-zoom）
+                _stopVVGuard();
+                _restoreViewport();
 
-                // 回到 focus 前的位置（避免畫面跳）
+                // 回到 focus 前的位置（保底）
                 window.scrollTo(0, inputEl._prevScrollY || 0);
 
                 map.invalidateSize(true);
