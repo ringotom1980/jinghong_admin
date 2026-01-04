@@ -73,23 +73,26 @@
     // ✅ Default: Voyager
     baseVoyager.addTo(map);
 
-    // ✅ Layer switcher (top-right)
+    // ✅ Layer switcher（放在縮放按鈕下方同側）
     L.control.layers(
         { 'Voyager': baseVoyager, 'Positron': basePositron },
         null,
         { position: 'topleft' }
     ).addTo(map);
 
-    map.setView([23.9, 121.0], 8);
-    // --- Auto geolocation (mobile) + fallback + pulsing logo marker
+    // ✅ 初始視角：優先交給 PoleGeolocate（含 fallback/定位）；沒有載到才用台灣全覽
     if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
         window.PoleGeolocate.init({
             map: map,
             L: L,
-            fallback: { lat: 24.581150658613517, lng: 120.83267165030942 },
+            // ★這裡用你指定的 fallback（電腦無定位也會落在這裡）
+            fallback: { lat: 24.58115886283068, lng: 120.83268518306761 },
             zoom: 15,
             logoUrl: (window.POLE_LOGO_URL || '')
         });
+    } else {
+        // 保底（例如 pole_geolocate.js 沒載到）
+        map.setView([23.9, 121.0], 8);
     }
 
     var picked = { lat: null, lng: null, label: '' };
