@@ -57,6 +57,10 @@ $u = function (string $path) use ($base): string {
                         <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
                         登入管理系統
                     </a>
+                    <button id="poleNavBtn" class="btn btn--info pole-nav" type="button" hidden>
+                        <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
+                        用 Google 導航
+                    </button>
                 </div>
 
                 <!-- Center: Search -->
@@ -94,14 +98,6 @@ $u = function (string $path) use ($base): string {
                     <div id="poleSuggestWrap" class="pole-suggest" hidden>
                         <ul id="poleSuggestList" class="pole-suggest__list" role="listbox" aria-label="搜尋建議"></ul>
                     </div>
-                </div>
-
-                <!-- Right: Nav (選到點後才顯示) -->
-                <div class="pole-top__right">
-                    <button id="poleNavBtn" class="btn btn--info pole-nav" type="button" hidden>
-                        <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
-                        用 Google 導航
-                    </button>
                 </div>
             </div>
         <?php endif; ?>

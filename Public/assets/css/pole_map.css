@@ -32,31 +32,47 @@ body.public-page.pole-map-page {
 }
 
 /* ===== Top floating bar ===== */
-/* 只有元件自己有底，不要整條白底 */
-.pole-top {
+/* 上方只放搜尋（永遠） */
+.pole-top{
   position: fixed;
-  top: 12px;
   left: 12px;
   right: 12px;
+  top: 12px;
   z-index: 1100;
-  pointer-events: none; /* ✅ 讓地圖可拖曳；子元件再開 pointer-events */
+  pointer-events: none;
   display: grid;
-  grid-template-columns: auto minmax(320px, 760px) auto;
-  align-items: start;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
-/* 左右區塊不要擠壓中間搜尋框 */
+/* 子元件才可以點（外層 pointer-events:none） */
 .pole-top__left,
-.pole-top__center,
-.pole-top__right {
+.pole-top__center{
   pointer-events: auto;
 }
 
-.pole-top__left {
-  display: inline-flex;
+/* 底部 Dock：logo/公司名/登入/導航（永遠） */
+.pole-top__left{
+  pointer-events: auto;
+
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1200;
+
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
+
+  padding: 10px 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 18px 54px rgba(2,6,23,.18);
+  backdrop-filter: blur(10px);
 }
 
 .pole-brand {
@@ -92,7 +108,8 @@ body.public-page.pole-map-page {
 }
 
 /* 中間搜尋 */
-.pole-top__center {
+.pole-top__center{
+  pointer-events: auto;
   justify-self: center;
   width: 100%;
   max-width: 760px;
@@ -235,9 +252,6 @@ body.public-page.pole-map-page {
 }
 
 /* 右側導航（選到點後才顯示） */
-.pole-top__right {
-  justify-self: end;
-}
 .pole-nav {
   height: 44px;
   border-radius: 16px;
@@ -246,11 +260,15 @@ body.public-page.pole-map-page {
 }
 
 /* ===== Leaflet 控制項避開左上角品牌 ===== */
-/* 讓 +/- 往下移，避免被 logo 壓住 */
-.leaflet-top.leaflet-left {
-  top: 72px;
+.leaflet-top.leaflet-left{
+  top: 64px; /* 搜尋列 + 間距，視覺比較準 */
 }
+
 /* ✅ 只修這顆：避免被 .btn{display:inline-flex} 蓋掉 */
 #poleNavBtn[hidden] {
   display: none !important;
+}
+/* 避免底部 dock 蓋住 attribution */
+.leaflet-control-attribution{
+  margin-bottom: 110px; /* dock 高度不同可微調 */
 }
