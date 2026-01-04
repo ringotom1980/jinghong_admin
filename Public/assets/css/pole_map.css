@@ -51,7 +51,7 @@ body.public-page.pole-map-page {
   pointer-events: auto;
 }
 
-/* 底部 Dock：logo/公司名/登入/導航（永遠） */
+/* 底部 Dock：只排版，不要大白底面板 */
 .pole-top__left{
   pointer-events: auto;
 
@@ -67,24 +67,25 @@ body.public-page.pole-map-page {
   gap: 10px;
   flex-wrap: wrap;
 
-  padding: 10px 10px;
-  border-radius: 18px;
-  border: 1px solid rgba(15,23,42,.10);
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 18px 54px rgba(2,6,23,.18);
-  backdrop-filter: blur(10px);
+  /* ✅ 移除大白底框 */
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
-.pole-brand {
+/* 品牌：不要白底框，只保留排列 */
+.pole-brand{
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15,23,42,.08);
-  background: rgba(255,255,255,.88);
-  box-shadow: 0 14px 40px rgba(2,6,23,.10);
-  backdrop-filter: blur(8px);
+
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .pole-brand__logo {
@@ -94,17 +95,19 @@ body.public-page.pole-map-page {
   object-fit: contain;
 }
 
-.pole-brand__text {
+.pole-brand__text{
   font-weight: 760;
   letter-spacing: .02em;
   color: rgba(15,23,42,.92);
   white-space: nowrap;
+  font-size: 13px; /* ✅ 手機更不擠 */
 }
 
-.pole-login {
-  height: 40px;
-  border-radius: 14px;
-  font-weight: 700;
+.pole-login{
+  height: 36px;
+  border-radius: 999px;
+  font-weight: 750;
+  padding: 0 12px;
 }
 
 /* 中間搜尋 */
@@ -257,6 +260,14 @@ body.public-page.pole-map-page {
   border-radius: 16px;
   font-weight: 760;
   box-shadow: 0 14px 40px rgba(2,6,23,.10);
+}
+/* 導航鍵：固定在 Dock 上方置中 */
+#poleNavBtn{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 72px;        /* ✅ 在底部列上方（可微調 64~86） */
+  z-index: 1250;
 }
 
 /* ===== Leaflet 控制項避開左上角品牌 ===== */
