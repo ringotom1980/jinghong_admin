@@ -79,7 +79,7 @@
         null,
         { position: 'topleft' }
     ).addTo(map);
-    
+
     // ✅ fallback（桌機永遠用；手機先定位失敗才用）
     var FALLBACK = { lat: 24.581154760722175, lng: 120.8326942049064 };
     var FALLBACK_ZOOM = 15;
@@ -89,8 +89,21 @@
     var isRealMobile = /Android|iPhone|iPad|iPod/i.test(ua);
 
     if (!isRealMobile) {
-        // ✅ 桌機：永遠落在 fallback，不呼叫 geolocate（避免打架）
+        // ✅ 桌機：固定 fallback 視角
         map.setView([FALLBACK.lat, FALLBACK.lng], FALLBACK_ZOOM);
+
+        // ✅ 桌機也顯示「目前點」（用 fallback 當作目前位置）
+        if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
+            window.PoleGeolocate.init({
+                map: map,
+                L: L,
+                fallback: FALLBACK,
+                zoom: FALLBACK_ZOOM,
+                logoUrl: (window.POLE_LOGO_URL || ''),
+                // 關鍵：桌機不嘗試定位，只畫 marker
+                __desktopOnly: true
+            });
+        }
     } else {
         // ✅ 手機：交給 PoleGeolocate（先定位，失敗才 fallback + marker）
         if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
