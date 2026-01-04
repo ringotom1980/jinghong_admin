@@ -59,10 +59,26 @@
     // --- Map
     var map = L.map('map', { zoomControl: true });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    // --- Base layers (Voyager default + Positron optional)
+    var baseVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-    }).addTo(map);
+    });
+
+    var basePositron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    });
+
+    // ✅ Default: Voyager
+    baseVoyager.addTo(map);
+
+    // ✅ Layer switcher (top-right)
+    L.control.layers(
+        { 'Voyager': baseVoyager, 'Positron': basePositron },
+        null,
+        { position: 'topright' }
+    ).addTo(map);
 
     map.setView([23.9, 121.0], 8);
 
