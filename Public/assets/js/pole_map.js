@@ -80,19 +80,19 @@
         { position: 'topleft' }
     ).addTo(map);
 
-    // ✅ 初始視角：優先交給 PoleGeolocate（含 fallback/定位）；沒有載到才用台灣全覽
+    // ✅ 永遠先用 fallback（桌機/手機都一致）
+    var FALLBACK = { lat: 24.58115886283068, lng: 120.83268518306761 };
+    map.setView([FALLBACK.lat, FALLBACK.lng], 15);
+
+    // ✅ 若有 PoleGeolocate：再嘗試抓定位；失敗會維持 fallback
     if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
         window.PoleGeolocate.init({
             map: map,
             L: L,
-            // ★這裡用你指定的 fallback（電腦無定位也會落在這裡）
-            fallback: { lat: 24.58115886283068, lng: 120.83268518306761 },
+            fallback: FALLBACK,
             zoom: 15,
             logoUrl: (window.POLE_LOGO_URL || '')
         });
-    } else {
-        // 保底（例如 pole_geolocate.js 沒載到）
-        map.setView([23.9, 121.0], 8);
     }
 
     var picked = { lat: null, lng: null, label: '' };
