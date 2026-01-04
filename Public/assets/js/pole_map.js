@@ -41,6 +41,9 @@
     var wrapEl = qs('#poleSuggestWrap');
     var listEl = qs('#poleSuggestList');
     var navBtn = qs('#poleNavBtn');
+    var pickedMetaEl = qs('#polePickedMeta');
+    var pickedPoleEl = qs('#polePickedPoleNo');
+    var pickedAddrEl = qs('#polePickedAddr');
 
     // --- Map
     var map = L.map('map', { zoomControl: true });
@@ -82,6 +85,16 @@
         if (inputEl) {
             inputEl.value = String(item.display || item.label || '').trim();
         }
+        // ✅ 顯示「桿號 / 地址」在搜尋框下方
+        if (pickedMetaEl) {
+            var pn = String(item.pole_no || '').trim();
+            var ad = String(item.address || '').trim();
+
+            if (pickedPoleEl) pickedPoleEl.textContent = pn || '—';
+            if (pickedAddrEl) pickedAddrEl.textContent = ad || '—';
+
+            pickedMetaEl.hidden = false;
+        }
 
         // ✅ 選到點後才顯示「用 Google 導航」
         setNavVisible(true);
@@ -119,7 +132,9 @@
                 + ' data-lat="' + escapeHtml(lat) + '"'
                 + ' data-lng="' + escapeHtml(lng) + '"'
                 + ' data-label="' + escapeHtml(label) + '"'
-                + ' data-display="' + escapeHtml(displayText) + '">'
+                + ' data-display="' + escapeHtml(displayText) + '"'
+                + ' data-pole="' + escapeHtml(poleNo) + '"'
+                + ' data-addr="' + escapeHtml(addr) + '">'
                 + '<div class="pole-suggest__title">' + escapeHtml(mapRef || label) + '</div>'
                 + '<div class="pole-suggest__meta">'
                 + (poleNo ? ('桿號：' + escapeHtml(poleNo) + '　') : '')
@@ -162,6 +177,10 @@
         clearEl.addEventListener('click', function () {
             if (inputEl) inputEl.value = '';
             hideSuggest();
+            // ✅ 清除後：把「桿號/地址」資訊列一起收起來
+            if (pickedMetaEl) pickedMetaEl.hidden = true;
+            if (pickedPoleEl) pickedPoleEl.textContent = '';
+            if (pickedAddrEl) pickedAddrEl.textContent = '';
 
             // ✅ 清除後：導覽按鈕回到不顯示
             setNavVisible(false);
@@ -186,8 +205,10 @@
             var lng = Number(li.getAttribute('data-lng'));
             var label = li.getAttribute('data-label') || '';
             var display = li.getAttribute('data-display') || label;
+            var poleNo = li.getAttribute('data-pole') || '';
+            var addr = li.getAttribute('data-addr') || '';
             if (!isFinite(lat) || !isFinite(lng)) return;
-            setPicked({ lat: lat, lng: lng, label: label, display: display });
+            setPicked({ lat: lat, lng: lng, label: label, display: display, pole_no: poleNo, address: addr });
         });
 
         listEl.addEventListener('keydown', function (e) {
@@ -199,8 +220,10 @@
             var lng = Number(li.getAttribute('data-lng'));
             var label = li.getAttribute('data-label') || '';
             var display = li.getAttribute('data-display') || label;
+            var poleNo = li.getAttribute('data-pole') || '';
+            var addr = li.getAttribute('data-addr') || '';
             if (!isFinite(lat) || !isFinite(lng)) return;
-            setPicked({ lat: lat, lng: lng, label: label, display: display });
+            setPicked({ lat: lat, lng: lng, label: label, display: display, pole_no: poleNo, address: addr });
         });
     }
 

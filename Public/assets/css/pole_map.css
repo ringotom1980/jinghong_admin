@@ -157,6 +157,39 @@ body.public-page.pole-map-page {
   border-color: rgba(15,23,42,.14);
   transform: translateY(-0.5px);
 }
+/* ===== Picked meta under search ===== */
+.pole-picked{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(255,255,255,.90);
+  box-shadow: 0 14px 40px rgba(2,6,23,.10);
+  backdrop-filter: blur(10px);
+}
+
+.pole-picked__row{
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 2px 0;
+}
+
+.pole-picked__k{
+  font-size: 12px;
+  font-weight: 760;
+  color: rgba(15,23,42,.58);
+  letter-spacing: .06em;
+}
+
+.pole-picked__v{
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(15,23,42,.88);
+  line-height: 1.35;
+  word-break: break-word;
+}
 
 /* Suggest：浮層（不撐開下面地圖） */
 .pole-suggest {
