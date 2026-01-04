@@ -281,5 +281,5 @@ body.public-page.pole-map-page {
 }
 /* 避免底部 dock 蓋住 attribution */
 .leaflet-control-attribution{
-  margin-bottom: 110px; /* dock 高度不同可微調 */
+  margin-bottom: 120px; /* dock 高度不同可微調 */
 }
