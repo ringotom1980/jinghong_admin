@@ -79,20 +79,40 @@
         null,
         { position: 'topleft' }
     ).addTo(map);
-
-    // ✅ 永遠先用 fallback（桌機/手機都一致）
+    // ✅ fallback（桌機永遠用；手機失敗才用）
     var FALLBACK = { lat: 24.58115886283068, lng: 120.83268518306761 };
-    map.setView([FALLBACK.lat, FALLBACK.lng], 15);
+    var FALLBACK_ZOOM = 15;
 
-    // ✅ 若有 PoleGeolocate：再嘗試抓定位；失敗會維持 fallback
-    if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
+    // 判斷是否手機/平板（touch + UA）
+    var isMobile = (function () {
+        var ua = String(navigator.userAgent || '');
+        var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+        return touch && /Android|iPhone|iPad|iPod/i.test(ua);
+    })();
+
+    if (isMobile && window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
+        // ✅ 手機：由 PoleGeolocate 先嘗試定位；失敗才 fallback
         window.PoleGeolocate.init({
             map: map,
             L: L,
             fallback: FALLBACK,
-            zoom: 15,
+            zoom: FALLBACK_ZOOM,
             logoUrl: (window.POLE_LOGO_URL || '')
         });
+    } else {
+        // ✅ 電腦：永遠 fallback（不嘗試定位）
+        map.setView([FALLBACK.lat, FALLBACK.lng], FALLBACK_ZOOM);
+
+        // 電腦也要顯示 logo pulse marker（在 fallback 點）
+        if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
+            window.PoleGeolocate.init({
+                map: map,
+                L: L,
+                fallback: FALLBACK,
+                zoom: FALLBACK_ZOOM,
+                logoUrl: (window.POLE_LOGO_URL || '')
+            });
+        }
     }
 
     var picked = { lat: null, lng: null, label: '' };
