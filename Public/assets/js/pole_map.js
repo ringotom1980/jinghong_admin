@@ -247,15 +247,32 @@
         inputEl.addEventListener('focus', function () {
             setVhVar();
             onInput();
-            // iOS 有時會把頁面推一下，先記住
+
+            // ===== iOS 專用：鎖住 body，避免 Safari 自動捲動聚焦 =====
             inputEl._prevScrollY = window.scrollY || 0;
+
+            document.body.style.position = 'fixed';
+            document.body.style.top = '-' + inputEl._prevScrollY + 'px';
+            document.body.style.left = '0';
+            document.body.style.right = '0';
+            document.body.style.width = '100%';
         });
 
         inputEl.addEventListener('blur', function () {
             // 鍵盤收起後 iOS viewport 會延遲更新，稍等再修復
             setTimeout(function () {
                 setVhVar();
+
+                // ===== 還原 body 狀態 =====
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
+                document.body.style.width = '';
+
+                // 回到 focus 前的位置（避免畫面跳）
                 window.scrollTo(0, inputEl._prevScrollY || 0);
+
                 map.invalidateSize(true);
             }, 150);
         });
