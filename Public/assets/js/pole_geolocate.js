@@ -21,6 +21,7 @@
 
         _logoUrl: '',
         _marker: null,
+        _markerOnly: false,
 
         init: function (opts) {
             opts = opts || {};
@@ -35,8 +36,17 @@
             if (isNum(opts.zoom)) this._zoom = Number(opts.zoom);
 
             this._logoUrl = String(opts.logoUrl || global.POLE_LOGO_URL || '').trim();
+            this._markerOnly = (opts.markerOnly === true);
 
-            // 進場：先嘗試抓定位；失敗/拒絕/timeout 才 fallback
+            this._markerOnly = (opts.markerOnly === true);
+
+            // 桌機：只畫 marker（用 fallback 當作目前點），絕不改視角、也不嘗試定位
+            if (this._markerOnly) {
+                this._setMyMarker(this._fallback.lat, this._fallback.lng);
+                return;
+            }
+
+            // 手機：先嘗試定位；失敗才 fallback（會 setView + marker）
             this._tryGeolocation();
         },
 
@@ -73,7 +83,10 @@
         },
 
         _applyFallback: function () {
-            this._applyCenter(this._fallback.lat, this._fallback.lng, this._zoom, false);
+            // markerOnly 模式不改視角
+            if (!this._markerOnly) {
+                this._applyCenter(this._fallback.lat, this._fallback.lng, this._zoom, false);
+            }
             this._setMyMarker(this._fallback.lat, this._fallback.lng);
         },
 

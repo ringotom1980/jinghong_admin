@@ -87,12 +87,14 @@
     // ✅ 只用 UA 判斷「真手機」：避免觸控筆電誤判
     var ua = String(navigator.userAgent || '');
     var isRealMobile = /Android|iPhone|iPad|iPod/i.test(ua);
-
     if (!isRealMobile) {
-        // ✅ 桌機：固定 fallback 視角
+        // =========================
+        // 🖥 桌機模式
+        // =========================
+        // 1️⃣ 視角只在這裡設定一次（永遠 fallback）
         map.setView([FALLBACK.lat, FALLBACK.lng], FALLBACK_ZOOM);
 
-        // ✅ 桌機也顯示「目前點」（用 fallback 當作目前位置）
+        // 2️⃣ 只畫「目前點」marker（不定位、不 setView）
         if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
             window.PoleGeolocate.init({
                 map: map,
@@ -100,12 +102,18 @@
                 fallback: FALLBACK,
                 zoom: FALLBACK_ZOOM,
                 logoUrl: (window.POLE_LOGO_URL || ''),
-                // 關鍵：桌機不嘗試定位，只畫 marker
-                __desktopOnly: true
+                markerOnly: true   // ✅ 關鍵：只畫 marker，完全不碰視角
             });
         }
+
     } else {
-        // ✅ 手機：交給 PoleGeolocate（先定位，失敗才 fallback + marker）
+        // =========================
+        // 📱 手機模式
+        // =========================
+        // 交給 PoleGeolocate：
+        // - 先嘗試定位
+        // - 成功 → 定位點 + marker
+        // - 失敗 → fallback + marker
         if (window.PoleGeolocate && typeof window.PoleGeolocate.init === 'function') {
             window.PoleGeolocate.init({
                 map: map,
@@ -115,7 +123,7 @@
                 logoUrl: (window.POLE_LOGO_URL || '')
             });
         } else {
-            // 保底：沒載到 PoleGeolocate，至少落 fallback
+            // 保底（理論上不會發生）
             map.setView([FALLBACK.lat, FALLBACK.lng], FALLBACK_ZOOM);
         }
     }
