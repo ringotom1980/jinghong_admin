@@ -1,70 +1,63 @@
-/*
- * Path: Public/assets/css/ui_modal.css
- * 說明: 共用 Modal 外觀（不含動畫；動畫在 motion.css）
- * - 使用 .modal-backdrop / .modal-panel（對齊 motion.css）
- * - 風格：A（輕量）
+/* Path: Public/assets/css/ui_modal.css
+ * 說明: Modal 外觀（不塞 app.css）
  */
+
+:root{
+  --modal-z: 4000;
+}
 
 .modal-backdrop{
   position: fixed;
   inset: 0;
-  z-index: 1900;
-
+  z-index: var(--modal-z);
   display: grid;
   place-items: center;
-
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(6px);
-
-  padding: 16px;
+  padding: 18px;
+  background: rgba(2, 6, 23, 0.34);
+  backdrop-filter: blur(10px);
 }
 
 .modal-panel{
-  width: min(520px, calc(100vw - 32px));
+  width: min(520px, calc(100vw - 36px));
+  background: rgba(255,255,255,.94);
+  border: 1px solid rgba(15,23,42,.12);
   border-radius: 18px;
-  background: rgba(255,255,255,.96);
-  border: 1px solid rgba(15,23,42,.10);
-  box-shadow: 0 20px 58px rgba(2, 6, 23, 0.18);
+  box-shadow: 0 20px 60px rgba(2,6,23,.20);
   overflow: hidden;
 }
 
 .modal__head{
   padding: 14px 16px 10px 16px;
   border-bottom: 1px solid rgba(15,23,42,.08);
-  background: linear-gradient(
-    180deg,
-    rgba(246, 247, 251, 0.92),
-    rgba(255,255,255,0)
-  );
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(180deg, rgba(246,247,251,.92), rgba(255,255,255,0));
 }
 
 .modal__title{
+  margin: 0;
   font-size: 16px;
   font-weight: 900;
-  letter-spacing: 0.04em;
-  color: rgba(15,23,42,.9);
+  letter-spacing: .02em;
+  color: rgba(15,23,42,.92);
 }
 
 .modal__body{
-  padding: 14px 16px 6px 16px;
-}
-
-.modal__message{
+  padding: 14px 16px 16px 16px;
+  color: rgba(15,23,42,.76);
   font-size: 14px;
-  font-weight: 650;
-  line-height: 1.6;
-  color: rgba(15,23,42,.82);
-  white-space: pre-wrap;
+  line-height: 1.55;
 }
 
-.modal__actions{
+.modal__foot{
+  padding: 12px 16px 16px 16px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-
-  padding: 12px 16px 16px 16px;
 }
 
-.modal__actions .btn{
-  min-width: 92px;
+.modal__close{
+  display: none; /* ✅ Confirm-only：不提供右上角關閉 */
 }
