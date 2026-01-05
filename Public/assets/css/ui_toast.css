@@ -1,0 +1,98 @@
+/*
+ * Path: Public/assets/css/ui_toast.css
+ * 說明: 共用 Toast 外觀（不含動畫；動畫在 motion.css）
+ * - 依 app.css 的色票變數（primary/info/success/warning/danger）
+ * - class 對齊 motion.css：.toast-wrap / .toast / .is-show / .is-leave
+ */
+
+.toast-wrap{
+  /* motion.css 已定 position/right/bottom/z-index/gap；這裡只做保底 */
+  pointer-events: none;
+}
+
+.toast{
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: 26px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 260px;
+  max-width: 360px;
+
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: 0 14px 34px rgba(2, 6, 23, 0.12);
+
+  color: rgba(15,23,42,.92);
+  backdrop-filter: blur(10px);
+}
+
+.toast__icon{
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(37, 99, 235, 0.10);
+  color: var(--info);
+}
+
+.toast__icon i{
+  font-size: 14px;
+  line-height: 1;
+}
+
+.toast__msg{
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(15,23,42,.88);
+  word-break: break-word;
+}
+
+.toast__close{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+
+  color: rgba(15,23,42,.55);
+  display: grid;
+  place-items: center;
+
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+.toast__close:hover{
+  background: rgba(15,23,42,.05);
+  color: rgba(15,23,42,.75);
+  transform: translateY(-0.5px);
+}
+.toast__close:active{
+  transform: translateY(0);
+}
+
+/* ===== 類型樣式（輕量：用 icon 背景色 + 左側淡色點綴） ===== */
+.toast--success .toast__icon{
+  background: var(--success-soft);
+  color: var(--success);
+}
+.toast--error .toast__icon{
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.toast--warn .toast__icon{
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.toast--info .toast__icon{
+  background: var(--info-soft);
+  color: var(--info);
+}
