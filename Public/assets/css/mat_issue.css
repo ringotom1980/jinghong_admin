@@ -196,14 +196,15 @@
 /* 讓 mat 頁面在大螢幕使用較寬版面，避免左右空曠 */
 
 .mat-issue .content {
-  max-width: 1480px;      /* 原本 1200，這裡只放寬 mat */
-  padding-left: 8px;
-  padding-right: 8px;
+  max-width: 1480px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* 超大螢幕再放一點 */
-@media (min-width: 1600px) {
-  .mat-issue .content {
-    max-width: 1640px;
+@media (max-width: 1200px){
+  .mat-issue .content{
+    padding-left: 8px;
+    padding-right: 8px;
   }
 }
