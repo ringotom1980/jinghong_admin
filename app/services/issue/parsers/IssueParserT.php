@@ -131,16 +131,20 @@ final class IssueParserT
       $mname = '';
       $recedeOld = 0.0;
 
-      if ($goodQty > 0 && $oldQty == 0.0) {
-        // Case: 拆除良>0、舊料=0（此時 scrap/foot 依來源必為0，但仍照欄位取值）
+      // 判斷「有沒有量」：T 單允許負數，因此用 != 0 判斷
+      $hasGood = ($goodQty != 0.0);
+      $hasOld  = ($oldQty  != 0.0);
+
+      if ($hasGood && !$hasOld) {
+        // Case: 拆除良有量、舊料=0（含負數拆除良）
         $mn = trim((string)$this->getCellByKey($cells, $headerMap, 'good_mat_no'));
         $mname = trim((string)$this->getCellByKey($cells, $headerMap, 'good_mat_name'));
-        $recedeOld = $goodQty;
+        $recedeOld = $goodQty; // 保留正負
       } else {
-        // Case: (1) good=0 old>0、(2) good=old>0、(3) good=0 old=0（廢料/下腳列）
+        // 其餘：走材料編號/材料名稱及規範（含：舊料有量、兩者皆有量、兩者皆0）
         $mn = trim((string)$this->getCellByKey($cells, $headerMap, 'mat_no'));
         $mname = trim((string)$this->getCellByKey($cells, $headerMap, 'mat_name'));
-        $recedeOld = $oldQty; // 可為 0
+        $recedeOld = $oldQty; // 保留正負（可為 0）
       }
 
       // material_number 為必填；若此列真的沒料號，才跳過（避免寫入空料號造成後續流程問題）
@@ -255,19 +259,41 @@ final class IssueParserT
     return $cells[$idx] ?? null;
   }
 
-  /**
-   * 數字規則：空白/NULL/非數字 -> 0
+  /* 數字規則：
+   * - 空白/NULL -> 0
+   * - 支援負數（含括號負數、全形負號、Unicode minus）
+   * - 去除千分位逗號與空白
    */
   private function num($v): float
   {
     if ($v === null) return 0.0;
-    if (is_string($v)) {
-      $v = trim($v);
-      if ($v === '') return 0.0;
-      $v = str_replace([',', ' '], '', $v);
+
+    // PhpSpreadsheet 可能會直接給 float/int，這種直接回傳即可
+    if (is_int($v) || is_float($v)) return (float)$v;
+
+    $s = trim((string)$v);
+    if ($s === '') return 0.0;
+
+    // 去除常見分隔符
+    $s = str_replace([',', ' '], '', $s);
+
+    // 支援「(123.45)」會計括號負數
+    $isParenNeg = false;
+    if (preg_match('/^\((.*)\)$/', $s, $m)) {
+      $isParenNeg = true;
+      $s = $m[1];
+      $s = trim($s);
     }
-    if (!is_numeric($v)) return 0.0;
-    return (float)$v;
+
+    // 支援全形負號/Unicode minus -> 半形 -
+    $s = str_replace(["－", "−"], "-", $s);
+
+    if (!is_numeric($s)) return 0.0;
+
+    $n = (float)$s;
+    if ($isParenNeg) $n = -abs($n);
+
+    return $n;
   }
 
   /**
