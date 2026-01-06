@@ -92,6 +92,13 @@ final class IssueParserT
 
       $scrap = $this->num($this->getCellByKey($cells, $headerMap, 'scrap'));
       $foot  = $this->num($this->getCellByKey($cells, $headerMap, 'footprint'));
+error_log('[T] voucher='.(string)$voucher
+  .' good_raw='.json_encode($this->getCellByKey($cells,$headerMap,'good_qty'), JSON_UNESCAPED_UNICODE)
+  .' old_raw='.json_encode($this->getCellByKey($cells,$headerMap,'old_qty'), JSON_UNESCAPED_UNICODE)
+  .' scrap_raw='.json_encode($this->getCellByKey($cells,$headerMap,'scrap'), JSON_UNESCAPED_UNICODE)
+  .' foot_raw='.json_encode($this->getCellByKey($cells,$headerMap,'footprint'), JSON_UNESCAPED_UNICODE)
+  .' => good='.$goodQty.' old='.$oldQty.' scrap='.$scrap.' foot='.$foot
+);
 
       // === 定版規則（T單）===
       // - 每列都要匯入（不因 good/old 都 0 就跳過）
