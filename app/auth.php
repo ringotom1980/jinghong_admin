@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/auth.php
  * 說明: 身分驗證與登入狀態工具
@@ -30,13 +31,16 @@ function require_login(): void
 
     $uri = parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
 
-    // API
-    if (str_starts_with($uri, '/api/')) {
+    // API：支援 /api/* 以及 {BASE_URL}/api/*
+    $base = base_url();                // 例：/jinghong_admin（或空字串）
+    $apiPrefix = rtrim($base, '/') . '/api/'; // 例：/jinghong_admin/api/
+
+    if (str_starts_with($uri, '/api/') || ($base !== '' && str_starts_with($uri, $apiPrefix))) {
         json_error('未登入', 401);
     }
 
     // Page
-    $base = base_url();
+    // Page
     $loginPath = rtrim($base, '/') . '/login';
 
     $return = ($uri !== '/login')
