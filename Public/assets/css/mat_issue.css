@@ -193,18 +193,21 @@
 }
 
 /* ===== mat/issue layout override ===== */
-/* 讓 mat 頁面在大螢幕使用較寬版面，避免左右空曠 */
+/* 目的：不要置中縮在中間；讓內容吃滿「主內容區」寬度，左右留一點安全邊 */
 
-.mat-issue .content {
-  max-width: 1480px;
-  padding-left: 0;
-  padding-right: 0;
+.mat-issue .content{
+  max-width: none;          /* ✅ 取消 1480 限制 */
+  width: 100%;              /* ✅ 吃滿可用寬度 */
+  margin-left: 0;           /* ✅ 取消置中 */
+  margin-right: 0;          /* ✅ 取消置中 */
+  padding-left: 16px;       /* ✅ 保留邊界，不要貼死 */
+  padding-right: 16px;
 }
 
-/* 超大螢幕再放一點 */
+/* 小螢幕再稍微縮一點（可選） */
 @media (max-width: 1200px){
   .mat-issue .content{
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
