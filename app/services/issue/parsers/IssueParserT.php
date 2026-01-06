@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/mat/issue/parsers/IssueParserT.php
  * 說明: T 類解析器（只負責 T 單）
@@ -31,8 +32,15 @@ final class IssueParserT
 
   /** @var string[] */
   private $keyHeaders = [
-    '憑證批號', '拆除良數量', '舊料數量', '拆除原材料編號', '材料編號',
-    '拆除原材料名稱', '材料名稱及規範', '廢料數量', '下腳數量'
+    '憑證批號',
+    '拆除良數量',
+    '舊料數量',
+    '拆除原材料編號',
+    '材料編號',
+    '拆除原材料名稱',
+    '材料名稱及規範',
+    '廢料數量',
+    '下腳數量'
   ];
 
   /**
@@ -85,23 +93,30 @@ final class IssueParserT
       $scrap = $this->num($this->getCellByKey($cells, $headerMap, 'scrap'));
       $foot  = $this->num($this->getCellByKey($cells, $headerMap, 'footprint'));
 
+      // === 定版規則（T單）===
+      // - 每列都要匯入（不因 good/old 都 0 就跳過）
+      // - material_* / recede_old 的來源由 good/old 決策：
+      //   1) good>0 且 old==0 => 拆除原材料 + recede_old=good
+      //   2) good==old 且 >0  => 材料編號/名稱及規範 + recede_old=old
+      //   3) 其餘（good==0 或 old>0 或 兩者皆0）=> 材料編號/名稱及規範 + recede_old=old(可為0)
+
       $mn = '';
       $mname = '';
       $recedeOld = 0.0;
 
-      if ($goodQty > 0) {
+      if ($goodQty > 0 && $oldQty == 0.0) {
+        // Case: 拆除良>0、舊料=0（此時 scrap/foot 依來源必為0，但仍照欄位取值）
         $mn = trim((string)$this->getCellByKey($cells, $headerMap, 'good_mat_no'));
         $mname = trim((string)$this->getCellByKey($cells, $headerMap, 'good_mat_name'));
         $recedeOld = $goodQty;
-      } elseif ($oldQty > 0) {
+      } else {
+        // Case: (1) good=0 old>0、(2) good=old>0、(3) good=0 old=0（廢料/下腳列）
         $mn = trim((string)$this->getCellByKey($cells, $headerMap, 'mat_no'));
         $mname = trim((string)$this->getCellByKey($cells, $headerMap, 'mat_name'));
-        $recedeOld = $oldQty;
-      } else {
-        // both 0 -> skip
-        continue;
+        $recedeOld = $oldQty; // 可為 0
       }
 
+      // material_number 為必填；若此列真的沒料號，才跳過（避免寫入空料號造成後續流程問題）
       if ($mn === '') continue;
 
       $out[] = [
