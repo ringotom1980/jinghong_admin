@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/mat/MatIssueService.php
  * 說明: Mat Issue 厚層（SQL/交易/規則集中）
@@ -190,6 +191,25 @@ final class MatIssueService
         $fileType = strtoupper(substr($originalFilename, 0, 1));
         if ($fileType === '' || strlen($fileType) !== 1) $fileType = 'T';
 
+        // ✅ 同日+同檔名：視為「重新匯入」→ 先刪舊批次（items 會因 FK cascade 一起刪）
+        $dupSt = $pdo->prepare(
+          "SELECT batch_id
+   FROM mat_issue_batches
+   WHERE withdraw_date = ?
+     AND original_filename = ?"
+        );
+        $dupSt->execute([$withdrawDate, $originalFilename]);
+        $dupRows = $dupSt->fetchAll();
+
+        if (!empty($dupRows)) {
+          // 刪掉全部同名舊批次（避免同名多批造成髒資料）
+          $del = $pdo->prepare("DELETE FROM mat_issue_batches WHERE batch_id = ?");
+          foreach ($dupRows as $dr) {
+            $oldBatchId = (int)($dr['batch_id'] ?? 0);
+            if ($oldBatchId > 0) $del->execute([$oldBatchId]);
+          }
+        }
+
         // create batch
         $st = $pdo->prepare(
           "INSERT INTO mat_issue_batches (withdraw_date, original_filename, file_type, uploaded_by)
@@ -221,7 +241,10 @@ final class MatIssueService
           $mn = (string)($r['material_number'] ?? '');
           $mname = (string)($r['material_name'] ?? '');
 
-          if ($mn === '') { $sumSkipped++; continue; }
+          if ($mn === '') {
+            $sumSkipped++;
+            continue;
+          }
 
           // shift lookup
           $shift = self::lookupShiftByMaterial($mn);
