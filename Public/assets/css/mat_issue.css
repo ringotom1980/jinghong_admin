@@ -21,9 +21,9 @@
 }
 
 .mi-label{
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(15,23,42,.72);
+  font-size: 14px;
+  font-weight: 850;
+  color: rgba(15,23,42,.78);
 }
 
 .mi-actions{
@@ -35,20 +35,21 @@
 
 .mi-note{
   margin-top: 6px;
-  font-size: 12px;
-  color: rgba(15,23,42,.56);
-  line-height: 1.5;
+  font-size: 13px;
+  color: rgba(15,23,42,.60);
+  line-height: 1.6;
 }
 
 .mi-result{
   margin-top: 6px;
-  font-size: 13px;
-  color: rgba(15,23,42,.72);
+  font-size: 14px;
+  color: rgba(15,23,42,.74);
   background: rgba(255,255,255,.6);
   border: 1px dashed rgba(15,23,42,.12);
   border-radius: 14px;
   padding: 10px 12px;
   min-height: 42px;
+  line-height: 1.55;
 }
 
 .mi-dates{
@@ -61,17 +62,18 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 9px 13px;
   border-radius: 999px;
   cursor: pointer;
   user-select: none;
   border: 1px solid rgba(15,23,42,.12);
   background: rgba(255,255,255,.68);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 850;
-  color: rgba(15,23,42,.78);
+  color: rgba(15,23,42,.80);
   transition: transform 140ms ease, background 160ms ease, border-color 160ms ease;
 }
+
 .mi-pill:hover{
   transform: translateY(-1px);
   background: rgba(255,255,255,.9);
@@ -103,7 +105,7 @@
 }
 .mi-batch__meta{
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(15,23,42,.62);
   display: flex;
   gap: 10px;
@@ -150,8 +152,9 @@
 }
 .mi-miss__sub{
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(15,23,42,.62);
+  line-height: 1.55;
 }
 
 /* modal inner form */
@@ -185,7 +188,7 @@
   color: rgba(15,23,42,.86);
 }
 .mi-modal-name{
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(15,23,42,.62);
 }
 
