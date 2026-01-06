@@ -200,7 +200,7 @@ final class MatIssueService
         // parse
         $parser = $manager->getParser($fileType);
 
-        $spreadsheet = IOFactory::load($tmp);
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($tmp);
         $sheet = $spreadsheet->getSheet(0);
 
         $rows = $parser->parse($sheet);
