@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/issue/IssueImportManager.php';
+// require_once __DIR__ . '/issue/IssueImportManager.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -172,6 +172,7 @@ final class MatIssueService
     $hasMissing = false;
 
     try {
+      require_once __DIR__ . '/issue/IssueImportManager.php';
       $manager = new IssueImportManager();
 
       foreach ($files as $f) {
