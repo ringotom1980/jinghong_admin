@@ -234,3 +234,53 @@
     padding-right: 10px;
   }
 }
+
+/* ===== mat/issue only: date + file polish (美化日期選單及檔案上傳)===== */
+.mat-issue .mi-form{
+  /* 你已經並排了，這裡只補間距更舒服 */
+  column-gap: 14px;
+  row-gap: 10px;
+}
+
+/* date input */
+.mat-issue #miWithdrawDate{
+  height: 42px;
+  font-size: 15px;
+  font-weight: 750;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.16);
+  background: rgba(255,255,255,.86);
+  padding: 10px 12px;
+}
+.mat-issue #miWithdrawDate:focus{
+  border-color: rgba(37,99,235,.45);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.14);
+  background: rgba(255,255,255,.96);
+}
+
+/* file input (Chrome/Edge 支援很好) */
+.mat-issue #miFiles{
+  height: 42px;
+  font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.16);
+  background: rgba(255,255,255,.86);
+  padding: 6px 10px;
+}
+
+/* 美化「選擇檔案 / 沒有選擇檔案」 */
+.mat-issue #miFiles::file-selector-button{
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(15,23,42,.06);
+  color: rgba(15,23,42,.86);
+  font-weight: 850;
+  cursor: pointer;
+  padding: 0 12px;
+}
+.mat-issue #miFiles::file-selector-button:hover{
+  background: rgba(15,23,42,.09);
+  border-color: rgba(15,23,42,.18);
+}
