@@ -64,12 +64,6 @@ $pageJs = [
               <div class="mi-actions">
                 <button class="btn btn--primary" type="button" id="miBtnImport">匯入領退資料</button>
               </div>
-
-              <div class="mi-note">
-                只解析第一張工作表；欄位列會自動掃描（前 30 列）；缺班別會列出材料編號供人工補齊。
-              </div>
-
-              <div class="mi-result" id="miImportResult" aria-live="polite"></div>
             </div>
           </div>
         </div>

@@ -25,7 +25,6 @@
       this.els.batches = qs('#miBatches');
       this.els.missing = qs('#miMissing');
       this.els.btnOpenShift = qs('#miBtnOpenShift');
-      this.els.result = qs('#miImportResult');
 
       if (this.els.btnImport) {
         this.els.btnImport.addEventListener('click', function () {
@@ -89,11 +88,6 @@
         Modal.confirm(title, message, onConfirm);
       }
     },
-
-    setResultText: function (text) {
-      if (!this.els.result) return;
-      this.els.result.textContent = text || '';
-    }
   };
 
   global.MatIssueApp = App;
