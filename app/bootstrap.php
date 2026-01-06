@@ -30,10 +30,6 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
-//暫時放下面三行釋放，我還不確定是否會影響其他頁面
-if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
-    session_write_close();
-}
 
 /* ========= BASE_URL（全站唯一來源） ========= */
 /**
