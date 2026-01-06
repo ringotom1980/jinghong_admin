@@ -21,7 +21,6 @@
       this.els.date = qs('#miWithdrawDate');
       this.els.files = qs('#miFiles');
       this.els.btnImport = qs('#miBtnImport');
-      this.els.btnRefresh = qs('#miBtnRefresh');
       this.els.dates = qs('#miDates');
       this.els.batches = qs('#miBatches');
       this.els.missing = qs('#miMissing');
@@ -31,11 +30,6 @@
       if (this.els.btnImport) {
         this.els.btnImport.addEventListener('click', function () {
           MatIssueImport.doImport();
-        });
-      }
-      if (this.els.btnRefresh) {
-        this.els.btnRefresh.addEventListener('click', function () {
-          App.refreshAll(true);
         });
       }
       if (this.els.btnOpenShift) {

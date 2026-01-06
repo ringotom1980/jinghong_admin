@@ -56,14 +56,13 @@ $pageJs = [
                 </div>
 
                 <div class="mi-field">
-                  <label class="mi-label" for="miFiles">選擇 Excel（可多檔）</label>
+                  <label class="mi-label" for="miFiles">選擇 Excel（檔名請依類型使用 L、K、S、T、W 開頭命名）</label>
                   <input class="mi-file" type="file" id="miFiles" multiple accept=".xlsx,.xls" />
                 </div>
               </div>
 
               <div class="mi-actions">
-                <button class="btn btn--primary" type="button" id="miBtnImport">開始匯入</button>
-                <button class="btn btn--secondary" type="button" id="miBtnRefresh">刷新</button>
+                <button class="btn btn--primary" type="button" id="miBtnImport">匯入領退資料</button>
               </div>
 
               <div class="mi-note">
