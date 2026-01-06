@@ -19,15 +19,42 @@ final class IssueParserT
 {
   /** @var array<string, string[]> */
   private $alias = [
-    'voucher' => ['憑證批號', '憑證批號(批次)', '憑證批號/批次'],
-    'good_qty' => ['拆除良數量', '拆除良', '拆除良(數量)'],
-    'old_qty' => ['舊料數量', '舊料', '舊料(數量)'],
-    'good_mat_no' => ['拆除原材料編號', '拆除原材料編號(料號)', '拆除原材料編碼'],
-    'mat_no' => ['材料編號', '材料料號', '料號'],
-    'good_mat_name' => ['拆除原材料名稱', '拆除原材料名稱(品名)', '拆除原材料品名'],
-    'mat_name' => ['材料名稱及規範', '材料名稱規格', '材料名稱', '品名及規範', '品名規格'],
-    'scrap' => ['廢料數量', '廢料', '廢料(數量)'],
-    'footprint' => ['下腳數量', '下腳', '下腳(數量)'],
+    // 憑證
+    'voucher' => [
+      '憑證批號',
+    ],
+
+    // 數量判斷用
+    'good_qty' => [
+      '拆除良數量',
+    ],
+    'old_qty' => [
+      '舊料數量',
+    ],
+
+    // 拆除良路徑（good > 0 且 old = 0）
+    'good_mat_no' => [
+      '拆除原材料編號',
+    ],
+    'good_mat_name' => [
+      '拆除原材料名稱',
+    ],
+
+    // 一般材料路徑（其餘所有情境）
+    'mat_no' => [
+      '材料編號',
+    ],
+    'mat_name' => [
+      '材料名稱及規範',
+    ],
+
+    // 其他數量
+    'scrap' => [
+      '廢料數量',
+    ],
+    'footprint' => [
+      '下腳數量',
+    ],
   ];
 
   /** @var string[] */
@@ -92,13 +119,6 @@ final class IssueParserT
 
       $scrap = $this->num($this->getCellByKey($cells, $headerMap, 'scrap'));
       $foot  = $this->num($this->getCellByKey($cells, $headerMap, 'footprint'));
-error_log('[T] voucher='.(string)$voucher
-  .' good_raw='.json_encode($this->getCellByKey($cells,$headerMap,'good_qty'), JSON_UNESCAPED_UNICODE)
-  .' old_raw='.json_encode($this->getCellByKey($cells,$headerMap,'old_qty'), JSON_UNESCAPED_UNICODE)
-  .' scrap_raw='.json_encode($this->getCellByKey($cells,$headerMap,'scrap'), JSON_UNESCAPED_UNICODE)
-  .' foot_raw='.json_encode($this->getCellByKey($cells,$headerMap,'footprint'), JSON_UNESCAPED_UNICODE)
-  .' => good='.$goodQty.' old='.$oldQty.' scrap='.$scrap.' foot='.$foot
-);
 
       // === 定版規則（T單）===
       // - 每列都要匯入（不因 good/old 都 0 就跳過）
@@ -180,17 +200,47 @@ error_log('[T] voucher='.(string)$voucher
    */
   private function findCol(array $cells, array $names): int
   {
+    // 先做一次 normalize（trim）
+    $cellsNorm = [];
     for ($i = 0; $i < count($cells); $i++) {
-      $h = $cells[$i];
-      if ($h === '') continue;
+      $cellsNorm[$i] = trim((string)$cells[$i]);
+    }
 
-      for ($k = 0; $k < count($names); $k++) {
-        $n = $names[$k];
-        if ($n !== '' && mb_strpos($h, $n) !== false) {
+    $namesNorm = [];
+    for ($k = 0; $k < count($names); $k++) {
+      $namesNorm[$k] = trim((string)$names[$k]);
+    }
+
+    // 1) 完全相等優先
+    for ($k = 0; $k < count($namesNorm); $k++) {
+      $n = $namesNorm[$k];
+      if ($n === '') continue;
+
+      for ($i = 0; $i < count($cellsNorm); $i++) {
+        $h = $cellsNorm[$i];
+        if ($h === '') continue;
+
+        if ($h === $n) {
           return $i;
         }
       }
     }
+
+    // 2) 找不到才用「包含」
+    for ($k = 0; $k < count($namesNorm); $k++) {
+      $n = $namesNorm[$k];
+      if ($n === '') continue;
+
+      for ($i = 0; $i < count($cellsNorm); $i++) {
+        $h = $cellsNorm[$i];
+        if ($h === '') continue;
+
+        if (mb_strpos($h, $n) !== false) {
+          return $i;
+        }
+      }
+    }
+
     return -1;
   }
 
