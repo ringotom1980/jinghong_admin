@@ -20,6 +20,29 @@
   gap: 10px;
 }
 
+/* 匯入表單：日期 + 檔案並排 */
+.mi-row{
+  display: grid;
+  gap: 12px;
+}
+
+.mi-row--2{
+  grid-template-columns: 260px 1fr; /* 左短右長：日期固定寬度、檔案吃滿 */
+  align-items: end;
+}
+
+.mi-field{
+  display: grid;
+  gap: 8px;
+}
+
+/* 小螢幕自動改回直排 */
+@media (max-width: 640px){
+  .mi-row--2{
+    grid-template-columns: 1fr;
+  }
+}
+
 .mi-label{
   font-size: 14px;
   font-weight: 850;
