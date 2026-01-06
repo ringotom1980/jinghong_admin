@@ -337,6 +337,65 @@ label,
   transform: translateY(0);
 }
 
+/* ===== Button loading (global) (圈圈動畫)===== */
+/* 用法：
+ * <button class="btn btn--primary" ...>
+ *   <span class="btn__text">匯入領退資料</span>
+ *   <span class="btn__spinner" aria-hidden="true"></span>
+ * </button>
+ * JS：加上 .is-loading + disabled
+ */
+
+.btn {
+  position: relative; /* 讓 spinner 定位穩定 */
+  gap: 8px;           /* 文字/圈圈間距（你要的「中間有點間距」） */
+}
+
+.btn__text {
+  display: inline-block;
+}
+
+.btn__spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-top-color: rgba(255, 255, 255, 0.98);
+  animation: uiSpin 0.85s linear infinite;
+}
+
+/* 非實心按鈕（例如 secondary/info/ghost）圈圈顏色改用深色系 */
+.btn--secondary .btn__spinner,
+.btn--info .btn__spinner,
+.btn--success .btn__spinner,
+.btn--warning .btn__spinner,
+.btn--danger .btn__spinner,
+.btn--ghost .btn__spinner {
+  border-color: rgba(15, 23, 42, 0.28);
+  border-top-color: rgba(15, 23, 42, 0.78);
+}
+
+/* 進入 loading */
+.btn.is-loading {
+  pointer-events: none;
+  opacity: 0.92;
+  filter: saturate(0.98);
+}
+
+.btn.is-loading .btn__spinner {
+  display: inline-block;
+}
+
+/* 也可選擇：loading 時文字稍微淡一點（保持不跳動） */
+.btn.is-loading .btn__text {
+  opacity: 0.92;
+}
+
+@keyframes uiSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* ===== Inputs ===== */
 .input,
 input[type="text"],

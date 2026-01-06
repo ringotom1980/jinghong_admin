@@ -1,5 +1,7 @@
 /* Path: Public/assets/js/mat_issue_import.js
  * 說明: 匯入（多檔上傳 + 顯示結果）
+ * - 匯入期間：按鈕加上 is-loading + disabled，避免連點
+ * - 完成/失敗：用 Toast 提示；最後一定解除 loading（finally）
  */
 
 (function (global) {
@@ -25,34 +27,52 @@
         return;
       }
 
+      // lock button + show spinner
+      var btn = (this.app && this.app.els) ? this.app.els.btnImport : null;
+      if (btn) {
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+      }
+
       var fd = new FormData();
       fd.append('withdraw_date', d);
       for (var i = 0; i < input.files.length; i++) {
         fd.append('files[]', input.files[i]);
       }
 
-      apiPostForm('/api/mat/issue_import', fd).then(function (j) {
-        if (!j || !j.success) {
-          MatIssueApp.toast('danger', '匯入失敗', j && j.error ? j.error : 'issue_import');
-          return;
-        }
+      apiPostForm('/api/mat/issue_import', fd)
+        .then(function (j) {
+          if (!j || !j.success) {
+            MatIssueApp.toast('danger', '匯入失敗', j && j.error ? j.error : 'issue_import');
+            return;
+          }
 
-        var r = j.data || {};
-        var sum = r.summary || {};
-        var msg = ''
-          + '完成：成功 ' + String(sum.inserted || 0)
-          + '、略過 ' + String(sum.skipped || 0)
-          + '、錯誤 ' + String(sum.errors || 0);
+          var r = j.data || {};
+          var sum = r.summary || {};
+          var msg = ''
+            + '完成：成功 ' + String(sum.inserted || 0)
+            + '、略過 ' + String(sum.skipped || 0)
+            + '、錯誤 ' + String(sum.errors || 0);
 
-        MatIssueApp.toast('success', '匯入完成', msg, 2600);
+          MatIssueApp.toast('success', '匯入完成', msg, 2600);
 
-        // 若有缺 shift，提示（缺漏清單會由 refreshAll 載入）
-        if (r.has_missing_shift) {
-          MatIssueApp.toast('warning', '需要補齊班別', '有缺 shift 的材料編號，請點「補齊班別」', 3200);
-        }
+          // 若有缺 shift，提示（缺漏清單會由 refreshAll 載入）
+          if (r.has_missing_shift) {
+            MatIssueApp.toast('warning', '需要補齊班別', '有缺 shift 的材料編號，請點「補齊班別」', 3200);
+          }
 
-        MatIssueApp.refreshAll(true);
-      });
+          MatIssueApp.refreshAll(true);
+        })
+        .catch(function (err) {
+          MatIssueApp.toast('danger', '匯入失敗', (err && err.message) ? err.message : 'network_error');
+        })
+        .finally(function () {
+          // unlock button + hide spinner
+          if (btn) {
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+          }
+        });
     }
   };
 

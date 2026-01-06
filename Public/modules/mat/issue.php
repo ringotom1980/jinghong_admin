@@ -62,7 +62,10 @@ $pageJs = [
               </div>
 
               <div class="mi-actions">
-                <button class="btn btn--primary" type="button" id="miBtnImport">匯入領退資料</button>
+                <button class="btn btn--primary" type="button" id="miBtnImport">
+                  <span class="btn__text">匯入領退資料</span>
+                  <span class="btn__spinner" aria-hidden="true"></span>
+                </button>
               </div>
             </div>
           </div>
