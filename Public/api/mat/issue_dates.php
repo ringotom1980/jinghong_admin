@@ -9,7 +9,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
 
-require_once __DIR__ . '/../../../app/services/mat/MatIssueService.php';
+require_once __DIR__ . '/../../../app/services/MatIssueService.php';
 
 try {
   $data = MatIssueService::listDates();
