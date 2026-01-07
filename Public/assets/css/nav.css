@@ -321,20 +321,6 @@
 }
 
 /* ===== Main content spacing helper ===== */
-/* .page {
-  margin-left: var(--rail-w);
-  padding: 18px 18px 64px 18px;
-}
-.footer {
-  margin-left: var(--rail-w);
-  padding: 14px 18px 18px 18px;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
-  color: rgba(15, 23, 42, 0.55);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-} */
-/* ===== Main content spacing helper ===== */
 /* 目的：
  * - Topbar 固定（你已做）
  * - Sidebar 固定（position:fixed）

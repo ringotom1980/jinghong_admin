@@ -90,20 +90,6 @@ $pageJs = [
             <div class="mi-batches" id="miBatches"></div>
           </div>
         </div>
-
-        <!-- 缺 shift -->
-        <div class="card mi-card mi-card--wide">
-          <div class="card__head mi-head-row">
-            <h2>缺班別（shift）補齊</h2>
-            <div class="mi-head-actions">
-              <button class="btn btn--info" type="button" id="miBtnOpenShift">補齊班別</button>
-            </div>
-          </div>
-          <div class="card__body">
-            <div class="mi-missing" id="miMissing"></div>
-          </div>
-        </div>
-
       </section>
     </div>
   </main>

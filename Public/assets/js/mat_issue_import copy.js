@@ -42,17 +42,37 @@
 
       apiPostForm('/api/mat/issue_import', fd)
         .then(function (j) {
-          if (!j || !j.success) return;
+          if (!j || !j.success) {
+            MatIssueApp.toast('danger', '匯入失敗', j && j.error ? j.error : 'issue_import');
+            return;
+          }
 
-          MatIssueApp.state.batch_ids = j.data.batch_ids || [];
+          var r = j.data || {};
+          var sum = r.summary || {};
+          var msg = ''
+            + '完成：成功 ' + String(sum.inserted || 0)
+            + '、略過 ' + String(sum.skipped || 0)
+            + '、錯誤 ' + String(sum.errors || 0);
 
-          if (j.data.has_missing_shift) {
-            MatIssueShift.openShiftModal();
+          MatIssueApp.toast('success', '匯入完成', msg, 2600);
+
+          // 若有缺 shift，提示（缺漏清單會由 refreshAll 載入）
+          if (r.has_missing_shift) {
+            MatIssueApp.toast('warning', '需要補齊班別', '有缺 shift 的材料編號，請點「補齊班別」', 3200);
           }
 
           MatIssueApp.refreshAll(true);
+        })
+        .catch(function (err) {
+          MatIssueApp.toast('danger', '匯入失敗', (err && err.message) ? err.message : 'network_error');
+        })
+        .finally(function () {
+          // unlock button + hide spinner
+          if (btn) {
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+          }
         });
-
     }
   };
 
