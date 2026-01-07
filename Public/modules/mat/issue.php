@@ -27,12 +27,12 @@ $pageJs = [
 <html lang="zh-Hant">
 <?php require __DIR__ . '/../../partials/head.php'; ?>
 
-<body class="page-enter">
+<body>
 
   <?php require __DIR__ . '/../../partials/header.php'; ?>
   <?php require __DIR__ . '/../../partials/sidebar.php'; ?>
 
-  <main class="page mat-issue" role="main">
+  <main class="page mat-issue page-enter" role="main">
     <div class="content">
 
       <header class="page-head">
