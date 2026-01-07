@@ -321,7 +321,7 @@
 }
 
 /* ===== Main content spacing helper ===== */
-.page {
+/* .page {
   margin-left: var(--rail-w);
   padding: 18px 18px 64px 18px;
 }
@@ -329,6 +329,40 @@
   margin-left: var(--rail-w);
   padding: 14px 18px 18px 18px;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
+  color: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} */
+/* ===== Main content spacing helper ===== */
+/* 目的：
+ * - Topbar 固定（你已做）
+ * - Sidebar 固定（position:fixed）
+ * - 內容 + footer 跟著捲動（不釘 footer）
+ * - 修正「像兩個版面」：主內容區要有一致底板，不要露出 body 背景
+ */
+.page {
+  margin-left: var(--rail-w);
+  padding: 18px 18px 24px 18px;
+
+  /* ✅ 關鍵：給主內容區一層「工作底板」，避免露出 body 漸層造成雙層感 */
+  background: rgba(246, 247, 251, 0.92);
+  border-left: 1px solid rgba(15, 23, 42, 0.06);
+
+  /* 讓內容至少撐滿視窗高度（扣掉 topbar） */
+  min-height: calc(100vh - var(--topbar-h));
+}
+
+/* footer 跟內容一起捲：不要 fixed/sticky */
+.footer {
+  margin-left: var(--rail-w);
+  padding: 14px 18px 18px 18px;
+
+  /* ✅ 同一塊底板：視覺連續 */
+  background: rgba(246, 247, 251, 0.92);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-left: 1px solid rgba(15, 23, 42, 0.06);
+
   color: rgba(15, 23, 42, 0.55);
   display: flex;
   justify-content: space-between;
