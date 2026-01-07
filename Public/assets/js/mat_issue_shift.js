@@ -135,18 +135,14 @@
 
       var html = ''
         + '<div class="mi-modal-grid">'
-        + '  <div class="mi-modal-hint">範圍：' + escapeHtml(d) + '（限定本次匯入批次：' + escapeHtml(batchIds.join(',')) + '）</div>'
-        + '  <div class="mi-modal-hint">以下材料缺班別，必須逐筆指定後才能完成。</div>'
-        + '  <div class="mi-shift-head">'
-        + '    <div>材料編號</div><div>材料名稱</div><div>班別承辦人</div>'
-        + '  </div>'
+        + '  <div class="mi-shift-head">本次匯入以下材料缺班別，必須逐筆指定後才能儲存。</div>'
         + '  <div class="mi-shift-list">' + rowsHtml + '</div>'
         + '</div>';
 
       // ✅ 使用 Modal.open 的 confirm 按鈕作為「儲存」
       //    透過 ui_modal.js 的 onConfirm return false → 阻止關閉（直到儲存成功才手動 close）
       Modal.open({
-        title: '補齊班別（必填）',
+        title: '請選擇班別',
         html: html,
         confirmText: '儲存',
         closeOnBackdrop: false,
