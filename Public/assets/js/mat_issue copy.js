@@ -1,6 +1,5 @@
 /* Path: Public/assets/js/mat_issue.js
  * 說明: /mat/issue 總控（狀態/初始化/協調子模組/統一 toast+modal）
- * ✅ 新增：last_import_batch_ids（本次匯入範圍）
  */
 
 (function (global) {
@@ -13,10 +12,7 @@
       withdraw_date: '',
       selected_batch_id: null,
       missing: [],
-      personnel: [],
-
-      // ✅ 本次匯入 batch 範圍（匯入後立即用這個查缺班別）
-      last_import_batch_ids: []
+      personnel: []
     },
 
     els: {},
@@ -28,7 +24,7 @@
       this.els.dates = qs('#miDates');
       this.els.batches = qs('#miBatches');
       this.els.missing = qs('#miMissing');
-      this.els.btnOpenShift = qs('#miBtnOpenShift'); // 可能已移除（沒關係）
+      this.els.btnOpenShift = qs('#miBtnOpenShift');
 
       if (this.els.btnImport) {
         this.els.btnImport.addEventListener('click', function () {
@@ -50,13 +46,16 @@
         this.els.date.value = yyyy + '-' + mm + '-' + dd;
       }
 
+      // state date
       this.state.withdraw_date = (this.els.date && this.els.date.value) ? this.els.date.value : '';
 
+      // submodules init
       if (global.MatIssueDates) MatIssueDates.init(this);
       if (global.MatIssueBatches) MatIssueBatches.init(this);
       if (global.MatIssueShift) MatIssueShift.init(this);
       if (global.MatIssueImport) MatIssueImport.init(this);
 
+      // first load
       this.refreshAll(false);
     },
 
@@ -64,9 +63,7 @@
       this.state.withdraw_date = dateStr || '';
       if (this.els.date) this.els.date.value = this.state.withdraw_date;
 
-      // 切日期時：這不是「本次匯入」了，所以清掉 last_import_batch_ids（避免誤用）
-      this.state.last_import_batch_ids = [];
-
+      // refresh dependent
       if (global.MatIssueBatches) MatIssueBatches.loadBatches();
       if (global.MatIssueShift) MatIssueShift.loadMissing();
     },
@@ -75,8 +72,6 @@
       if (!keepDate && this.els.date) {
         this.state.withdraw_date = this.els.date.value || '';
       }
-
-      // refreshAll 也視為一般刷新，不強制使用本次匯入
       if (global.MatIssueDates) MatIssueDates.loadDates();
       if (global.MatIssueBatches) MatIssueBatches.loadBatches();
       if (global.MatIssueShift) MatIssueShift.loadMissing();

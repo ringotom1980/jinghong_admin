@@ -1,5 +1,14 @@
 /* Path: Public/assets/js/mat_issue_shift.js
- * 說明: 缺 shift 補齊（顯示缺漏 + Modal 下拉選班別人員 + 儲存）
+ * 說明: 缺 shift 補齊（匯入後強制彈出 Modal：逐筆指定、必填才可關閉）
+ *
+ * ✅ 定版：
+ * - 缺 shift 的每個「唯一 material_number」顯示一列：
+ *   material_number / material_name / 下拉選單（A-鄭建昇...）
+ * - 每列必選 shift_code 才能儲存
+ * - 儲存成功：
+ *   1) 更新本次 batch_ids 範圍內、shift 空白的 mat_issue_items.shift
+ *   2) upsert mat_materials(material_number, material_name, shift)
+ * - 儲存後自動關閉 modal
  */
 
 (function (global) {
@@ -12,21 +21,47 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
+  function uniqByMaterial(rows) {
+    var map = {};
+    var out = [];
+    for (var i = 0; i < (rows || []).length; i++) {
+      var r = rows[i] || {};
+      var mn = String(r.material_number || '');
+      if (!mn) continue;
+      if (map[mn]) continue;
+      map[mn] = true;
+      out.push(r);
+    }
+    return out;
+  }
+
   var Mod = {
     app: null,
+    _lastQueryBatchIds: [],
 
     init: function (app) { this.app = app; },
 
-    loadMissing: function () {
+    /**
+     * opts:
+     * - batch_ids: []  （可選；有值就查「本次匯入範圍」）
+     * - autoOpen: true（可選；查完若有缺漏就自動彈窗）
+     */
+    loadMissing: function (opts) {
       if (!global.apiGet) return;
+      opts = opts || {};
 
       var d = (this.app && this.app.state) ? this.app.state.withdraw_date : '';
-      if (!d) {
-        if (this.app) this.app.els.missing.innerHTML = '<div class="mi-note">請先選擇領退日期</div>';
-        return;
+      if (!d) return;
+
+      var batchIds = opts.batch_ids || [];
+      this._lastQueryBatchIds = batchIds;
+
+      var url = '/api/mat/issue_missing_shifts?withdraw_date=' + encodeURIComponent(d);
+      if (batchIds && batchIds.length) {
+        url += '&batch_ids=' + encodeURIComponent(batchIds.join(','));
       }
 
-      apiGet('/api/mat/issue_missing_shifts?withdraw_date=' + encodeURIComponent(d)).then(function (j) {
+      apiGet(url).then(function (j) {
         if (!j || !j.success) {
           if (global.MatIssueApp) MatIssueApp.toast('danger', '載入失敗', j && j.error ? j.error : 'issue_missing_shifts');
           return;
@@ -34,40 +69,27 @@
 
         var missing = (j.data && j.data.missing) ? j.data.missing : [];
         var personnel = (j.data && j.data.personnel) ? j.data.personnel : [];
+
+        // 去重（material_number）
+        missing = uniqByMaterial(missing);
+
         if (Mod.app && Mod.app.state) {
           Mod.app.state.missing = missing;
           Mod.app.state.personnel = personnel;
         }
-        Mod.renderMissing(missing);
+
+        // 匯入後頁面已移除缺漏區塊：這裡不 render 卡片，只在需要時彈窗
+        if (opts.autoOpen && missing.length) {
+          Mod.openShiftModal({
+            batch_ids: batchIds,
+            force: true
+          });
+        }
       });
     },
 
-    renderMissing: function (rows) {
-      var root = this.app && this.app.els ? this.app.els.missing : null;
-      if (!root) return;
-
-      if (!rows || !rows.length) {
-        root.innerHTML = '<div class="mi-note">目前無缺漏（shift 已齊全）</div>';
-        return;
-      }
-
-      var html = '';
-      for (var i = 0; i < rows.length; i++) {
-        var r = rows[i];
-        html += ''
-          + '<div class="mi-miss">'
-          + '  <div class="mi-miss__row">'
-          + '    <div class="mi-miss__title">' + escapeHtml(r.material_number) + '</div>'
-          + '    <div class="mi-miss__title">缺漏 ' + escapeHtml(r.missing_count) + ' 筆</div>'
-          + '  </div>'
-          + '  <div class="mi-miss__sub">' + escapeHtml(r.material_name || '') + '</div>'
-          + '</div>';
-      }
-
-      root.innerHTML = html;
-    },
-
-    openShiftModal: function () {
+    openShiftModal: function (opts) {
+      opts = opts || {};
       var d = (this.app && this.app.state) ? this.app.state.withdraw_date : '';
       if (!d) {
         MatIssueApp.toast('warning', '尚未選日期', '請先選擇領退日期');
@@ -76,85 +98,145 @@
 
       var missing = (this.app && this.app.state) ? (this.app.state.missing || []) : [];
       if (!missing.length) {
-        MatIssueApp.toast('info', '無缺漏', '目前沒有缺 shift 需要補齊');
+        if (!opts.force) MatIssueApp.toast('info', '無缺漏', '目前沒有缺 shift 需要補齊');
         return;
       }
 
       var personnel = (this.app && this.app.state) ? (this.app.state.personnel || []) : [];
+      var batchIds = opts.batch_ids || this._lastQueryBatchIds || (this.app && this.app.state ? this.app.state.last_import_batch_ids : []) || [];
 
-      var opts = '';
+      // options html
+      var optHtml = '<option value="">（請選擇）</option>';
       for (var i = 0; i < personnel.length; i++) {
         var p = personnel[i];
         var label = (p.shift_code || '') + '-' + (p.person_name || '');
-        opts += '<option value="' + escapeHtml(p.shift_code) + '">' + escapeHtml(label) + '</option>';
-      }
-      if (!opts) {
-        opts = '<option value="">（尚未建立 mat_personnel）</option>';
+        optHtml += '<option value="' + escapeHtml(p.shift_code) + '">' + escapeHtml(label) + '</option>';
       }
 
-      var list = '';
+      var rowsHtml = '';
       for (var k = 0; k < missing.length; k++) {
-        var m = missing[k];
-        list += ''
-          + '<div class="mi-modal-item">'
-          + '  <div>'
-          + '    <div class="mi-modal-code">' + escapeHtml(m.material_number) + '</div>'
-          + '    <div class="mi-modal-name">' + escapeHtml(m.material_name || '') + '</div>'
+        var m = missing[k] || {};
+        var mn = String(m.material_number || '');
+        var mname = String(m.material_name || '');
+
+        rowsHtml += ''
+          + '<div class="mi-shift-row" data-mn="' + escapeHtml(mn) + '">'
+          + '  <div class="mi-shift-col mi-shift-col--mn">'
+          + '    <div class="mi-modal-code">' + escapeHtml(mn) + '</div>'
           + '  </div>'
-          + '  <div class="mi-modal-name">缺 ' + escapeHtml(m.missing_count) + '</div>'
+          + '  <div class="mi-shift-col mi-shift-col--name">'
+          + '    <div class="mi-modal-name">' + escapeHtml(mname) + '</div>'
+          + '  </div>'
+          + '  <div class="mi-shift-col mi-shift-col--sel">'
+          + '    <select class="mi-shift-sel">' + optHtml + '</select>'
+          + '  </div>'
           + '</div>';
       }
 
       var html = ''
         + '<div class="mi-modal-grid">'
-        + '  <div class="mi-modal-hint">範圍：' + escapeHtml(d) + '（只回填該日期 shift 仍為空白的明細）</div>'
-        + '  <label class="mi-label">選擇班別承辦人</label>'
-        + '  <select id="miShiftSelect">' + opts + '</select>'
-        + '  <div class="mi-modal-hint">將把下列材料編號的 shift 一次寫入（材料主檔 + 本日明細回填）</div>'
-        + '  <div class="mi-modal-list">' + list + '</div>'
+        + '  <div class="mi-modal-hint">範圍：' + escapeHtml(d) + '（限定本次匯入批次：' + escapeHtml(batchIds.join(',')) + '）</div>'
+        + '  <div class="mi-modal-hint">以下材料缺班別，必須逐筆指定後才能完成。</div>'
+        + '  <div class="mi-shift-head">'
+        + '    <div>材料編號</div><div>材料名稱</div><div>班別承辦人</div>'
+        + '  </div>'
+        + '  <div class="mi-shift-list">' + rowsHtml + '</div>'
         + '</div>';
 
+      // ✅ 使用 Modal.open 的 confirm 按鈕作為「儲存」
+      //    透過 ui_modal.js 的 onConfirm return false → 阻止關閉（直到儲存成功才手動 close）
       Modal.open({
-        title: '缺班別補齊',
+        title: '補齊班別（必填）',
         html: html,
-        confirmText: '確認寫入',
-        onConfirm: function () {
-          var sel = document.getElementById('miShiftSelect');
-          var code = sel ? (sel.value || '') : '';
-          if (!code) {
-            MatIssueApp.toast('warning', '未選班別', '請先選擇班別承辦人');
-            // confirm-only modal 已關閉，所以這裡就直接提示；你若要「未選不關閉」再跟我說，我會改成 custom modal
-            return;
-          }
-          Mod.saveShift(code);
-        },
+        confirmText: '儲存',
         closeOnBackdrop: false,
-        closeOnEsc: false
+        closeOnEsc: false,
+        allowCloseBtn: false,
+        onConfirm: function () {
+          // 驗證 + 儲存（異步）→ 這裡一律 return false，不讓 modal 自己關
+          Mod._saveFromModal(batchIds);
+          return false;
+        }
       });
     },
 
-    saveShift: function (shiftCode) {
+    _saveFromModal: function (batchIds) {
       if (!global.apiPost) return;
 
       var d = (this.app && this.app.state) ? this.app.state.withdraw_date : '';
-      var missing = (this.app && this.app.state) ? (this.app.state.missing || []) : [];
+      if (!d) return;
 
-      var materialNumbers = [];
-      for (var i = 0; i < missing.length; i++) {
-        materialNumbers.push(missing[i].material_number);
+      var root = document.querySelector('.mi-shift-list');
+      if (!root) return;
+
+      var rows = root.querySelectorAll('.mi-shift-row');
+      if (!rows || !rows.length) return;
+
+      var items = [];
+      var ok = true;
+
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var mn = row.getAttribute('data-mn') || '';
+        var sel = row.querySelector('.mi-shift-sel');
+        var code = sel ? (sel.value || '') : '';
+
+        if (!code) {
+          ok = false;
+          // 提示：第一個未選者 focus
+          if (sel) sel.focus();
+          break;
+        }
+
+        // 取 material_name（直接從 DOM 取顯示字串）
+        var nameEl = row.querySelector('.mi-modal-name');
+        var mname = nameEl ? (nameEl.textContent || '') : '';
+
+        items.push({
+          material_number: mn,
+          material_name: mname,
+          shift_code: code
+        });
+      }
+
+      if (!ok) {
+        MatIssueApp.toast('warning', '尚未完成', '每一筆都必須選擇班別承辦人');
+        return;
+      }
+
+      // 去重（以 material_number）
+      var seen = {};
+      var uniq = [];
+      for (var k = 0; k < items.length; k++) {
+        var it = items[k];
+        if (!it.material_number) continue;
+        if (seen[it.material_number]) continue;
+        seen[it.material_number] = true;
+        uniq.push(it);
       }
 
       apiPost('/api/mat/issue_shift_save', {
         withdraw_date: d,
-        shift_code: shiftCode,
-        material_numbers: materialNumbers
+        batch_ids: batchIds || [],
+        items: uniq
       }).then(function (j) {
         if (!j || !j.success) {
           MatIssueApp.toast('danger', '寫入失敗', j && j.error ? j.error : 'issue_shift_save');
           return;
         }
+
         var updated = (j.data && j.data.updated_items) ? j.data.updated_items : 0;
-        MatIssueApp.toast('success', '已補齊', '已回填 ' + String(updated) + ' 筆明細', 2600);
+        var uniqCnt = (j.data && j.data.unique_materials) ? j.data.unique_materials : uniq.length;
+
+        MatIssueApp.toast('success', '已補齊', '已完成 ' + String(uniqCnt) + ' 筆材料設定，回填明細 ' + String(updated) + ' 筆', 2600);
+
+        // ✅ 關閉 modal（此時才關）
+        if (global.Modal && Modal.close) Modal.close();
+
+        // 一般刷新（不再用本次匯入限定）
+        if (Mod.app && Mod.app.state) {
+          Mod.app.state.last_import_batch_ids = [];
+        }
         MatIssueApp.refreshAll(true);
       });
     }

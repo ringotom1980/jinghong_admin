@@ -7,6 +7,8 @@
 
 declare(strict_types=1);
 
+// require_once __DIR__ . '/issue/IssueImportManager.php';
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 final class MatIssueService
@@ -39,6 +41,7 @@ final class MatIssueService
     $pdo = db();
     $pdo->beginTransaction();
     try {
+      // FK cascade will remove items, but we still delete parent explicitly
       $st = $pdo->prepare("DELETE FROM mat_issue_batches WHERE batch_id = ?");
       $st->execute([$batchId]);
 
@@ -55,38 +58,23 @@ final class MatIssueService
     }
   }
 
-  /**
-   * 缺 shift 清單
-   * - 預設：用 withdraw_date 查（保留既有前端行為）
-   * - 若提供 batchIds：只查「本次匯入」範圍
-   */
-  public static function listMissingShifts(string $withdrawDate, array $batchIds = []): array
+  public static function listMissingShifts(string $withdrawDate): array
   {
-    $pdo = db();
-
-    $where = "WHERE withdraw_date = ?
-                AND (shift IS NULL OR shift = '')";
-    $params = [$withdrawDate];
-
-    $batchIds = self::normalize_int_ids($batchIds);
-    if (!empty($batchIds)) {
-      $in = implode(',', array_fill(0, count($batchIds), '?'));
-      $where .= " AND batch_id IN ($in)";
-      $params = array_merge($params, $batchIds);
-    }
-
+    // missing list
     $sql = "SELECT material_number,
                    MAX(material_name) AS material_name,
                    COUNT(*) AS missing_count
             FROM mat_issue_items
-            $where
+            WHERE withdraw_date = ?
+              AND (shift IS NULL OR shift = '')
             GROUP BY material_number
-            ORDER BY material_number ASC";
-    $st = $pdo->prepare($sql);
-    $st->execute($params);
+            ORDER BY missing_count DESC, material_number ASC";
+    $st = db()->prepare($sql);
+    $st->execute([$withdrawDate]);
     $missing = $st->fetchAll();
 
-    $p = $pdo->query("SELECT shift_code, person_name
+    // personnel list
+    $p = db()->query("SELECT shift_code, person_name
                       FROM mat_personnel
                       ORDER BY shift_code ASC")->fetchAll();
 
@@ -96,96 +84,62 @@ final class MatIssueService
     ];
   }
 
-  /**
-   * 依「本次匯入範圍」補齊 shift（逐筆指定）
-   *
-   * items: [
-   *   ['material_number'=>..., 'material_name'=>..., 'shift_code'=>...],
-   *   ...
-   * ]
-   *
-   * 行為（你定版的 5 點）：
-   * - 對每個唯一 material_number（去重後）：
-   *   1) 更新 mat_issue_items.shift：僅限本次 batch_ids 範圍內、同 material_number 且 shift 空白
-   *   2) upsert mat_materials：material_number/material_name/shift（shift=shift_code）
-   */
-  public static function saveShift(string $withdrawDate, array $items, array $batchIds): array
+  public static function saveShift(string $withdrawDate, string $shiftCode, array $materialNumbers): array
   {
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $withdrawDate)) {
-      throw new InvalidArgumentException('withdraw_date 格式不正確（YYYY-MM-DD）');
+    $shiftCode = strtoupper(trim($shiftCode));
+    if ($shiftCode === '' || strlen($shiftCode) !== 1) {
+      throw new InvalidArgumentException('shift_code 不正確');
     }
-
-    $batchIds = self::normalize_int_ids($batchIds);
-    if (empty($batchIds)) {
-      throw new InvalidArgumentException('batch_ids 不可為空（需限定本次匯入範圍）');
-    }
-
-    if (!is_array($items) || empty($items)) {
-      throw new InvalidArgumentException('items 不可為空');
-    }
-
-    // 去重：material_number 為 key（同材編只留第一筆）
-    $uniq = [];
-    foreach ($items as $it) {
-      $mn = trim((string)($it['material_number'] ?? ''));
-      if ($mn === '') continue;
-      if (isset($uniq[$mn])) continue;
-
-      $code = strtoupper(trim((string)($it['shift_code'] ?? '')));
-      if ($code === '' || strlen($code) !== 1) {
-        throw new InvalidArgumentException('shift_code 不正確');
-      }
-
-      $mname = (string)($it['material_name'] ?? '');
-      $uniq[$mn] = ['material_number' => $mn, 'material_name' => $mname, 'shift_code' => $code];
-    }
-    if (empty($uniq)) {
-      throw new InvalidArgumentException('items 不可為空');
+    if (empty($materialNumbers)) {
+      throw new InvalidArgumentException('material_numbers 不可為空');
     }
 
     $pdo = db();
     $pdo->beginTransaction();
     try {
-      // upsert mat_materials（依你定版：material_number 唯一，直接 upsert）
+      // 1) upsert mat_materials.shift = shiftCode
+      //    若材料不存在 mat_materials，則建立一筆（只填 material_number, shift, material_location=''）
       $upsert = $pdo->prepare(
-        "INSERT INTO mat_materials (material_number, material_name, shift, material_location)
-         VALUES (?, ?, ?, '')
-         ON DUPLICATE KEY UPDATE
-           material_name = VALUES(material_name),
-           shift = VALUES(shift)"
+        "INSERT INTO mat_materials (material_number, shift, material_location)
+         VALUES (?, ?, '')
+         ON DUPLICATE KEY UPDATE shift = VALUES(shift)"
       );
 
-      // 更新 mat_issue_items（限定本次 batch_ids + shift 空白 + 同材編）
-      $batchIn = implode(',', array_fill(0, count($batchIds), '?'));
-
-      $upd = $pdo->prepare(
-        "UPDATE mat_issue_items
-         SET shift = ?
-         WHERE withdraw_date = ?
-           AND batch_id IN ($batchIn)
-           AND (shift IS NULL OR shift = '')
-           AND material_number = ?"
-      );
-
-      $updatedItems = 0;
-
-      foreach ($uniq as $mn => $row) {
-        $shiftCode = $row['shift_code'];
-        $mname = $row['material_name'];
-
-        // 1) 主檔 upsert
-        $upsert->execute([$mn, $mname, $shiftCode]);
-
-        // 2) 明細回填（本次 batch 範圍）
-        $params = array_merge([$shiftCode, $withdrawDate], $batchIds, [$mn]);
-        $upd->execute($params);
-        $updatedItems += (int)$upd->rowCount();
+      foreach ($materialNumbers as $mn) {
+        $mn = trim((string)$mn);
+        if ($mn === '') continue;
+        $upsert->execute([$mn, $shiftCode]);
       }
 
+      // 2) 回填 mat_issue_items.shift（僅限本 withdraw_date 且 shift 空白的同 material_number）
+      // build IN (...)
+      $clean = [];
+      foreach ($materialNumbers as $mn) {
+        $mn = trim((string)$mn);
+        if ($mn !== '') $clean[] = $mn;
+      }
+      if (empty($clean)) {
+        $pdo->rollBack();
+        throw new InvalidArgumentException('material_numbers 不可為空');
+      }
+
+      $in = implode(',', array_fill(0, count($clean), '?'));
+      $params = array_merge([$shiftCode, $withdrawDate], $clean);
+
+      $sql = "UPDATE mat_issue_items
+              SET shift = ?
+              WHERE withdraw_date = ?
+                AND (shift IS NULL OR shift = '')
+                AND material_number IN ($in)";
+      $st = $pdo->prepare($sql);
+      $st->execute($params);
+      $updatedItems = $st->rowCount();
+
       $pdo->commit();
+
       return [
         'updated_items' => $updatedItems,
-        'unique_materials' => count($uniq)
+        'shift_code' => $shiftCode
       ];
     } catch (Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
@@ -196,9 +150,9 @@ final class MatIssueService
   /**
    * 匯入多檔
    * - 建 batch
+   * - 解析第一張 sheet
    * - 寫 items
    * - shift 比對：存在 mat_materials.shift → 帶入；否則 shift=''
-   * ✅ 回傳：batch_ids（本次匯入建立的批次清單）
    */
   public static function importFiles(string $withdrawDate, array $files, ?int $uploadedBy): array
   {
@@ -217,13 +171,13 @@ final class MatIssueService
     $sumErrors = 0;
 
     $hasMissing = false;
-    $batchIds = [];
 
     try {
       require_once __DIR__ . '/issue/IssueImportManager.php';
       $manager = new IssueImportManager();
 
       foreach ($files as $f) {
+        // normalize one file structure from $_FILES
         $tmp = $f['tmp_name'] ?? '';
         $name = $f['name'] ?? '';
         $err  = $f['error'] ?? UPLOAD_ERR_NO_FILE;
@@ -237,17 +191,18 @@ final class MatIssueService
         $fileType = strtoupper(substr($originalFilename, 0, 1));
         if ($fileType === '' || strlen($fileType) !== 1) $fileType = 'T';
 
-        // 同日+同檔名：重新匯入 → 刪舊批次
+        // ✅ 同日+同檔名：視為「重新匯入」→ 先刪舊批次（items 會因 FK cascade 一起刪）
         $dupSt = $pdo->prepare(
           "SELECT batch_id
-             FROM mat_issue_batches
-            WHERE withdraw_date = ?
-              AND original_filename = ?"
+   FROM mat_issue_batches
+   WHERE withdraw_date = ?
+     AND original_filename = ?"
         );
         $dupSt->execute([$withdrawDate, $originalFilename]);
         $dupRows = $dupSt->fetchAll();
 
         if (!empty($dupRows)) {
+          // 刪掉全部同名舊批次（避免同名多批造成髒資料）
           $del = $pdo->prepare("DELETE FROM mat_issue_batches WHERE batch_id = ?");
           foreach ($dupRows as $dr) {
             $oldBatchId = (int)($dr['batch_id'] ?? 0);
@@ -262,7 +217,6 @@ final class MatIssueService
         );
         $st->execute([$withdrawDate, $originalFilename, $fileType, $uploadedBy]);
         $batchId = (int)$pdo->lastInsertId();
-        $batchIds[] = $batchId;
 
         // parse
         $parser = $manager->getParser($fileType);
@@ -272,6 +226,7 @@ final class MatIssueService
 
         $rows = $parser->parse($sheet);
 
+        // write items
         $ins = $pdo->prepare(
           "INSERT INTO mat_issue_items
            (batch_id, withdraw_date, voucher, material_number, material_name,
@@ -281,6 +236,7 @@ final class MatIssueService
         );
 
         foreach ($rows as $r) {
+          // required
           $voucher = (string)($r['voucher'] ?? '');
           $mn = (string)($r['material_number'] ?? '');
           $mname = (string)($r['material_name'] ?? '');
@@ -290,6 +246,7 @@ final class MatIssueService
             continue;
           }
 
+          // shift lookup
           $shift = self::lookupShiftByMaterial($mn);
           if ($shift === null || $shift === '') {
             $shift = '';
@@ -323,8 +280,7 @@ final class MatIssueService
           'skipped'  => $sumSkipped,
           'errors'   => $sumErrors,
         ],
-        'has_missing_shift' => $hasMissing,
-        'batch_ids' => $batchIds
+        'has_missing_shift' => $hasMissing
       ];
     } catch (Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
@@ -341,19 +297,5 @@ final class MatIssueService
     $v = $row['shift'];
     if ($v === null) return null;
     return (string)$v;
-  }
-
-  /** @return array<int,int> */
-  private static function normalize_int_ids($ids): array
-  {
-    if (!is_array($ids)) return [];
-    $out = [];
-    foreach ($ids as $v) {
-      $n = (int)$v;
-      if ($n > 0) $out[] = $n;
-    }
-    // unique
-    $out = array_values(array_unique($out));
-    return $out;
   }
 }

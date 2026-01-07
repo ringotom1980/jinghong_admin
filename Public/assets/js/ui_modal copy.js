@@ -1,7 +1,6 @@
 /* Path: Public/assets/js/ui_modal.js
  * 說明: Modal 行為（open/close/confirm）
  * 定版：confirm modal 必須點「確認」才可關閉（不點背景、不 auto close、不 ESC）
- * ✅ 修正：onConfirm() 若回傳 false → 不關閉（用於「必填才可關閉」的情境）
  */
 (function (global) {
   'use strict';
@@ -61,23 +60,10 @@
       var confirmBtn = panel.querySelector('.modal__confirm');
       if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
-          var shouldClose = true;
           if (onConfirm) {
-            try {
-              // ✅ 若 onConfirm 明確回傳 false → 不關閉
-              var r = onConfirm();
-              if (r === false) shouldClose = false;
-            } catch (e) {}
+            try { onConfirm(); } catch (e) {}
           }
-          if (shouldClose) Modal.close();
-        });
-      }
-
-      var closeBtn = panel.querySelector('.modal__close');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', function () {
-          // confirm-only：預設不允許用 X 關閉；但若你未來要放行，可在 opts.allowCloseBtn 開
-          if (opts.allowCloseBtn) Modal.close();
+          Modal.close();
         });
       }
 

@@ -4,7 +4,6 @@
  * 說明: 匯入（多檔、withdraw_date）
  * - 建 batch + 寫 items
  * - shift：有主檔就帶入，沒有就空白（缺漏由前端人工補齊）
- * ✅ 回傳 batch_ids（本次匯入批次清單）
  */
 
 declare(strict_types=1);
@@ -40,6 +39,7 @@ try {
 function normalize_files_array(array $f): array
 {
   $out = [];
+  // multi
   if (is_array($f['name'] ?? null)) {
     $n = count($f['name']);
     for ($i = 0; $i < $n; $i++) {
@@ -54,6 +54,7 @@ function normalize_files_array(array $f): array
     return $out;
   }
 
+  // single
   $out[] = $f;
   return $out;
 }

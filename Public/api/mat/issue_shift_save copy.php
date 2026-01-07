@@ -1,16 +1,7 @@
 <?php
 /**
  * Path: Public/api/mat/issue_shift_save.php
- * 說明: 人工補齊 shift（逐筆指定）
- * Body:
- * {
- *   withdraw_date: "YYYY-MM-DD",
- *   batch_ids: [1,2,3],
- *   items: [
- *     { material_number, material_name, shift_code },
- *     ...
- *   ]
- * }
+ * 說明: 人工補齊 shift（寫入 mat_materials.shift + 回填 mat_issue_items.shift）
  */
 
 declare(strict_types=1);
@@ -24,21 +15,21 @@ $raw = file_get_contents('php://input');
 $body = json_decode((string)$raw, true);
 
 $withdrawDate = trim((string)($body['withdraw_date'] ?? ''));
-$batchIds = $body['batch_ids'] ?? [];
-$items = $body['items'] ?? [];
+$shiftCode = trim((string)($body['shift_code'] ?? ''));
+$materialNumbers = $body['material_numbers'] ?? [];
 
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $withdrawDate)) {
   json_error('withdraw_date 格式不正確（YYYY-MM-DD）', 400);
 }
-if (!is_array($batchIds) || empty($batchIds)) {
-  json_error('batch_ids 不可為空（需限定本次匯入範圍）', 400);
+if ($shiftCode === '') {
+  json_error('shift_code 不可為空', 400);
 }
-if (!is_array($items) || empty($items)) {
-  json_error('items 不可為空', 400);
+if (!is_array($materialNumbers) || empty($materialNumbers)) {
+  json_error('material_numbers 不可為空', 400);
 }
 
 try {
-  $data = MatIssueService::saveShift($withdrawDate, $items, $batchIds);
+  $data = MatIssueService::saveShift($withdrawDate, $shiftCode, $materialNumbers);
   json_ok($data);
 } catch (Throwable $e) {
   json_error($e->getMessage(), 500);

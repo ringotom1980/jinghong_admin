@@ -1,9 +1,7 @@
 /* Path: Public/assets/js/mat_issue_import.js
  * 說明: 匯入（多檔上傳 + 顯示結果）
- * ✅ 匯入完成後：
- * - 保留 summary toast
- * - 取得 batch_ids 存到 App.state.last_import_batch_ids
- * - 若 has_missing_shift → 立刻以 batch_ids 範圍查缺漏並自動彈出補班別 modal（必填才可關閉）
+ * - 匯入期間：按鈕加上 is-loading + disabled，避免連點
+ * - 完成/失敗：用 Toast 提示；最後一定解除 loading（finally）
  */
 
 (function (global) {
@@ -29,6 +27,7 @@
         return;
       }
 
+      // lock button + show spinner
       var btn = (this.app && this.app.els) ? this.app.els.btnImport : null;
       if (btn) {
         btn.classList.add('is-loading');
@@ -57,27 +56,18 @@
 
           MatIssueApp.toast('success', '匯入完成', msg, 2600);
 
-          // ✅ 存本次匯入 batch_ids（本次匯入範圍）
-          var batchIds = r.batch_ids || [];
-          if (Mod.app && Mod.app.state) {
-            Mod.app.state.last_import_batch_ids = batchIds;
+          // 若有缺 shift，提示（缺漏清單會由 refreshAll 載入）
+          if (r.has_missing_shift) {
+            MatIssueApp.toast('warning', '需要補齊班別', '有缺 shift 的材料編號，請點「補齊班別」', 3200);
           }
 
-          // 更新日期/批次 UI（保留原本功能）
           MatIssueApp.refreshAll(true);
-
-          // ✅ 若有缺 shift → 以「本次匯入 batch 範圍」查缺漏，並自動彈窗要求補齊
-          if (r.has_missing_shift && global.MatIssueShift && MatIssueShift.loadMissing) {
-            MatIssueShift.loadMissing({
-              batch_ids: batchIds,
-              autoOpen: true
-            });
-          }
         })
         .catch(function (err) {
           MatIssueApp.toast('danger', '匯入失敗', (err && err.message) ? err.message : 'network_error');
         })
         .finally(function () {
+          // unlock button + hide spinner
           if (btn) {
             btn.classList.remove('is-loading');
             btn.disabled = false;
