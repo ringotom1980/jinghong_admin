@@ -9,12 +9,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
 
+require_once __DIR__ . '/../../../app/services/MatIssueService.php';
+
 $withdrawDate = (string)($_GET['withdraw_date'] ?? '');
-$batchIds = $_GET['batch_ids'] ?? [];
+$withdrawDate = trim($withdrawDate);
 
-$data = MatIssueService::listMissingShifts(
-  $withdrawDate,
-  array_map('intval', $batchIds)
-);
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $withdrawDate)) {
+  json_error('withdraw_date 格式不正確（YYYY-MM-DD）', 400);
+}
 
-json_ok($data);
+try {
+  $data = MatIssueService::listMissingShifts($withdrawDate);
+  json_ok($data);
+} catch (Throwable $e) {
+  json_error($e->getMessage(), 500);
+}
