@@ -1,6 +1,8 @@
 /* Path: Public/assets/js/mat_issue_dates.js
  * 說明: 日期膠囊（withdraw_date 列表）
- * ✅ 追加：依月份分組顯示（只增加小標題，不破壞原本膠囊樣式）
+ * ✅ 追加：
+ * - 依月份分組顯示（只增加小標題，不破壞原本膠囊樣式）
+ * - 只顯示最近 3 個月份
  */
 
 (function (global) {
@@ -58,6 +60,9 @@
         return;
       }
 
+      // ✅ 只顯示最近 N 個月份
+      var MAX_MONTHS = 3;
+
       // ✅ 分組：YYYY-MM -> dates[]
       var groups = {};
       var order = []; // keep month order as they appear (dates are usually DESC already)
@@ -72,9 +77,12 @@
         groups[mk].push(d);
       }
 
+      // ✅ 只取前 3 個月份（通常 dates 是 DESC，所以 order[0] 是最新月份）
+      var monthsToShow = order.slice(0, MAX_MONTHS);
+
       var html = '';
-      for (var oi = 0; oi < order.length; oi++) {
-        var monthKey = order[oi];
+      for (var oi = 0; oi < monthsToShow.length; oi++) {
+        var monthKey = monthsToShow[oi];
         var monthTitle = formatMonthTitle(monthKey);
 
         html += ''
@@ -96,13 +104,12 @@
 
       root.innerHTML = html;
 
-      // bind click
+      // bind click（重新 render 時仍維持原 dates 分組，但仍只顯示最近 3 個月份）
       var pills = root.querySelectorAll('.mi-pill');
       for (var k = 0; k < pills.length; k++) {
         pills[k].addEventListener('click', function () {
           var d = this.getAttribute('data-date') || '';
           if (global.MatIssueApp) MatIssueApp.setWithdrawDate(d);
-          // highlight（用原 dates 重新 render，保留分組）
           Mod.render(dates);
         });
       }
