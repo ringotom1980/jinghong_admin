@@ -2,7 +2,8 @@
  * 說明: 日期膠囊（withdraw_date 列表）
  * ✅ 追加：
  * - 依月份分組顯示（只增加小標題，不破壞原本膠囊樣式）
- * - 只顯示最近 3 個月份
+ * - 預設只顯示最近 3 個月份
+ * - 超過 3 個月份 → 顯示「更多 / 收合」
  */
 
 (function (global) {
@@ -12,7 +13,9 @@
     s = (s === null || s === undefined) ? '' : String(s);
     return s
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
   }
 
   function getMonthKey(dateStr) {
@@ -32,6 +35,9 @@
 
   var Mod = {
     app: null,
+
+    // ✅ UI state: 是否展開所有月份
+    _showAllMonths: false,
 
     init: function (app) {
       this.app = app;
@@ -60,12 +66,11 @@
         return;
       }
 
-      // ✅ 只顯示最近 N 個月份
       var MAX_MONTHS = 3;
 
-      // ✅ 分組：YYYY-MM -> dates[]
+      // 分組：YYYY-MM -> dates[]
       var groups = {};
-      var order = []; // keep month order as they appear (dates are usually DESC already)
+      var order = []; // months order as they appear (dates are usually DESC already)
       for (var i = 0; i < dates.length; i++) {
         var d = String(dates[i] || '');
         if (!d) continue;
@@ -77,10 +82,11 @@
         groups[mk].push(d);
       }
 
-      // ✅ 只取前 3 個月份（通常 dates 是 DESC，所以 order[0] 是最新月份）
-      var monthsToShow = order.slice(0, MAX_MONTHS);
+      var hasMore = order.length > MAX_MONTHS;
+      var monthsToShow = Mod._showAllMonths ? order : order.slice(0, MAX_MONTHS);
 
       var html = '';
+
       for (var oi = 0; oi < monthsToShow.length; oi++) {
         var monthKey = monthsToShow[oi];
         var monthTitle = formatMonthTitle(monthKey);
@@ -102,14 +108,35 @@
           + '</div>';
       }
 
+      // ✅ 更多 / 收合
+      if (hasMore) {
+        html += ''
+          + '<div class="mi-month mi-month--more">'
+          + '  <div class="mi-month__pills">'
+          + '    <div class="mi-pill mi-pill--more" data-act="toggle-more">'
+          + escapeHtml(Mod._showAllMonths ? '收合' : '更多')
+          + '    </div>'
+          + '  </div>'
+          + '</div>';
+      }
+
       root.innerHTML = html;
 
-      // bind click（重新 render 時仍維持原 dates 分組，但仍只顯示最近 3 個月份）
-      var pills = root.querySelectorAll('.mi-pill');
+      // bind date pills
+      var pills = root.querySelectorAll('.mi-pill[data-date]');
       for (var k = 0; k < pills.length; k++) {
         pills[k].addEventListener('click', function () {
           var d = this.getAttribute('data-date') || '';
           if (global.MatIssueApp) MatIssueApp.setWithdrawDate(d);
+          Mod.render(dates);
+        });
+      }
+
+      // bind more toggle
+      var moreBtn = root.querySelector('.mi-pill[data-act="toggle-more"]');
+      if (moreBtn) {
+        moreBtn.addEventListener('click', function () {
+          Mod._showAllMonths = !Mod._showAllMonths;
           Mod.render(dates);
         });
       }
