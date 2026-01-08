@@ -342,3 +342,23 @@
   transform: translateY(0);
   filter: brightness(0.98);
 }
+
+/* ===== mi dates: month grouping (only add subtitles) ===== */
+.mi-month {
+  display: grid;
+  gap: 8px;
+}
+
+.mi-month__title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: rgba(15, 23, 42, 0.55);
+  padding-left: 2px;
+}
+
+.mi-month__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
