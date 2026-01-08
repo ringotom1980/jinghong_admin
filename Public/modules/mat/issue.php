@@ -89,7 +89,7 @@ $pageJs = [
 
               <div class="mi-head-actions">
                 <button class="btn btn--danger" type="button" id="miBtnDeleteAll" disabled>
-                  刪除全部單號
+                  刪除全部
                 </button>
               </div>
             </div>
