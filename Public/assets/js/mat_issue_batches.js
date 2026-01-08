@@ -88,7 +88,8 @@
       var vFirst = box ? (box.getAttribute('data-voucher-first') || '') : '';
       var vCnt = box ? parseInt(box.getAttribute('data-voucher-cnt') || '0', 10) : 0;
 
-      var label = '批次 #' + String(batchId);
+      // ✅ 顯示用 label：以 voucher 為主；拿不到 voucher 才退回「整批資料」
+      var label = '整批資料';
       if (vFirst) {
         label = (vCnt && vCnt > 1) ? (vFirst + ' 等 ' + vCnt + ' 單') : vFirst;
       }
@@ -106,7 +107,8 @@
                 MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete');
                 return;
               }
-              MatIssueApp.toast('success', '已刪除', '批次 #' + String(batchId) + ' 已刪除', 2600);
+              // ✅ 成功訊息也改成單號導向
+              MatIssueApp.toast('success', '已刪除', (label + ' 已刪除'), 2600);
               MatIssueApp.refreshAll(true);
             });
           },
@@ -125,18 +127,19 @@
         return;
       }
 
-      // fallback：若 confirmChoice 不存在，退回原本 confirm-only（你原本的定版行為）
+      // fallback：若 confirmChoice 不存在，退回原本 confirm-only（confirm-only 依然只能按確認）
       MatIssueApp.confirm(title, msg, function () {
         apiPost('/api/mat/issue_delete', { batch_id: batchId }).then(function (j) {
           if (!j || !j.success) {
             MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete');
             return;
           }
-          MatIssueApp.toast('success', '已刪除', '批次 #' + String(batchId) + ' 已刪除', 2600);
+          MatIssueApp.toast('success', '已刪除', (label + ' 已刪除'), 2600);
           MatIssueApp.refreshAll(true);
         });
       });
     }
+
   };
 
   global.MatIssueBatches = Mod;
