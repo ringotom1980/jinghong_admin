@@ -41,7 +41,7 @@
       if (!root) return;
 
       if (!rows || !rows.length) {
-        root.innerHTML = '<div class="mi-note">此日期尚無批次</div>';
+        root.innerHTML = '<div class="mi-note">此日期尚無資料</div>';
         return;
       }
 

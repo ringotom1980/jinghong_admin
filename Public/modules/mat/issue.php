@@ -84,7 +84,7 @@ $pageJs = [
         <!-- 批次/檔名 -->
         <div class="card mi-card mi-card--wide">
           <div class="card__head">
-            <h2>批次／檔名清單</h2>
+            <h2 id="miIssueListTitle">日期-領退清單</h2>
           </div>
           <div class="card__body">
             <div class="mi-batches" id="miBatches"></div>
