@@ -24,11 +24,26 @@ final class MatIssueService
 
   public static function listBatchesByDate(string $withdrawDate): array
   {
-    $sql = "SELECT b.batch_id, b.withdraw_date, b.original_filename, b.file_type, b.uploaded_at,
-                   (SELECT COUNT(*) FROM mat_issue_items i WHERE i.batch_id = b.batch_id) AS items_count
-            FROM mat_issue_batches b
-            WHERE b.withdraw_date = ?
-            ORDER BY b.batch_id DESC";
+    $sql = "SELECT
+          b.batch_id,
+          b.withdraw_date,
+          b.original_filename,
+          b.file_type,
+          b.uploaded_at,
+          (SELECT COUNT(*) FROM mat_issue_items i WHERE i.batch_id = b.batch_id) AS items_count,
+
+          /* 取一個代表 voucher（通常同批會一致；若不一致也至少能顯示其中一筆） */
+          (SELECT MIN(NULLIF(TRIM(i2.voucher), ''))
+             FROM mat_issue_items i2
+            WHERE i2.batch_id = b.batch_id) AS voucher_first,
+
+          /* voucher 去重後的數量（用來決定要不要顯示「等 N 單」） */
+          (SELECT COUNT(DISTINCT NULLIF(TRIM(i3.voucher), ''))
+             FROM mat_issue_items i3
+            WHERE i3.batch_id = b.batch_id) AS voucher_cnt
+        FROM mat_issue_batches b
+        WHERE b.withdraw_date = ?
+        ORDER BY b.batch_id DESC";
     $st = db()->prepare($sql);
     $st->execute([$withdrawDate]);
     return ['batches' => $st->fetchAll()];

@@ -49,7 +49,10 @@
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i];
         html += ''
-          + '<div class="mi-batch" data-batch-id="' + escapeHtml(r.batch_id) + '">'
+          + '<div class="mi-batch"'
+          + ' data-batch-id="' + escapeHtml(r.batch_id) + '"'
+          + ' data-voucher-first="' + escapeHtml(r.voucher_first || '') + '"'
+          + ' data-voucher-cnt="' + escapeHtml(r.voucher_cnt || 0) + '">'
           + '  <div>'
           + '    <div class="mi-batch__name">' + escapeHtml(r.original_filename) + '</div>'
           + '    <div class="mi-batch__meta">'
@@ -72,17 +75,25 @@
           var box = this.closest('.mi-batch');
           if (!box) return;
           var batchId = box.getAttribute('data-batch-id');
-          Mod.deleteBatch(batchId);
+          Mod.deleteBatch(batchId, box);
         });
       }
     },
 
-    deleteBatch: function (batchId) {
+    deleteBatch: function (batchId, box) {
       if (!batchId) return;
       if (!global.apiPost) return;
 
       var title = '確認刪除';
-      var msg = '確定要刪除整批？（批次 #' + String(batchId) + '）';
+      var vFirst = box ? (box.getAttribute('data-voucher-first') || '') : '';
+      var vCnt = box ? parseInt(box.getAttribute('data-voucher-cnt') || '0', 10) : 0;
+
+      var label = '批次 #' + String(batchId);
+      if (vFirst) {
+        label = (vCnt && vCnt > 1) ? (vFirst + ' 等 ' + vCnt + ' 單') : vFirst;
+      }
+
+      var msg = '確定要刪除此單號？（' + label + '）';
 
       // ✅ 優先使用可取消的 confirmChoice（一般刪除）
       if (global.Modal && Modal.confirmChoice) {
