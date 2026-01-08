@@ -2,86 +2,92 @@
  * 說明: /mat/issue 本頁樣式（共用外觀靠 app/nav/motion/ui_*）
  */
 
-.mat-issue .mi-grid{
+.mat-issue .mi-grid {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(12, 1fr);
 }
 
-.mi-card{ grid-column: span 6; }
-.mi-card--wide{ grid-column: span 12; }
-
-@media (max-width: 980px){
-  .mi-card{ grid-column: span 12; }
+.mi-card {
+  grid-column: span 6;
+}
+.mi-card--wide {
+  grid-column: span 12;
 }
 
-.mi-form{
+@media (max-width: 980px) {
+  .mi-card {
+    grid-column: span 12;
+  }
+}
+
+.mi-form {
   display: grid;
   gap: 10px;
 }
 
 /* 匯入表單：日期 + 檔案並排 */
-.mi-row{
+.mi-row {
   display: grid;
   gap: 12px;
 }
 
-.mi-row--2{
+.mi-row--2 {
   grid-template-columns: 260px 1fr; /* 左短右長：日期固定寬度、檔案吃滿 */
   align-items: end;
 }
 
-.mi-field{
+.mi-field {
   display: grid;
   gap: 8px;
 }
 
 /* 小螢幕自動改回直排 */
-@media (max-width: 640px){
-  .mi-row--2{
+@media (max-width: 640px) {
+  .mi-row--2 {
     grid-template-columns: 1fr;
   }
 }
 
-.mi-label{
+.mi-label {
   font-size: 14px;
   font-weight: 850;
-  color: rgba(15,23,42,.78);
+  color: rgba(15, 23, 42, 0.78);
 }
 
-.mi-actions{
+.mi-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
 
-.mi-note{
+.mi-note {
   margin-top: 6px;
   font-size: 13px;
-  color: rgba(15,23,42,.60);
+  color: rgba(15, 23, 42, 0.6);
   line-height: 1.6;
 }
 
-.mi-result{
+.mi-result {
   margin-top: 6px;
   font-size: 14px;
-  color: rgba(15,23,42,.74);
-  background: rgba(255,255,255,.6);
-  border: 1px dashed rgba(15,23,42,.12);
+  color: rgba(15, 23, 42, 0.74);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px dashed rgba(15, 23, 42, 0.12);
   border-radius: 14px;
   padding: 10px 12px;
   min-height: 42px;
   line-height: 1.55;
 }
 
-.mi-dates{
+.mi-dates {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.mi-pill{
+.mi-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -89,198 +95,250 @@
   border-radius: 999px;
   cursor: pointer;
   user-select: none;
-  border: 1px solid rgba(15,23,42,.12);
-  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.68);
   font-size: 14px;
   font-weight: 850;
-  color: rgba(15,23,42,.80);
-  transition: transform 140ms ease, background 160ms ease, border-color 160ms ease;
+  color: rgba(15, 23, 42, 0.8);
+  transition: transform 140ms ease, background 160ms ease,
+    border-color 160ms ease;
 }
 
-.mi-pill:hover{
+.mi-pill:hover {
   transform: translateY(-1px);
-  background: rgba(255,255,255,.9);
-  border-color: rgba(37,99,235,.22);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(37, 99, 235, 0.22);
 }
-.mi-pill.is-active{
-  background: rgba(37,99,235,.10);
-  border-color: rgba(37,99,235,.28);
-  color: rgba(15,23,42,.92);
+.mi-pill.is-active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.28);
+  color: rgba(15, 23, 42, 0.92);
 }
 
-.mi-batches{
+.mi-batches {
   display: grid;
   gap: 10px;
 }
 
-.mi-batch{
+.mi-batch {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
   padding: 12px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(15,23,42,.10);
-  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
 }
-.mi-batch__name{
+.mi-batch__name {
   font-weight: 900;
-  color: rgba(15,23,42,.90);
+  color: rgba(15, 23, 42, 0.9);
 }
-.mi-batch__meta{
+.mi-batch__meta {
   margin-top: 4px;
   font-size: 13px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
-.mi-batch__actions{
+.mi-batch__actions {
   display: flex;
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
 }
 
-.mi-head-row{
+.mi-head-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
-.mi-head-actions{
+.mi-head-actions {
   display: flex;
   gap: 10px;
 }
 
-.mi-missing{
+.mi-missing {
   display: grid;
   gap: 10px;
 }
 
-.mi-miss{
+.mi-miss {
   padding: 12px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(15,23,42,.10);
-  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
 }
-.mi-miss__row{
+.mi-miss__row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
 }
-.mi-miss__title{
+.mi-miss__title {
   font-weight: 900;
-  color: rgba(15,23,42,.90);
+  color: rgba(15, 23, 42, 0.9);
 }
-.mi-miss__sub{
+.mi-miss__sub {
   margin-top: 4px;
   font-size: 13px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
   line-height: 1.55;
 }
 
 /* modal inner form */
-.mi-modal-grid{
+.mi-modal-grid {
   display: grid;
   gap: 10px;
 }
-.mi-modal-hint{
+.mi-modal-hint {
   font-size: 12px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
 }
-.mi-modal-list{
+.mi-modal-list {
   max-height: 240px;
   overflow: auto;
-  border: 1px solid rgba(15,23,42,.10);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 14px;
-  background: rgba(255,255,255,.65);
+  background: rgba(255, 255, 255, 0.65);
   padding: 10px;
 }
-.mi-modal-item{
+.mi-modal-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 8px 6px;
-  border-bottom: 1px solid rgba(15,23,42,.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
-.mi-modal-item:last-child{ border-bottom: 0; }
-.mi-modal-code{
+.mi-modal-item:last-child {
+  border-bottom: 0;
+}
+.mi-modal-code {
   font-weight: 900;
-  color: rgba(15,23,42,.86);
+  color: rgba(15, 23, 42, 0.86);
 }
-.mi-modal-name{
+.mi-modal-name {
   font-size: 13px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
 }
 
 /* ===== mat/issue layout override ===== */
 /* 目的：不要置中縮在中間；讓內容吃滿「主內容區」寬度，左右留一點安全邊 */
 
-.mat-issue .content{
-  max-width: none;          /* ✅ 取消 1480 限制 */
-  width: 100%;              /* ✅ 吃滿可用寬度 */
-  margin-left: 0;           /* ✅ 取消置中 */
-  margin-right: 0;          /* ✅ 取消置中 */
-  padding-left: 16px;       /* ✅ 保留邊界，不要貼死 */
+.mat-issue .content {
+  max-width: none; /* ✅ 取消 1480 限制 */
+  width: 100%; /* ✅ 吃滿可用寬度 */
+  margin-left: 0; /* ✅ 取消置中 */
+  margin-right: 0; /* ✅ 取消置中 */
+  padding-left: 16px; /* ✅ 保留邊界，不要貼死 */
   padding-right: 16px;
 }
 
 /* 小螢幕再稍微縮一點（可選） */
-@media (max-width: 1200px){
-  .mat-issue .content{
+@media (max-width: 1200px) {
+  .mat-issue .content {
     padding-left: 10px;
     padding-right: 10px;
   }
 }
 
-/* ===== mat/issue only: date + file polish (美化日期選單及檔案上傳)===== */
-.mat-issue .mi-form{
-  /* 你已經並排了，這裡只補間距更舒服 */
+/* ===== mat/issue only: date + file + import button polish ===== */
+
+/* 表單排版間距（你原本的保留） */
+.mat-issue .mi-form {
   column-gap: 14px;
   row-gap: 10px;
 }
 
 /* date input */
-.mat-issue #miWithdrawDate{
+.mat-issue #miWithdrawDate {
   height: 42px;
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 520; /* ✅ 改細：跟按鈕一致 */
   border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.16);
-  background: rgba(255,255,255,.86);
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.86);
   padding: 10px 12px;
 }
-.mat-issue #miWithdrawDate:focus{
-  border-color: rgba(37,99,235,.45);
-  box-shadow: 0 0 0 4px rgba(37,99,235,.14);
-  background: rgba(255,255,255,.96);
+.mat-issue #miWithdrawDate:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+  background: rgba(255, 255, 255, 0.96);
 }
 
-/* file input (Chrome/Edge 支援很好) */
-.mat-issue #miFiles{
+/* file input (input 本體也要一致，不然看起來會怪) */
+.mat-issue #miFiles {
   height: 42px;
   font-size: 15px;
+  font-weight: 520; /* ✅ 一致 */
   border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.16);
-  background: rgba(255,255,255,.86);
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.86);
   padding: 6px 10px;
 }
+.mat-issue #miFiles:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+}
 
-/* 美化「選擇檔案 / 沒有選擇檔案」 */
-.mat-issue #miFiles::file-selector-button{
+/* 匯入按鈕（更像舊站：字細、穩、乾淨） */
+.mat-issue #miBtnImport {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 520;
+  letter-spacing: 0.01em;
+
+  background: linear-gradient(180deg, #33448a 0%, #2f3f7a 100%);
+  border: none;
+  color: #fff;
+
+  box-shadow: 0 6px 14px rgba(47, 63, 122, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+.mat-issue #miBtnImport:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(47, 63, 122, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  filter: brightness(1.02);
+}
+.mat-issue #miBtnImport:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(47, 63, 122, 0.22),
+    inset 0 2px 6px rgba(0, 0, 0, 0.18);
+  filter: brightness(0.98);
+}
+.mat-issue #miBtnImport.is-loading {
+  transform: none;
+  filter: saturate(0.95);
+}
+
+/* 美化「選擇檔案 / 沒有選擇檔案」：字不要粗、視覺要乾淨 */
+.mat-issue #miFiles::file-selector-button {
   height: 30px;
   margin-right: 10px;
   border-radius: 10px;
-  border: 1px solid rgba(15,23,42,.14);
-  background: rgba(15,23,42,.06);
-  color: rgba(15,23,42,.86);
-  font-weight: 850;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: rgba(15, 23, 42, 0.06);
+  color: rgba(15, 23, 42, 0.86);
+  font-weight: 520; /* ✅ 改細：不要 850 */
   cursor: pointer;
   padding: 0 12px;
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+    transform 0.18s ease, filter 0.18s ease;
 }
-.mat-issue #miFiles::file-selector-button:hover{
-  background: rgba(15,23,42,.09);
-  border-color: rgba(15,23,42,.18);
+.mat-issue #miFiles::file-selector-button:hover {
+  background: rgba(15, 23, 42, 0.09);
+  border-color: rgba(15, 23, 42, 0.18);
+  transform: translateY(-0.5px);
+}
+.mat-issue #miFiles::file-selector-button:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
 }
