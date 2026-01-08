@@ -1,7 +1,8 @@
 /* Path: Public/assets/js/ui_modal.js
- * 說明: Modal 行為（open/close/confirm）
+ * 說明: Modal 行為（open/close/confirm/confirmChoice）
  * 定版：confirm modal 必須點「確認」才可關閉（不點背景、不 auto close、不 ESC）
  * ✅ 修正：onConfirm() 若回傳 false → 不關閉（用於「必填才可關閉」的情境）
+ * ✅ 新增：confirmChoice（一般情境：可取消，可用 X / 背景 / ESC 關閉；取消不觸發 onConfirm）
  */
 (function (global) {
   'use strict';
@@ -24,11 +25,14 @@
       var title = opts.title || '';
       var html = opts.html || '';
       var confirmText = opts.confirmText || '確認';
+      var cancelText = (opts.cancelText !== undefined && opts.cancelText !== null) ? String(opts.cancelText) : '';
       var onConfirm = (typeof opts.onConfirm === 'function') ? opts.onConfirm : null;
+      var onCancel = (typeof opts.onCancel === 'function') ? opts.onCancel : null;
 
       // close policy (default: confirm-only)
       var closeOnBackdrop = !!opts.closeOnBackdrop; // default false
       var closeOnEsc = !!opts.closeOnEsc; // default false
+      var allowCloseBtn = !!opts.allowCloseBtn; // default false（confirm-only）
 
       this.close(); // one at a time
 
@@ -47,6 +51,7 @@
         + '</div>'
         + '<div class="modal__body">' + html + '</div>'
         + '<div class="modal__foot">'
+        + (cancelText ? '  <button class="btn btn--ghost modal__cancel" type="button">' + escapeHtml(cancelText) + '</button>' : '')
         + '  <button class="btn btn--primary modal__confirm" type="button">' + escapeHtml(confirmText) + '</button>'
         + '</div>';
 
@@ -73,23 +78,48 @@
         });
       }
 
+      var cancelBtn = panel.querySelector('.modal__cancel');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+          if (onCancel) {
+            try { onCancel(); } catch (e) {}
+          }
+          Modal.close();
+        });
+      }
+
       var closeBtn = panel.querySelector('.modal__close');
       if (closeBtn) {
         closeBtn.addEventListener('click', function () {
-          // confirm-only：預設不允許用 X 關閉；但若你未來要放行，可在 opts.allowCloseBtn 開
-          if (opts.allowCloseBtn) Modal.close();
+          // confirm-only：預設不允許用 X 關閉；一般 confirmChoice 會開 allowCloseBtn
+          if (!allowCloseBtn) return;
+
+          if (onCancel) {
+            try { onCancel(); } catch (e) {}
+          }
+          Modal.close();
         });
       }
 
       if (closeOnBackdrop) {
         bd.addEventListener('click', function (e) {
-          if (e.target === bd) Modal.close();
+          if (e.target === bd) {
+            if (onCancel) {
+              try { onCancel(); } catch (err) {}
+            }
+            Modal.close();
+          }
         });
       }
 
       if (closeOnEsc) {
         bd._escHandler = function (e) {
-          if (e.key === 'Escape') Modal.close();
+          if (e.key === 'Escape') {
+            if (onCancel) {
+              try { onCancel(); } catch (err2) {}
+            }
+            Modal.close();
+          }
         };
         document.addEventListener('keydown', bd._escHandler);
       }
@@ -98,14 +128,39 @@
       return bd;
     },
 
+    // ✅ 原定版：只能按「確認」才可關閉（不點背景、不 ESC、不 X）
+    // 且 onConfirm() 回傳 false → 不關閉
     confirm: function (title, message, onConfirm) {
       return this.open({
         title: title || '確認',
         html: '<p style="margin:0;white-space:pre-wrap;">' + escapeHtml(message || '') + '</p>',
         confirmText: '確認',
         onConfirm: onConfirm || null,
+        cancelText: '',
+
+        allowCloseBtn: false,
         closeOnBackdrop: false,
         closeOnEsc: false
+      });
+    },
+
+    // ✅ 一般確認：可取消（取消鈕 / X / 背景 / ESC 都視為取消，不會觸發 onConfirm）
+    confirmChoice: function (title, message, onConfirm, onCancel, opts) {
+      opts = opts || {};
+      return this.open({
+        title: title || '確認',
+        html: '<p style="margin:0;white-space:pre-wrap;">' + escapeHtml(message || '') + '</p>',
+
+        confirmText: opts.confirmText || '確認',
+        cancelText: (opts.cancelText !== undefined) ? String(opts.cancelText) : '取消',
+
+        onConfirm: onConfirm || null,
+        onCancel: onCancel || null,
+
+        // 預設放行（符合一般刪除/確認）
+        allowCloseBtn: (opts.allowCloseBtn !== undefined) ? !!opts.allowCloseBtn : true,
+        closeOnBackdrop: (opts.closeOnBackdrop !== undefined) ? !!opts.closeOnBackdrop : true,
+        closeOnEsc: (opts.closeOnEsc !== undefined) ? !!opts.closeOnEsc : true
       });
     },
 

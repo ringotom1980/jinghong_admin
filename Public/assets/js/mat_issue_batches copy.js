@@ -8,8 +8,8 @@
   function escapeHtml(s) {
     s = (s === null || s === undefined) ? '' : String(s);
     return s
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
   var Mod = {
@@ -81,41 +81,7 @@
       if (!batchId) return;
       if (!global.apiPost) return;
 
-      var title = '確認刪除';
-      var msg = '確定要刪除整批？（批次 #' + String(batchId) + '）';
-
-      // ✅ 優先使用可取消的 confirmChoice（一般刪除）
-      if (global.Modal && Modal.confirmChoice) {
-        Modal.confirmChoice(
-          title,
-          msg,
-          function () {
-            apiPost('/api/mat/issue_delete', { batch_id: batchId }).then(function (j) {
-              if (!j || !j.success) {
-                MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete');
-                return;
-              }
-              MatIssueApp.toast('success', '已刪除', '批次 #' + String(batchId) + ' 已刪除', 2600);
-              MatIssueApp.refreshAll(true);
-            });
-          },
-          function () {
-            // 取消：不做事（可選提示）
-            // MatIssueApp.toast('info', '已取消', '未刪除任何資料', 1400);
-          },
-          {
-            confirmText: '確認刪除',
-            cancelText: '取消',
-            allowCloseBtn: true,
-            closeOnBackdrop: true,
-            closeOnEsc: true
-          }
-        );
-        return;
-      }
-
-      // fallback：若 confirmChoice 不存在，退回原本 confirm-only（你原本的定版行為）
-      MatIssueApp.confirm(title, msg, function () {
+      MatIssueApp.confirm('確認刪除', '確定要刪除整批？（批次 #' + String(batchId) + '）', function () {
         apiPost('/api/mat/issue_delete', { batch_id: batchId }).then(function (j) {
           if (!j || !j.success) {
             MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete');
