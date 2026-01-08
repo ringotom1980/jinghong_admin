@@ -56,6 +56,11 @@
             + '、錯誤 ' + String(sum.errors || 0);
 
           MatIssueApp.toast('success', '匯入完成', msg, 2600);
+          // ✅ (1) 匯入成功後清空檔案 input（避免殘留、避免重複送出同一批檔案）
+          var fileInput = Mod.app && Mod.app.els ? Mod.app.els.files : null;
+          if (fileInput) {
+            try { fileInput.value = ''; } catch (e) { }
+          }
 
           // ✅ 存本次匯入 batch_ids（本次匯入範圍）
           var batchIds = r.batch_ids || [];
@@ -63,7 +68,12 @@
             Mod.app.state.last_import_batch_ids = batchIds;
           }
 
-          // 更新日期/批次 UI（保留原本功能）
+          // ✅ (2) 匯入成功後：聚焦到本次匯入日期（讓日期膠囊高亮、領退清單立刻看到剛匯入的資料）
+          if (global.MatIssueApp && MatIssueApp.setWithdrawDate) {
+            MatIssueApp.setWithdrawDate(d); // d 就是本次匯入使用者選的 withdraw_date
+          }
+
+          // 仍保留 refresh：讓日期膠囊重新載入並高亮、批次清單同步刷新
           MatIssueApp.refreshAll(true);
 
           // ✅ 若有缺 shift → 以「本次匯入 batch 範圍」查缺漏，並自動彈窗要求補齊
