@@ -1,5 +1,8 @@
 /* Path: Public/assets/js/mat_issue_batches.js
  * 說明: 批次/檔名清單（依 withdraw_date）
+ * ✅ 新增：
+ * - 更新標題：YYYY-MM-DD - 領退清單
+ * - 標題旁「刪除全部單號」：刪除該日期下所有批次（連帶 items）
  */
 
 (function (global) {
@@ -14,15 +17,52 @@
 
   var Mod = {
     app: null,
+    _boundDeleteAll: false,
 
-    init: function (app) { this.app = app; },
+    init: function (app) {
+      this.app = app;
+      this.bindDeleteAllOnce();
+    },
+
+    // 依日期更新「領退清單」標題與刪除全部按鈕狀態
+    syncTitleAndDeleteAllBtn: function () {
+      var d = (this.app && this.app.state) ? (this.app.state.withdraw_date || '') : '';
+      var titleEl = document.getElementById('miIssueListTitle');
+      if (titleEl) {
+        titleEl.textContent = (d ? (d + ' - 領退清單') : '日期-領退清單');
+      }
+
+      var btn = document.getElementById('miBtnDeleteAll');
+      if (btn) {
+        btn.disabled = !d;
+      }
+    },
+
+    bindDeleteAllOnce: function () {
+      if (this._boundDeleteAll) return;
+      this._boundDeleteAll = true;
+
+      var btn = document.getElementById('miBtnDeleteAll');
+      if (!btn) return;
+
+      btn.addEventListener('click', function () {
+        var d = (Mod.app && Mod.app.state) ? (Mod.app.state.withdraw_date || '') : '';
+        if (!d) return;
+        Mod.deleteAllByDate(d);
+      });
+    },
 
     loadBatches: function () {
       if (!global.apiGet) return;
 
+      // 每次載入前同步標題/按鈕
+      this.syncTitleAndDeleteAllBtn();
+
       var d = (this.app && this.app.state) ? this.app.state.withdraw_date : '';
       if (!d) {
-        if (this.app) this.app.els.batches.innerHTML = '<div class="mi-note">請先選擇領退日期</div>';
+        if (this.app && this.app.els && this.app.els.batches) {
+          this.app.els.batches.innerHTML = '<div class="mi-note">請先選擇領退日期</div>';
+        }
         return;
       }
 
@@ -63,7 +103,7 @@
           + '    </div>'
           + '  </div>'
           + '  <div class="mi-batch__actions">'
-          + '    <button class="btn btn--danger" type="button" data-act="delete">刪除整批</button>'
+          + '    <button class="btn btn--danger" type="button" data-act="delete">刪除本單</button>'
           + '  </div>'
           + '</div>';
       }
@@ -107,15 +147,11 @@
                 MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete');
                 return;
               }
-              // ✅ 成功訊息也改成單號導向
               MatIssueApp.toast('success', '已刪除', (label + ' 已刪除'), 2600);
               MatIssueApp.refreshAll(true);
             });
           },
-          function () {
-            // 取消：不做事（可選提示）
-            // MatIssueApp.toast('info', '已取消', '未刪除任何資料', 1400);
-          },
+          function () {},
           {
             confirmText: '確認刪除',
             cancelText: '取消',
@@ -127,7 +163,7 @@
         return;
       }
 
-      // fallback：若 confirmChoice 不存在，退回原本 confirm-only（confirm-only 依然只能按確認）
+      // fallback：confirm-only
       MatIssueApp.confirm(title, msg, function () {
         apiPost('/api/mat/issue_delete', { batch_id: batchId }).then(function (j) {
           if (!j || !j.success) {
@@ -138,8 +174,46 @@
           MatIssueApp.refreshAll(true);
         });
       });
-    }
+    },
 
+    // ✅ 刪除該日期下所有單號（其實是刪除該日期的所有 batches，items 會 ON DELETE CASCADE）
+    deleteAllByDate: function (withdrawDate) {
+      if (!withdrawDate) return;
+      if (!global.apiPost) return;
+
+      var title = '確認刪除';
+      var msg = '確定要刪除 ' + String(withdrawDate) + ' 的全部單號？（此動作無法復原）';
+
+      var doReq = function () {
+        apiPost('/api/mat/issue_delete_all', { withdraw_date: withdrawDate }).then(function (j) {
+          if (!j || !j.success) {
+            MatIssueApp.toast('danger', '刪除失敗', j && j.error ? j.error : 'issue_delete_all');
+            return;
+          }
+          MatIssueApp.toast('success', '已刪除', (String(withdrawDate) + ' 全部單號已刪除'), 2600);
+          MatIssueApp.refreshAll(true);
+        });
+      };
+
+      if (global.Modal && Modal.confirmChoice) {
+        Modal.confirmChoice(
+          title,
+          msg,
+          function () { doReq(); },
+          function () {},
+          {
+            confirmText: '確認刪除',
+            cancelText: '取消',
+            allowCloseBtn: true,
+            closeOnBackdrop: true,
+            closeOnEsc: true
+          }
+        );
+        return;
+      }
+
+      MatIssueApp.confirm(title, msg, function () { doReq(); });
+    }
   };
 
   global.MatIssueBatches = Mod;

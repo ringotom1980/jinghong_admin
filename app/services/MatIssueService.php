@@ -70,6 +70,28 @@ final class MatIssueService
     }
   }
 
+  public static function deleteAllByDate(string $withdrawDate): array
+  {
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+      $st = $pdo->prepare("DELETE FROM mat_issue_batches WHERE withdraw_date = ?");
+      $st->execute([$withdrawDate]);
+
+      // DELETE batches 後，items 會因 fk ON DELETE CASCADE 自動清掉
+      $deletedBatches = (int)$st->rowCount();
+
+      $pdo->commit();
+      return [
+        'withdraw_date' => $withdrawDate,
+        'deleted_batches' => $deletedBatches
+      ];
+    } catch (Throwable $e) {
+      if ($pdo->inTransaction()) $pdo->rollBack();
+      throw $e;
+    }
+  }
+
   /**
    * 缺 shift 清單
    * - 預設：用 withdraw_date 查（保留既有前端行為）

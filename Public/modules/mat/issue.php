@@ -84,8 +84,17 @@ $pageJs = [
         <!-- 批次/檔名 -->
         <div class="card mi-card mi-card--wide">
           <div class="card__head">
-            <h2 id="miIssueListTitle">日期-領退清單</h2>
+            <div class="mi-head-row">
+              <h2 id="miIssueListTitle">日期-領退清單</h2>
+
+              <div class="mi-head-actions">
+                <button class="btn btn--danger" type="button" id="miBtnDeleteAll" disabled>
+                  刪除全部單號
+                </button>
+              </div>
+            </div>
           </div>
+
           <div class="card__body">
             <div class="mi-batches" id="miBatches"></div>
           </div>
