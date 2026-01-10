@@ -97,42 +97,41 @@ final class MatEditService
         }));
         if (!$ids) return;
 
+        // JSON key 一律用字串比對（recon_values_json 的 key 是 "2" 這種字串）
+        $keysToRemove = array_map('strval', $ids);
+
         $this->pdo->beginTransaction();
         try {
-            // 1) 清理 mat_edit_reconciliation.recon_values_json 內對應 key
-            //    因為 key 是字串，所以用 (string)$id 比對
-            $rows = $this->pdo->query("SELECT withdraw_date, recon_values_json FROM mat_edit_reconciliation")->fetchAll();
-            if ($rows) {
-                $idKeys = array_map('strval', $ids);
+            // 1) 清理 mat_edit_reconciliation：移除所有日期的對應 key
+            //    MariaDB 10.2+ 支援 JSON_REMOVE；但你的欄位是 longtext，所以要用 JSON_SET/REMOVE 仍可（會隱式轉 JSON）
+            //    若資料內有非 JSON 的髒值，JSON_VALID=0 的行先跳過，避免整批炸掉
+            $rows = $this->pdo->query("SELECT withdraw_date, recon_values_json FROM mat_edit_reconciliation")->fetchAll(PDO::FETCH_ASSOC);
 
-                $stUpd = $this->pdo->prepare(
-                    "UPDATE mat_edit_reconciliation SET recon_values_json = :j WHERE withdraw_date = :d"
-                );
+            $upd = $this->pdo->prepare("UPDATE mat_edit_reconciliation SET recon_values_json = :j WHERE withdraw_date = :d");
 
-                foreach ($rows as $r) {
-                    $d = (string)$r['withdraw_date'];
-                    $j = (string)$r['recon_values_json'];
+            foreach ($rows as $r) {
+                $d = (string)$r['withdraw_date'];
+                $raw = (string)($r['recon_values_json'] ?? '');
 
-                    $data = json_decode($j, true);
-                    if (!is_array($data)) continue;
+                $data = json_decode($raw, true);
+                if (!is_array($data)) continue; // 非合法 JSON：跳過（避免亂改）
 
-                    $changed = false;
-                    foreach ($idKeys as $k) {
-                        if (array_key_exists($k, $data)) {
-                            unset($data[$k]);
-                            $changed = true;
-                        }
+                $changed = false;
+                foreach ($keysToRemove as $k) {
+                    if (array_key_exists($k, $data)) {
+                        unset($data[$k]);
+                        $changed = true;
                     }
-                    if (!$changed) continue;
-
-                    $newJson = json_encode($data, JSON_UNESCAPED_UNICODE);
-                    if (!is_string($newJson)) throw new RuntimeException('reconciliation JSON 編碼失敗（' . $d . '）');
-
-                    $stUpd->execute([':j' => $newJson, ':d' => $d]);
                 }
+                if (!$changed) continue;
+
+                $j = json_encode($data, JSON_UNESCAPED_UNICODE);
+                if (!is_string($j)) throw new RuntimeException('JSON 編碼失敗（reconciliation cleanup）');
+
+                $upd->execute([':j' => $j, ':d' => $d]);
             }
 
-            // 2) 刪分類（cm 會 FK cascade）
+            // 2) 刪分類（category_materials 會被 FK cascade）
             $in = implode(',', array_fill(0, count($ids), '?'));
             $st = $this->pdo->prepare("DELETE FROM mat_edit_categories WHERE id IN ($in)");
             $st->execute($ids);
