@@ -62,7 +62,7 @@ try {
     if (!$hasIssue && !$confirm) {
       json_ok([
         'need_confirm' => true,
-        'message' => '提領時間為' . $d . '當日尚未匯入提領資料(判斷mat_issue_items.withdraw_date)，日期是否正確'
+        'message' => '提領時間為' . $d . '當日尚未匯入提領資料，要儲存的提領日期是否正確'
       ]);
     }
 
