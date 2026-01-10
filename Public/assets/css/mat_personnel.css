@@ -1,0 +1,91 @@
+/* Path: Public/assets/css/mat_personnel.css
+ * 說明: /mat/personnel 專屬樣式（承辦人異動）
+ */
+
+.mat-personnel .mp-grid {
+  display: block;
+}
+
+.mat-personnel .mp-card .card__body {
+  padding: 14px 16px 16px;
+}
+
+.mat-personnel .mp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mat-personnel .mp-head h2 {
+  margin: 0;
+}
+
+.mat-personnel .mp-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mat-personnel .mp-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 120px;
+  gap: 12px;
+  align-items: center;
+
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mat-personnel .mp-shift {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgba(15, 23, 42, 0.8);
+}
+
+.mat-personnel .mp-input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.mat-personnel .mp-input:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.mat-personnel .mp-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mat-personnel .mp-row.is-busy {
+  opacity: 0.78;
+}
+
+.mat-personnel .mp-row.is-busy .mp-input,
+.mat-personnel .mp-row.is-busy .mp-btn {
+  pointer-events: none;
+}
+
+.mat-personnel .mp-footnote {
+  margin-top: 10px;
+  font-size: var(--fs-sub);
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .mat-personnel .mp-row {
+    grid-template-columns: 64px 1fr;
+    grid-template-areas:
+      "shift name"
+      "act act";
+  }
+  .mat-personnel .mp-shift { grid-area: shift; }
+  .mat-personnel .mp-name  { grid-area: name; }
+  .mat-personnel .mp-actions { grid-area: act; justify-content: flex-start; }
+}
