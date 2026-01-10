@@ -1,185 +1,164 @@
 /* Path: Public/assets/js/mat_stats.js
- * 說明: Mat Stats 總控（init / state / reload）
- * - 不做 DOM 細節，交給 capsules/filter/render/print
- * - 所有 API 路徑集中在這裡，避免各檔硬寫
+ * 說明: 統計頁總控（init/state/reload）
+ * - 只負責：狀態、呼叫 API、協調 capsules/filter/render/print
+ * - API 路徑：一律不帶 .php（由 router 對應 /api/* → Public/api/*.php）
  */
 
 (function (global) {
-    'use strict';
+  'use strict';
 
-    function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qs(sel, root) { return (root || document).querySelector(sel); }
 
-    var MatStatsApp = {
-        els: {},
-        state: {
-            selectedDate: '',     // YYYY-MM-DD
-            selectedShift: 'all', // all/A/B/C/D/E/F
-            capsules: []          // ['2026-01-10', ...]
-        },
+  var App = {
+    els: {},
+    state: {
+      withdraw_date: '',
+      shift: 'ALL',
+      payload: null
+    },
 
-        api: {
-            capsules: 'api/mat/stats_capsules',
-            stats: 'api/mat/stats'
-        },
+    init: function () {
+      this.els.dateText = qs('#msSelectedDate');
+      this.els.loading = qs('#msLoading');
+      this.els.error = qs('#msError');
+      this.els.content = qs('#msContent');
 
-        init: function () {
-            this.els.selectedDate = qs('#msSelectedDate');
-            this.els.capsules = qs('#msCapsules');
-            this.els.filter = qs('#msShiftFilter');
-            this.els.content = qs('#msContent');
-            this.els.loading = qs('#msLoading');
-            this.els.error = qs('#msError');
-            this.els.btnPrint = qs('#msBtnPrint');
+      // 子模組 init
+      if (global.MatStatsCapsules) global.MatStatsCapsules.init(this);
+      if (global.MatStatsFilter) global.MatStatsFilter.init(this);
+      if (global.MatStatsPrint) global.MatStatsPrint.init(this);
 
-            // bind modules
-            if (global.MatStatsCapsules) global.MatStatsCapsules.init(this);
-            if (global.MatStatsFilter) global.MatStatsFilter.init(this);
-            if (global.MatStatsRender) global.MatStatsRender.init(this);
-            if (global.MatStatsPrint) global.MatStatsPrint.init(this);
+      // 先載入膠囊（取得可用日期，並選第一個）
+      this.loadCapsules();
+    },
 
-            // initial load
-            this.loadCapsulesAndDefault();
-        },
+    setLoading: function (on) {
+      if (this.els.loading) this.els.loading.hidden = !on;
+      if (on) this.setError('');
+    },
 
-        setLoading: function (on) {
-            if (this.els.loading) this.els.loading.hidden = !on;
-        },
+    setError: function (msg) {
+      if (!this.els.error) return;
+      if (!msg) {
+        this.els.error.hidden = true;
+        this.els.error.textContent = '';
+        return;
+      }
+      this.els.error.hidden = false;
+      this.els.error.textContent = String(msg);
+    },
 
-        setError: function (msg) {
-            if (!this.els.error) return;
-            if (!msg) {
-                this.els.error.hidden = true;
-                this.els.error.textContent = '';
-                return;
-            }
-            this.els.error.hidden = false;
-            this.els.error.textContent = msg;
-        },
+    setSelectedDateText: function (d) {
+      if (this.els.dateText) this.els.dateText.textContent = d || '--';
+    },
 
-        setSelectedDate: function (ymd) {
-            this.state.selectedDate = ymd || '';
-            if (this.els.selectedDate) this.els.selectedDate.textContent = this.state.selectedDate || '--';
-        },
+    loadCapsules: function () {
+      var self = this;
+      self.setLoading(true);
 
-        setSelectedShift: function (shift) {
-            this.state.selectedShift = shift || 'all';
-        },
+      // 你可改成 /api/mat/stats_capsules（未來獨立），
+      // 但目前也可直接沿用既有 issue_dates（有 withdraw_date 列表）
+      var url = '/api/mat/stats_capsules';
 
-        apiGet: function (url, params) {
-            // ✅ 對齊你的共用 api.js：apiGet(url) 不吃 params，所以這裡自行組 querystring
-            params = params || {};
+      if (!global.apiGet) {
+        self.setLoading(false);
+        self.setError('缺少 api.js（apiGet 不存在）');
+        return;
+      }
 
-            var qsArr = [];
-            Object.keys(params).forEach(function (k) {
-                if (params[k] === undefined || params[k] === null) return;
-                var v = String(params[k]);
-                if (v === '') return;
-                qsArr.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
-            });
-
-            var u = String(url || '');
-            if (qsArr.length) {
-                u += (u.indexOf('?') >= 0 ? '&' : '?') + qsArr.join('&');
-            }
-
-            // ✅ 優先走你共用的 apiGet
-            if (global.apiGet) return global.apiGet(u);
-
-            // fallback：直接用 apiRequest（也走 BASE_URL + same-origin）
-            if (global.apiRequest) return global.apiRequest({ url: u, method: 'GET' });
-
-            // 最後 fallback：fetch（極少用到）
-            return fetch(u, { credentials: 'same-origin' })
-                .then(function (r) { return r.json(); })
-                .catch(function (e) {
-                    return { success: false, data: null, error: (e && e.message) ? e.message : 'Network error' };
-                });
-        },
-
-        loadCapsulesAndDefault: function () {
-            var self = this;
-            self.setError('');
-            self.setLoading(true);
-
-            self.apiGet(self.api.capsules, {})
-                .then(function (j) {
-                    if (!j || j.success !== true) throw new Error((j && j.error) || '載入日期失敗');
-
-                    var dates = [];
-                    // 允許 data.dates 或 data.capsules
-                    if (j.data && Array.isArray(j.data.dates)) dates = j.data.dates;
-                    if (j.data && Array.isArray(j.data.capsules)) dates = j.data.capsules;
-
-                    self.state.capsules = dates || [];
-                    if (global.MatStatsCapsules) global.MatStatsCapsules.render(self.state.capsules);
-
-                    // 預設日期：第一顆膠囊（通常是最新）
-                    var d0 = (self.state.capsules && self.state.capsules.length) ? self.state.capsules[0] : '';
-                    self.setSelectedDate(d0);
-
-                    // 預設 shift：all
-                    self.setSelectedShift('all');
-                    if (global.MatStatsFilter) global.MatStatsFilter.setActive('all');
-
-                    // 只要有日期就載入統計
-                    if (d0) return self.reload();
-                    self.setLoading(false);
-                    self.clearContent();
-                })
-                .catch(function (e) {
-                    self.setLoading(false);
-                    self.setError(e && e.message ? e.message : '載入失敗');
-                });
-        },
-
-        reload: function () {
-            var self = this;
-            var d = self.state.selectedDate;
-            var s = self.state.selectedShift || 'all';
-            if (!d) {
-                self.clearContent();
-                return Promise.resolve();
-            }
-
-            self.setError('');
-            self.setLoading(true);
-
-            return self.apiGet(self.api.stats, { withdraw_date: d, shift: s })
-                .then(function (j) {
-                    self.setLoading(false);
-
-                    if (!j || j.success !== true) throw new Error((j && j.error) || '載入統計失敗');
-
-                    // 交給 render 模組
-                    if (global.MatStatsRender) {
-                        global.MatStatsRender.render(j.data || {});
-                    }
-                })
-                .catch(function (e) {
-                    self.setLoading(false);
-                    self.setError(e && e.message ? e.message : '載入失敗');
-                });
-        },
-
-        clearContent: function () {
-            if (this.els.content) this.els.content.innerHTML = '';
-        },
-
-        onCapsuleSelected: function (ymd) {
-            this.setSelectedDate(ymd);
-            this.reload();
-        },
-
-        onShiftChanged: function (shift) {
-            this.setSelectedShift(shift);
-            this.reload();
+      global.apiGet(url).then(function (j) {
+        if (!j || !j.success) {
+          self.setLoading(false);
+          self.setError((j && j.error) ? j.error : '讀取日期膠囊失敗');
+          return;
         }
-    };
 
-    global.MatStatsApp = MatStatsApp;
+        var data = j.data || {};
+        // 允許兩種格式：{dates:[...]} 或 {items:[{date,...}]}
+        var dates = [];
+        if (Array.isArray(data.dates)) dates = data.dates.slice();
+        else if (Array.isArray(data.items)) dates = data.items.map(function (x) { return x && x.date ? String(x.date) : ''; }).filter(Boolean);
 
-    document.addEventListener('DOMContentLoaded', function () {
-        MatStatsApp.init();
-    });
+        // render capsules
+        if (global.MatStatsCapsules) {
+          global.MatStatsCapsules.render(dates);
+        }
+
+        // 預設選第一個日期
+        var first = dates[0] || '';
+        self.state.withdraw_date = first;
+        self.setSelectedDateText(first);
+
+        // 初次載入統計
+        self.reload();
+
+      }).catch(function (e) {
+        self.setLoading(false);
+        self.setError((e && e.message) ? e.message : 'Network error');
+      });
+    },
+
+    setDate: function (d) {
+      d = String(d || '');
+      if (!d) return;
+      this.state.withdraw_date = d;
+      this.setSelectedDateText(d);
+      this.reload();
+    },
+
+    setShift: function (shift) {
+      shift = String(shift || 'ALL').toUpperCase();
+      this.state.shift = shift || 'ALL';
+      this.reload();
+    },
+
+    reload: function () {
+      var self = this;
+      var d = self.state.withdraw_date;
+      if (!d) {
+        self.setLoading(false);
+        self.setError('缺少查詢日期');
+        return;
+      }
+
+      self.setLoading(true);
+
+      // 統計總控 API（你現在 debug 回傳就是這包）
+      var url = '/api/mat/stats?withdraw_date=' + encodeURIComponent(d) + '&shift=' + encodeURIComponent(self.state.shift || 'ALL');
+
+      global.apiGet(url).then(function (j) {
+        self.setLoading(false);
+
+        if (!j || !j.success) {
+          self.setError((j && j.error) ? j.error : '載入統計失敗');
+          return;
+        }
+
+        self.state.payload = j.data || null;
+
+        // 更新頁首日期（以回傳為準）
+        if (self.state.payload && self.state.payload.withdraw_date) {
+          self.setSelectedDateText(String(self.state.payload.withdraw_date));
+        }
+
+        // 渲染
+        if (global.MatStatsRender) {
+          global.MatStatsRender.render(self.state.payload, {
+            shift: self.state.shift || 'ALL'
+          });
+        }
+
+      }).catch(function (e) {
+        self.setLoading(false);
+        self.setError((e && e.message) ? e.message : 'Network error');
+      });
+    }
+  };
+
+  global.MatStatsApp = App;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    App.init();
+  });
 
 })(window);
