@@ -1,0 +1,127 @@
+/*
+ * Path: Public/assets/css/mat_stats.css
+ * 說明: mat/stats 統計頁專屬樣式
+ * 目標：占滿內容寬度（覆蓋 app.css 的 .content max-width）
+ */
+
+/* ✅ 只針對本頁：讓內容區滿版（不要動全站 .content） */
+.page.mat-stats .content{
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 18px 22px;
+}
+
+/* 讓整頁至少撐滿（視覺不會上面一小塊、下面空一大片） */
+.page.mat-stats{
+  min-height: calc(100vh - 20px);
+}
+
+/* ===== Toolbar card ===== */
+.ms-toolbar{
+  width: 100%;
+}
+
+.ms-toolbar__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ms-toolbar__title{
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.ms-toolbar__date{
+  font-weight: 900;
+  color: rgba(15,23,42,.9);
+}
+
+.ms-toolbar__actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===== Capsules ===== */
+.ms-capsules-wrap{
+  margin-top: 10px;
+}
+
+.ms-capsules{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* ===== Shift filter ===== */
+.ms-filter{
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ms-filter__btn{
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,.18);
+  background: rgba(255,255,255,.72);
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(15,23,42,.86);
+}
+
+.ms-filter__btn:hover{
+  background: rgba(255,255,255,.92);
+  border-color: rgba(15,23,42,.26);
+}
+
+.ms-filter__btn.is-active{
+  background: rgba(37,99,235,.12);
+  border-color: rgba(37,99,235,.32);
+  color: rgba(30,58,138,.95);
+  font-weight: 800;
+}
+
+/* ===== Status ===== */
+.ms-status{
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.ms-status__loading{
+  color: rgba(15,23,42,.66);
+  font-size: 14px;
+}
+
+.ms-status__error{
+  color: rgba(190,18,60,.86);
+  font-size: 14px;
+}
+
+/* ===== Content area (tables/cards inserted by JS) ===== */
+.ms-content{
+  margin-top: 14px;
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+
+/* 小螢幕收斂 padding */
+@media (max-width: 720px){
+  .page.mat-stats .content{
+    padding: 14px 12px;
+  }
+  .ms-toolbar__head{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
