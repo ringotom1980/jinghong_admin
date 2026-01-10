@@ -3,7 +3,7 @@
  * Path: Public/api/mat/edit_reconciliation.php
  * 說明: D 班對帳 API（get/save）
  * - withdraw_date -> recon_values_json（整包覆蓋）
- * - 儲存前檢查：mat_issue_items.withdraw_date 是否有資料
+ * - 儲存前檢查：mat_issue_items.withdraw_date 是否有資料（由 service 判斷）
  */
 
 declare(strict_types=1);
@@ -17,9 +17,28 @@ $svc = new MatEditService(db());
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
+/** 統一讀 payload（JSON body） */
+$payload = [];
+if ($method !== 'GET') {
+  $payload = json_decode((string)file_get_contents('php://input'), true);
+  if (!is_array($payload)) $payload = [];
+}
+
+/**
+ * 統一 action 來源（兼容）
+ * - GET：action 走 query（預設 get）
+ * - POST：優先 query action，其次 payload action
+ */
+if ($method === 'GET') {
+  $action = (string)($_GET['action'] ?? 'get');
+} else {
+  $action = (string)($_GET['action'] ?? '');
+  if ($action === '') $action = (string)($payload['action'] ?? '');
+}
+
 try {
+
   if ($method === 'GET') {
-    $action = (string)($_GET['action'] ?? 'get');
     if ($action !== 'get') json_error('不支援的 action', 400);
 
     $d = (string)($_GET['withdraw_date'] ?? '');
@@ -29,16 +48,14 @@ try {
   }
 
   if ($method === 'POST') {
-    $payload = json_decode((string)file_get_contents('php://input'), true);
-    if (!is_array($payload)) $payload = [];
-    $action = (string)($payload['action'] ?? '');
-
     if ($action !== 'save') json_error('不支援的 action', 400);
 
     $d = (string)($payload['withdraw_date'] ?? '');
+
     $values = $payload['values'] ?? [];
     if (!is_array($values)) $values = [];
 
+    // 前端二次確認旗標
     $confirm = (bool)($payload['confirm'] ?? false);
 
     $hasIssue = $svc->hasIssueData($d);
@@ -59,6 +76,7 @@ try {
   }
 
   json_error('不支援的 method', 405);
+
 } catch (Throwable $e) {
   json_error($e->getMessage(), 400);
 }

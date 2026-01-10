@@ -15,15 +15,24 @@ require_login();
 $pdo = db();
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-$action = '';
 
-// 統一 action 來源：GET 用 query；POST 用 JSON body
+/** 統一讀 payload（JSON body） */
+$payload = [];
+if ($method !== 'GET') {
+  $payload = json_decode((string)file_get_contents('php://input'), true);
+  if (!is_array($payload)) $payload = [];
+}
+
+/**
+ * 統一 action 來源（兼容）
+ * - GET：action 走 query（預設 list）
+ * - POST：優先 query action，其次 payload action
+ */
 if ($method === 'GET') {
   $action = (string)($_GET['action'] ?? 'list');
 } else {
-  $payload = json_decode((string)file_get_contents('php://input'), true);
-  if (!is_array($payload)) $payload = [];
-  $action = (string)($payload['action'] ?? '');
+  $action = (string)($_GET['action'] ?? '');
+  if ($action === '') $action = (string)($payload['action'] ?? '');
 }
 
 function must_int($v, string $msg): int {
@@ -40,16 +49,12 @@ function normalize_material_numbers($arr): array {
     if ($s === '') continue;
     $out[] = $s;
   }
-  // unique
-  $out = array_values(array_unique($out));
-  return $out;
+  return array_values(array_unique($out));
 }
 
 try {
 
-  /* =========================
-   * GET: list
-   * ========================= */
+  /** GET list */
   if ($method === 'GET' && $action === 'list') {
     $categoryId = must_int($_GET['category_id'] ?? 0, '缺少 category_id');
 
@@ -60,10 +65,9 @@ try {
       ORDER BY material_number
     ");
     $st->execute([':cid' => $categoryId]);
-    $rows = $st->fetchAll();
 
     $materials = [];
-    foreach ($rows as $r) {
+    foreach ($st->fetchAll() as $r) {
       $materials[] = (string)$r['material_number'];
     }
 
@@ -73,13 +77,10 @@ try {
     ]);
   }
 
-  /* =========================
-   * GET: pick_list (modal)
-   * ========================= */
+  /** GET pick_list */
   if ($method === 'GET' && $action === 'pick_list') {
     $categoryId = must_int($_GET['category_id'] ?? 0, '缺少 category_id');
 
-    // 取 shift=D 的材料清單，並帶出目前是否已被某分類佔用（含本分類）
     $st = $pdo->prepare("
       SELECT
         m.material_number,
@@ -92,21 +93,17 @@ try {
       ORDER BY m.material_number
     ");
     $st->execute();
-    $rows = $st->fetchAll();
 
     $items = [];
-    foreach ($rows as $r) {
+    foreach ($st->fetchAll() as $r) {
       $mn = (string)$r['material_number'];
       $assigned = $r['assigned_category_id'] !== null ? (int)$r['assigned_category_id'] : null;
-
-      $isSelected = ($assigned !== null && $assigned === $categoryId);
-      $isDisabled = ($assigned !== null && $assigned !== $categoryId);
 
       $items[] = [
         'material_number' => $mn,
         'material_name'   => (string)($r['material_name'] ?? ''),
-        'is_selected'     => $isSelected,
-        'is_disabled'     => $isDisabled,
+        'is_selected'     => ($assigned !== null && $assigned === $categoryId),
+        'is_disabled'     => ($assigned !== null && $assigned !== $categoryId),
         'assigned_category_id' => $assigned,
       ];
     }
@@ -117,29 +114,24 @@ try {
     ]);
   }
 
-  /* =========================
-   * POST: save
-   * body: { action:"save", category_id:1, material_numbers:["123","456"] }
-   * ========================= */
+  /** POST save */
   if ($method === 'POST' && $action === 'save') {
-    $payload = json_decode((string)file_get_contents('php://input'), true);
-    if (!is_array($payload)) $payload = [];
-
     $categoryId = must_int($payload['category_id'] ?? 0, '缺少 category_id');
     $numbers = normalize_material_numbers($payload['material_numbers'] ?? []);
 
-    // 先檢查：材料必須存在於 mat_materials 且 shift='D'
     if (count($numbers) > 0) {
       $in = implode(',', array_fill(0, count($numbers), '?'));
+
+      // 必須是 shift=D 的材料
       $st = $pdo->prepare("
         SELECT material_number
         FROM mat_materials
         WHERE shift='D' AND material_number IN ($in)
       ");
       $st->execute($numbers);
-      $okRows = $st->fetchAll();
+
       $okSet = [];
-      foreach ($okRows as $r) $okSet[(string)$r['material_number']] = true;
+      foreach ($st->fetchAll() as $r) $okSet[(string)$r['material_number']] = true;
 
       $missing = [];
       foreach ($numbers as $mn) {
@@ -149,7 +141,7 @@ try {
         json_error('材料不存在或非 D 班：' . implode(', ', $missing), 400);
       }
 
-      // 互斥檢查：同一 material_number 不可被其他分類佔用
+      // 互斥：不可被其他分類使用
       $st = $pdo->prepare("
         SELECT material_number, category_id
         FROM mat_edit_category_materials
@@ -159,6 +151,7 @@ try {
       $args = $numbers;
       $args[] = $categoryId;
       $st->execute($args);
+
       $conf = $st->fetch();
       if ($conf) {
         json_error('材料編號已被其他分類使用，無法選取：' . (string)$conf['material_number'], 400);
@@ -167,7 +160,6 @@ try {
 
     $pdo->beginTransaction();
 
-    // 先清掉本分類既有配置（整包覆蓋）
     $stDel = $pdo->prepare("DELETE FROM mat_edit_category_materials WHERE category_id = :cid");
     $stDel->execute([':cid' => $categoryId]);
 
@@ -182,7 +174,6 @@ try {
     }
 
     $pdo->commit();
-
     json_ok(true);
   }
 

@@ -35,6 +35,7 @@ if ($method === 'GET') {
 }
 
 try {
+
   /** GET list */
   if ($method === 'GET' && $action === 'list') {
     json_ok([
@@ -75,6 +76,7 @@ try {
   }
 
   json_error('不支援的 action', 400);
+
 } catch (Throwable $e) {
   json_error($e->getMessage(), 400);
 }
