@@ -105,11 +105,9 @@
 }
 
 .mat-edit .me-item {
-  display: grid;
-  grid-template-columns: 24px 1fr 140px 28px;
+  grid-template-columns: 78px 1fr 140px 28px;
   gap: 10px;
   align-items: center;
-
   padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid rgba(15, 23, 42, 0.1);
@@ -123,6 +121,22 @@
 .mat-edit .me-del {
   width: 18px;
   height: 18px;
+}
+
+.mat-edit .me-del-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mat-edit .me-del-text {
+  color: #dc2626;         /* 紅色 */
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;   /* 確保文字不會吃到點擊，只有 checkbox 有效 */
 }
 
 .mat-edit .me-name {

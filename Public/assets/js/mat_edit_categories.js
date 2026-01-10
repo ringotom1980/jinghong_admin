@@ -59,7 +59,10 @@
           var qty = reconMap[id] !== undefined ? reconMap[id] : 0;
           html += ''
             + '<div class="me-item" data-id="' + id + '" draggable="true">'
-            + '  <input type="checkbox" class="me-del" id="meDel-' + id + '">'
+            + '  <div class="me-del-wrap">'
+            + '    <input type="checkbox" class="me-del" id="meDel-' + id + '">'
+            + '    <span class="me-del-text">刪除</span>'
+            + '  </div>'
             + '  <input class="me-name-input" id="meName-' + id + '" type="text" value="' + escapeHtml(c.name || '') + '">'
             + '  <input class="me-qty" id="meQty-' + id + '" type="number" step="0.001" value="' + escapeHtml(String(qty)) + '" disabled>'
             + '  <div class="me-drag" title="拖曳排序">≡</div>'
