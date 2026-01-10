@@ -1,0 +1,120 @@
+/* Path: Public/assets/css/mat_edit_B.css
+ * 說明: B 班管理頁（/mat/edit_B）專屬樣式
+ */
+
+.mat-edit-b .mb-card { border-radius: var(--radius); }
+
+.mat-edit-b .mb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mat-edit-b .mb-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mat-edit-b .mb-search {
+  min-width: 320px;
+}
+
+.mat-edit-b .mb-search__input {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0 12px;
+  outline: none;
+}
+
+.mat-edit-b .mb-search__input:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.mat-edit-b .mb-search__hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 18px;
+}
+
+.mat-edit-b .mb-actions { display: flex; gap: 8px; }
+
+.mat-edit-b .mb-note {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+
+/* list */
+.mat-edit-b .mb-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mat-edit-b .mb-item {
+  display: grid;
+  grid-template-columns: 44px 68px 160px 1fr 140px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mat-edit-b .mb-item.is-dragging {
+  opacity: 0.72;
+  transform: scale(0.995);
+}
+
+.mat-edit-b .mb-drag {
+  width: 44px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.mat-edit-b .mb-drag:active { cursor: grabbing; }
+
+.mat-edit-b .mb-idx {
+  font-variant-numeric: tabular-nums;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.mat-edit-b .mb-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  color: rgba(15, 23, 42, 0.86);
+}
+
+.mat-edit-b .mb-name {
+  color: rgba(15, 23, 42, 0.86);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mat-edit-b .mb-item .btn { white-space: nowrap; }
+
+/* 搜尋中（filter mode）禁用拖曳/操作 */
+.mat-edit-b .mb-item.is-filtered .mb-drag {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mat-edit-b .mb-item.is-filtered .btn {
+  opacity: 0.55;
+}
