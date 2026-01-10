@@ -192,10 +192,10 @@
                 + '<div class="me-modal-grid">'
                 + '  <div class="me-field">'
                 + '    <div class="me-label">材料編號</div>'
-                + '    <div class="me-modal-hint" style="margin:6px 0 10px 0;">' + esc(materialNumber) + '</div>'
+                + '    <div class="me-modal-hint me-modal-hint--strong">' + esc(materialNumber) + '</div>'
                 + '    <div class="me-label">要插入到第幾筆？（1 - ' + esc(String(total)) + '）</div>'
                 + '    <input type="number" id="mbMovePos" class="me-name-input" min="1" step="1" placeholder="例如：3">'
-                + '    <div class="me-modal-hint">插入式移動：原本第 N 之後的資料會往後順延（不是對換）。</div>'
+                + '    <div class="me-modal-hint me-modal-hint--strong">插入式移動：原本第 N 之後的資料會往後順延。</div>'
                 + '  </div>'
                 + '</div>';
 
