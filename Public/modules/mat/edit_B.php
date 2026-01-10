@@ -14,7 +14,10 @@ require_login();
 
 $pageTitle = 'B 班管理｜領退管理';
 $pageCss = ['assets/css/mat_edit_B.css'];
-$pageJs  = ['assets/js/mat_edit_B.js'];
+$pageJs  = [
+  'assets/js/mat_edit_ui.js',
+  'assets/js/mat_edit_B.js',
+];
 
 ?>
 <!doctype html>

@@ -191,7 +191,7 @@
             var html = ''
                 + '<div class="me-modal-grid">'
                 + '  <div class="me-field">'
-                + '    <div class="me-label">材料編號</div>'
+                + '    <div class="me-modal-hint me-modal-hint--strong">材料編號</div>'
                 + '    <div class="me-modal-hint me-modal-hint--strong">' + esc(materialNumber) + '</div>'
                 + '    <div class="me-modal-hint me-modal-hint--strong">要插入到第幾筆？（1 - ' + esc(String(total)) + '）</div>'
                 + '    <input type="number" id="mbMovePos" class="me-name-input" min="1" step="1" placeholder="請輸入數字">'
