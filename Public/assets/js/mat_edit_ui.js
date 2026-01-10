@@ -167,7 +167,14 @@
 
         dragging = item;
         item.classList.add('is-dragging');
+
         try { e.dataTransfer.effectAllowed = 'move'; } catch (err) { }
+
+        try {
+          // ✅ 必須 setData，否則某些瀏覽器會直接不啟動拖曳
+          e.dataTransfer.setData('text/plain', item.getAttribute('data-id') || item.getAttribute('data-mn') || '1');
+          e.dataTransfer.dropEffect = 'move';
+        } catch (err2) { }
       });
 
       listEl.addEventListener('dragend', function () {
