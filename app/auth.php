@@ -40,7 +40,6 @@ function require_login(): void
     }
 
     // Page
-    // Page
     $loginPath = rtrim($base, '/') . '/login';
 
     $return = ($uri !== '/login')

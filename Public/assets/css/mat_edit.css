@@ -1,0 +1,44 @@
+/*
+ * Path: Public/assets/css/mat_edit.css
+ * 說明: D 班資料編輯（/mat/edit）頁面專屬樣式
+ * - 僅處理排版與區塊結構
+ * - 不覆蓋全站元件樣式
+ */
+
+.mat-edit {
+  --me-gap: 16px;
+}
+
+/* 主區塊排版 */
+.me-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--me-gap);
+  margin-top: 12px;
+}
+
+/* 卡片共用微調 */
+.me-card .card__body {
+  min-height: 80px; /* 預留空狀態高度 */
+}
+
+/* 空狀態提示（之後 JS 可用） */
+.me-empty {
+  padding: 20px;
+  text-align: center;
+  color: rgba(15, 23, 42, 0.5);
+  font-size: 14px;
+}
+
+/* 桌機：雙欄 */
+@media (min-width: 1100px) {
+  .me-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* 對帳資料與分類組合較重要，拉寬 */
+  .me-grid > .me-card:nth-child(1),
+  .me-grid > .me-card:nth-child(2) {
+    grid-column: span 2;
+  }
+}
