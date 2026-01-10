@@ -82,27 +82,21 @@ try {
 
             if (!is_array($updates)) $updates = [];
             if (!is_array($deletes)) $deletes = [];
-
-            // order 允許：null 或 array
             if ($order !== null && !is_array($order)) $order = null;
 
-            // normalize deletes
             $deletes = array_values(array_filter(array_map('intval', $deletes), function ($v) {
                 return $v > 0;
             }));
 
-            // normalize updates: [{id:int, name:string}]
             $normUpdates = [];
             foreach ($updates as $u) {
                 if (!is_array($u)) continue;
                 $id = (int)($u['id'] ?? 0);
                 $name = trim((string)($u['name'] ?? ''));
-                if ($id <= 0) continue;
-                if ($name === '') continue;
+                if ($id <= 0 || $name === '') continue;
                 $normUpdates[] = ['id' => $id, 'name' => $name];
             }
 
-            // normalize order
             $normOrder = null;
             if (is_array($order)) {
                 $normOrder = array_values(array_filter(array_map('intval', $order), function ($v) {
@@ -111,42 +105,27 @@ try {
                 if (!$normOrder) $normOrder = null;
             }
 
-            // ✅ 交易：確保 delete/rename/sort 一致性（任一步失敗整包回滾）
-            $pdo = db();
-            $pdo->beginTransaction();
-            try {
-                // 1) delete
-                if ($deletes) {
-                    $svc->deleteCategories($deletes);
-                }
+            // 1) delete（你若在 deleteCategories 內做 recon json 清理，也會在那裡處理交易）
+            if ($deletes) $svc->deleteCategories($deletes);
 
-                // 2) rename（跳過已刪除者）
-                if ($normUpdates) {
-                    $deletedSet = $deletes ? array_fill_keys($deletes, true) : [];
-                    foreach ($normUpdates as $u) {
-                        if (isset($deletedSet[$u['id']])) continue;
-                        $svc->renameCategory($u['id'], $u['name']);
-                    }
-                }
-
-                // 3) sort（若有提供）
-                if ($normOrder) {
-                    // 也跳過已刪除者
-                    if ($deletes) {
-                        $delSet = array_fill_keys($deletes, true);
-                        $normOrder = array_values(array_filter($normOrder, function ($id) use ($delSet) {
-                            return !isset($delSet[$id]);
-                        }));
-                    }
-                    if ($normOrder) $svc->sortCategories($normOrder);
-                }
-
-                $pdo->commit();
-                json_ok(true);
-            } catch (Throwable $e) {
-                $pdo->rollBack();
-                throw $e;
+            // 2) rename（跳過已刪除）
+            $deletedSet = $deletes ? array_fill_keys($deletes, true) : [];
+            foreach ($normUpdates as $u) {
+                if (isset($deletedSet[$u['id']])) continue;
+                $svc->renameCategory($u['id'], $u['name']);
             }
+
+            // 3) sort（注意：sortCategories 自己會開 transaction，所以這裡不要再包）
+            if ($normOrder) {
+                if ($deletes) {
+                    $normOrder = array_values(array_filter($normOrder, function ($id) use ($deletedSet) {
+                        return !isset($deletedSet[$id]);
+                    }));
+                }
+                if ($normOrder) $svc->sortCategories($normOrder);
+            }
+
+            json_ok(true);
         }
     }
 
