@@ -109,9 +109,9 @@
             title: title,
             items: items,
             onConfirm: function (codes) {
-              return global.apiPost('/api/mat/edit_category_materials?action=update', {
+              return global.apiPost('/api/mat/edit_category_materials?action=save', {
                 category_id: categoryId,
-                material_nos: codes
+                material_numbers: codes
               }).then(function (r) {
                 if (!r || !r.success) {
                   if (global.Toast) global.Toast.show({ type: 'error', title: '儲存失敗', message: (r && r.error) ? r.error : 'update error' });

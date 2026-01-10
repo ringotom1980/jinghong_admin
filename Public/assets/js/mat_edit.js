@@ -83,12 +83,41 @@
     loadCategoryMaterials: function () {
       var self = this;
       if (!global.apiGet) return Promise.resolve();
-      return global.apiGet('/api/mat/edit_category_materials?action=list').then(function (j) {
-        if (!j || !j.success) {
-          if (global.Toast) global.Toast.show({ type: 'error', title: '載入失敗', message: (j && j.error) ? j.error : 'edit_category_materials list error' });
-          return;
-        }
-        self.state.cmMap = (j.data && j.data.cm_map) ? j.data.cm_map : {};
+
+      var cats = self.state.categories || [];
+      if (!cats.length) {
+        self.state.cmMap = {};
+        return Promise.resolve();
+      }
+
+      // 逐分類打 list&category_id，組回 cmMap={catId:{codes:[], text:''}}
+      var jobs = cats.map(function (c) {
+        var id = (c && c.id !== undefined && c.id !== null) ? String(c.id) : '';
+        if (!id) return Promise.resolve({ id: '', codes: [] });
+
+        return global.apiGet('/api/mat/edit_category_materials?action=list&category_id=' + encodeURIComponent(id))
+          .then(function (j) {
+            if (!j || !j.success) {
+              // 單一分類失敗不要中斷整體
+              return { id: id, codes: [] };
+            }
+            var codes = (j.data && j.data.material_numbers) ? j.data.material_numbers : [];
+            if (!Array.isArray(codes)) codes = [];
+            return { id: id, codes: codes };
+          });
+      });
+
+      return Promise.all(jobs).then(function (rows) {
+        var map = {};
+        rows.forEach(function (r) {
+          if (!r || !r.id) return;
+          var codes = Array.isArray(r.codes) ? r.codes : [];
+          map[r.id] = {
+            codes: codes,
+            text: codes.join(', ')
+          };
+        });
+        self.state.cmMap = map;
       });
     },
 
