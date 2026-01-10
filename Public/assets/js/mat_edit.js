@@ -71,13 +71,33 @@
     loadReconciliation: function (ymd) {
       var self = this;
       if (!global.apiGet) return Promise.resolve();
-      return global.apiGet('/api/mat/edit_reconciliation?action=get&withdraw_date=' + encodeURIComponent(ymd)).then(function (j) {
-        if (!j || !j.success) {
-          if (global.Toast) global.Toast.show({ type: 'error', title: '載入失敗', message: (j && j.error) ? j.error : 'edit_reconciliation get error' });
-          return;
-        }
-        self.state.reconMap = (j.data && j.data.recon_map) ? j.data.recon_map : {};
-      });
+
+      return global.apiGet('/api/mat/edit_reconciliation?action=get&withdraw_date=' + encodeURIComponent(ymd))
+        .then(function (j) {
+          if (!j || !j.success) {
+            if (global.Toast) global.Toast.show({
+              type: 'error',
+              title: '載入失敗',
+              message: (j && j.error) ? j.error : 'edit_reconciliation get error'
+            });
+            return;
+          }
+
+          // ✅ API 回傳：data.values = { "1":"20", "2":"50" }
+          var values = (j.data && j.data.values) ? j.data.values : {};
+          if (!values || typeof values !== 'object') values = {};
+
+          // ✅ normalize：轉成 number（允許負數、小數；空值視為 0）
+          var norm = {};
+          Object.keys(values).forEach(function (k) {
+            var v = values[k];
+            var n = (v === '' || v === null || v === undefined) ? 0 : Number(v);
+            if (!isFinite(n)) n = 0;
+            norm[String(k)] = n;
+          });
+
+          self.state.reconMap = norm;
+        });
     },
 
     loadCategoryMaterials: function () {
