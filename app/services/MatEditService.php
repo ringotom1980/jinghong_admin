@@ -97,9 +97,51 @@ final class MatEditService
         }));
         if (!$ids) return;
 
-        $in = implode(',', array_fill(0, count($ids), '?'));
-        $st = $this->pdo->prepare("DELETE FROM mat_edit_categories WHERE id IN ($in)");
-        $st->execute($ids);
+        $this->pdo->beginTransaction();
+        try {
+            // 1) 清理 mat_edit_reconciliation.recon_values_json 內對應 key
+            //    因為 key 是字串，所以用 (string)$id 比對
+            $rows = $this->pdo->query("SELECT withdraw_date, recon_values_json FROM mat_edit_reconciliation")->fetchAll();
+            if ($rows) {
+                $idKeys = array_map('strval', $ids);
+
+                $stUpd = $this->pdo->prepare(
+                    "UPDATE mat_edit_reconciliation SET recon_values_json = :j WHERE withdraw_date = :d"
+                );
+
+                foreach ($rows as $r) {
+                    $d = (string)$r['withdraw_date'];
+                    $j = (string)$r['recon_values_json'];
+
+                    $data = json_decode($j, true);
+                    if (!is_array($data)) continue;
+
+                    $changed = false;
+                    foreach ($idKeys as $k) {
+                        if (array_key_exists($k, $data)) {
+                            unset($data[$k]);
+                            $changed = true;
+                        }
+                    }
+                    if (!$changed) continue;
+
+                    $newJson = json_encode($data, JSON_UNESCAPED_UNICODE);
+                    if (!is_string($newJson)) throw new RuntimeException('reconciliation JSON 編碼失敗（' . $d . '）');
+
+                    $stUpd->execute([':j' => $newJson, ':d' => $d]);
+                }
+            }
+
+            // 2) 刪分類（cm 會 FK cascade）
+            $in = implode(',', array_fill(0, count($ids), '?'));
+            $st = $this->pdo->prepare("DELETE FROM mat_edit_categories WHERE id IN ($in)");
+            $st->execute($ids);
+
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     /** @param int[] $orderedIds */
