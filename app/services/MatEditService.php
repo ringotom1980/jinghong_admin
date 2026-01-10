@@ -1,182 +1,398 @@
 <?php
+
 /**
  * Path: app/services/MatEditService.php
- * 說明: /mat/edit 後端服務層（集中資料操作）
- * - 分類 CRUD / 排序
- * - 分類 ↔ 材料組合
- * - 對帳資料（整包 JSON）
- * - 分類刪除時清理對帳 JSON
- * - 承辦人（沿用 mat_personnel）
+ * 說明: /mat/edit（D 班管理）後端服務層
+ * - mat_edit_categories：分類（list/create/update/delete/sort）
+ * - mat_edit_category_materials：分類-材料歸屬（材料互斥）
+ * - mat_edit_reconciliation：對帳（日期 -> JSON）
+ * - mat_materials：材料主檔（僅 shift='D'）
  */
 
 declare(strict_types=1);
 
-class MatEditService
+final class MatEditService
 {
-    private PDO $db;
+    /** @var PDO */
+    private $pdo;
 
-    public function __construct()
+    public function __construct(PDO $pdo)
     {
-        $this->db = db();
+        $this->pdo = $pdo;
     }
 
-    /* ========= 分類 ========= */
+    /* =========================
+   * Categories
+   * ========================= */
 
     public function listCategories(): array
     {
-        $sql = "SELECT * FROM mat_edit_categories ORDER BY sort_order ASC, id ASC";
-        return $this->db->query($sql)->fetchAll();
+        $sql = "SELECT id, category_name, sort_order
+            FROM mat_edit_categories
+            ORDER BY sort_order ASC, id ASC";
+        $rows = $this->pdo->query($sql)->fetchAll();
+
+        return array_map(function ($r) {
+            return [
+                'id' => (int)$r['id'],
+                'name' => (string)$r['category_name'],
+                'sort_order' => (int)$r['sort_order'],
+            ];
+        }, $rows);
+    }
+
+    public function categoryNameExists(string $name, ?int $excludeId = null): bool
+    {
+        $name = trim($name);
+        $sql = "SELECT 1 FROM mat_edit_categories WHERE category_name = :n";
+        if ($excludeId !== null) $sql .= " AND id <> :id";
+        $sql .= " LIMIT 1";
+
+        $st = $this->pdo->prepare($sql);
+        $st->bindValue(':n', $name, PDO::PARAM_STR);
+        if ($excludeId !== null) $st->bindValue(':id', $excludeId, PDO::PARAM_INT);
+        $st->execute();
+        return (bool)$st->fetchColumn();
     }
 
     public function createCategory(string $name): int
     {
-        $stmt = $this->db->prepare(
-            "INSERT INTO mat_edit_categories (category_name, sort_order)
-             VALUES (:name, (SELECT IFNULL(MAX(sort_order),0)+1 FROM mat_edit_categories))"
+        $name = trim($name);
+        if ($name === '') throw new RuntimeException('分類名稱不可為空');
+        if ($this->categoryNameExists($name, null)) throw new RuntimeException('名稱已存在');
+
+        // 新分類預設放到最後（sort_order = max+10）
+        $max = (int)$this->pdo->query("SELECT COALESCE(MAX(sort_order), 0) FROM mat_edit_categories")->fetchColumn();
+        $sort = $max + 10;
+
+        $st = $this->pdo->prepare(
+            "INSERT INTO mat_edit_categories (category_name, sort_order) VALUES (:n, :s)"
         );
-        $stmt->execute([':name' => $name]);
-        return (int)$this->db->lastInsertId();
+        $st->execute([':n' => $name, ':s' => $sort]);
+
+        return (int)$this->pdo->lastInsertId();
     }
 
-    public function updateCategory(int $id, string $name): void
+    public function renameCategory(int $id, string $name): void
     {
-        $stmt = $this->db->prepare(
-            "UPDATE mat_edit_categories SET category_name = :name WHERE id = :id"
-        );
-        $stmt->execute([':id' => $id, ':name' => $name]);
-    }
+        $name = trim($name);
+        if ($id <= 0) throw new RuntimeException('分類ID不正確');
+        if ($name === '') throw new RuntimeException('分類名稱不可為空');
+        if ($this->categoryNameExists($name, $id)) throw new RuntimeException('名稱已存在');
 
-    public function deleteCategory(int $id): void
-    {
-        $this->db->beginTransaction();
-
-        // 刪分類本體（materials 由 FK CASCADE）
-        $stmt = $this->db->prepare("DELETE FROM mat_edit_categories WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-
-        // 清理所有對帳 JSON
-        $rows = $this->db->query(
-            "SELECT withdraw_date, recon_values_json FROM mat_edit_reconciliation"
-        )->fetchAll();
-
-        foreach ($rows as $r) {
-            $json = json_decode($r['recon_values_json'], true);
-            if (!is_array($json)) continue;
-
-            $key = (string)$id;
-            if (!array_key_exists($key, $json)) continue;
-
-            unset($json[$key]);
-
-            if (empty($json)) {
-                $del = $this->db->prepare(
-                    "DELETE FROM mat_edit_reconciliation WHERE withdraw_date = :d"
-                );
-                $del->execute([':d' => $r['withdraw_date']]);
-            } else {
-                $upd = $this->db->prepare(
-                    "UPDATE mat_edit_reconciliation
-                     SET recon_values_json = :j
-                     WHERE withdraw_date = :d"
-                );
-                $upd->execute([
-                    ':j' => json_encode($json, JSON_UNESCAPED_UNICODE),
-                    ':d' => $r['withdraw_date']
-                ]);
-            }
+        $st = $this->pdo->prepare("UPDATE mat_edit_categories SET category_name = :n WHERE id = :id");
+        $st->execute([':n' => $name, ':id' => $id]);
+        if ($st->rowCount() === 0) {
+            // 可能名稱相同或不存在；不存在要報錯
+            $chk = $this->pdo->prepare("SELECT 1 FROM mat_edit_categories WHERE id=:id");
+            $chk->execute([':id' => $id]);
+            if (!$chk->fetchColumn()) throw new RuntimeException('分類不存在');
         }
-
-        $this->db->commit();
     }
 
+    public function deleteCategories(array $ids): void
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids), function ($v) {
+            return $v > 0;
+        }));
+        if (!$ids) return;
+
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $st = $this->pdo->prepare("DELETE FROM mat_edit_categories WHERE id IN ($in)");
+        $st->execute($ids);
+    }
+
+    /** @param int[] $orderedIds */
     public function sortCategories(array $orderedIds): void
     {
-        $this->db->beginTransaction();
-        $stmt = $this->db->prepare(
-            "UPDATE mat_edit_categories SET sort_order = :o WHERE id = :id"
-        );
+        $orderedIds = array_values(array_filter(array_map('intval', $orderedIds), function ($v) {
+            return $v > 0;
+        }));
+        if (!$orderedIds) return;
 
-        foreach ($orderedIds as $i => $id) {
-            $stmt->execute([':o' => $i + 1, ':id' => (int)$id]);
+        $this->pdo->beginTransaction();
+        try {
+            // 用 10,20,30... 避免頻繁重排造成衝突
+            $st = $this->pdo->prepare("UPDATE mat_edit_categories SET sort_order = :s WHERE id = :id");
+            $s = 10;
+            foreach ($orderedIds as $id) {
+                $st->execute([':s' => $s, ':id' => $id]);
+                $s += 10;
+            }
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
-        $this->db->commit();
     }
 
-    /* ========= 分類 ↔ 材料 ========= */
+    /* =========================
+   * Category Materials (shift='D')
+   * ========================= */
 
-    public function getCategoryMaterials(int $categoryId): array
+    public function listCategoryMaterials(): array
     {
-        $stmt = $this->db->prepare(
-            "SELECT material_number
-             FROM mat_edit_category_materials
-             WHERE category_id = :id"
-        );
-        $stmt->execute([':id' => $categoryId]);
-        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        // categories + materials concat
+        $cats = $this->listCategories();
+
+        $sql = "SELECT cm.category_id, cm.material_number, m.material_name
+            FROM mat_edit_category_materials cm
+            LEFT JOIN mat_materials m ON m.material_number = cm.material_number
+            ORDER BY cm.category_id ASC, cm.material_number ASC";
+        $rows = $this->pdo->query($sql)->fetchAll();
+
+        $map = []; // category_id => list
+        foreach ($rows as $r) {
+            $cid = (int)$r['category_id'];
+            if (!isset($map[$cid])) $map[$cid] = [];
+            $map[$cid][] = [
+                'material_number' => (string)$r['material_number'],
+                'material_name' => (string)($r['material_name'] ?? ''),
+            ];
+        }
+
+        // 給前端：每個分類材料組合（顯示用字串 + 清單）
+        foreach ($cats as &$c) {
+            $list = $map[$c['id']] ?? [];
+            $c['materials'] = $list;
+            $c['materials_text'] = implode(', ', array_map(function ($x) {
+                return $x['material_number'];
+            }, $list));
+        }
+        unset($c);
+
+        return $cats;
     }
 
-    public function saveCategoryMaterials(int $categoryId, array $materials): void
+    /**
+     * 供 modal 用：列出 shift='D' 的材料清單
+     * - 同時回傳 assigned_category_id，讓前端能「禁選」
+     */
+    public function listMaterialsShiftDWithAssignment(): array
     {
-        $this->db->beginTransaction();
+        $materials = $this->pdo->query(
+            "SELECT material_number, COALESCE(material_name,'') AS material_name
+       FROM mat_materials
+       WHERE shift = 'D'
+       ORDER BY material_number ASC"
+        )->fetchAll();
 
-        $del = $this->db->prepare(
-            "DELETE FROM mat_edit_category_materials WHERE category_id = :id"
-        );
-        $del->execute([':id' => $categoryId]);
+        $assigned = $this->pdo->query(
+            "SELECT material_number, category_id
+       FROM mat_edit_category_materials"
+        )->fetchAll();
 
-        if ($materials) {
-            $ins = $this->db->prepare(
-                "INSERT INTO mat_edit_category_materials (category_id, material_number)
-                 VALUES (:cid, :m)"
+        $assignedMap = [];
+        foreach ($assigned as $a) {
+            $assignedMap[(string)$a['material_number']] = (int)$a['category_id'];
+        }
+
+        return array_map(function ($m) use ($assignedMap) {
+            $num = (string)$m['material_number'];
+            return [
+                'material_number' => $num,
+                'material_name' => (string)$m['material_name'],
+                'assigned_category_id' => $assignedMap[$num] ?? null, // int|null
+            ];
+        }, $materials);
+    }
+
+    /**
+     * 設定某分類的材料組合（整包覆蓋）
+     * - 互斥規則：material_number 不可同時屬於其他分類
+     * @param string[] $materialNumbers
+     */
+    public function setCategoryMaterials(int $categoryId, array $materialNumbers): void
+    {
+        if ($categoryId <= 0) throw new RuntimeException('分類ID不正確');
+
+        // normalize unique
+        $materialNumbers = array_values(array_unique(array_filter(array_map(function ($v) {
+            return trim((string)$v);
+        }, $materialNumbers), function ($v) {
+            return $v !== '';
+        })));
+
+        // 檢查 category 存在
+        $st = $this->pdo->prepare("SELECT 1 FROM mat_edit_categories WHERE id = :id");
+        $st->execute([':id' => $categoryId]);
+        if (!$st->fetchColumn()) throw new RuntimeException('分類不存在');
+
+        // 檢查所有 material 是否在 shift='D' 的 mat_materials
+        if ($materialNumbers) {
+            $in = implode(',', array_fill(0, count($materialNumbers), '?'));
+            $chk = $this->pdo->prepare(
+                "SELECT material_number
+         FROM mat_materials
+         WHERE shift='D' AND material_number IN ($in)"
             );
-            foreach ($materials as $m) {
-                $ins->execute([':cid' => $categoryId, ':m' => $m]);
+            $chk->execute($materialNumbers);
+            $ok = $chk->fetchAll(PDO::FETCH_COLUMN);
+
+            $okMap = array_fill_keys(array_map('strval', $ok), true);
+            $missing = [];
+            foreach ($materialNumbers as $mn) {
+                if (!isset($okMap[$mn])) $missing[] = $mn;
+            }
+            if ($missing) {
+                throw new RuntimeException('材料不存在或非 D 班：' . implode(', ', $missing));
+            }
+
+            // 檢查互斥：是否已被其他分類占用
+            $in2 = implode(',', array_fill(0, count($materialNumbers), '?'));
+            $args = $materialNumbers;
+            $args[] = $categoryId;
+
+            $conf = $this->pdo->prepare(
+                "SELECT material_number, category_id
+         FROM mat_edit_category_materials
+         WHERE material_number IN ($in2) AND category_id <> ?"
+            );
+            $conf->execute($args);
+            $confRows = $conf->fetchAll();
+
+            if ($confRows) {
+                // 回報哪些材料被哪個分類占用
+                $bad = array_map(function ($r) {
+                    return (string)$r['material_number'] . '(category_id=' . (int)$r['category_id'] . ')';
+                }, $confRows);
+                throw new RuntimeException('材料已被其他分類選用：' . implode(', ', $bad));
             }
         }
 
-        $this->db->commit();
+        $this->pdo->beginTransaction();
+        try {
+            // 先刪再插（整包覆蓋）
+            $del = $this->pdo->prepare("DELETE FROM mat_edit_category_materials WHERE category_id = :cid");
+            $del->execute([':cid' => $categoryId]);
+
+            if ($materialNumbers) {
+                $ins = $this->pdo->prepare(
+                    "INSERT INTO mat_edit_category_materials (category_id, material_number) VALUES (:cid, :mn)"
+                );
+                foreach ($materialNumbers as $mn) {
+                    $ins->execute([':cid' => $categoryId, ':mn' => $mn]);
+                }
+            }
+
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
-    /* ========= 對帳 ========= */
+    /* =========================
+   * Reconciliation
+   * ========================= */
 
-    public function getReconciliation(string $date): ?array
+    public function getReconciliation(string $withdrawDate): array
     {
-        $stmt = $this->db->prepare(
-            "SELECT recon_values_json FROM mat_edit_reconciliation WHERE withdraw_date = :d"
+        $withdrawDate = trim($withdrawDate);
+        if (!$this->isValidDate($withdrawDate)) throw new RuntimeException('日期格式不正確');
+
+        $st = $this->pdo->prepare(
+            "SELECT recon_values_json, updated_at, updated_by
+       FROM mat_edit_reconciliation
+       WHERE withdraw_date = :d"
         );
-        $stmt->execute([':d' => $date]);
-        $row = $stmt->fetch();
-        return $row ? json_decode($row['recon_values_json'], true) : null;
+        $st->execute([':d' => $withdrawDate]);
+        $row = $st->fetch();
+
+        $values = [];
+        if ($row && isset($row['recon_values_json'])) {
+            $decoded = json_decode((string)$row['recon_values_json'], true);
+            if (is_array($decoded)) $values = $decoded;
+        }
+
+        // 統一：key 轉 string，value 轉數字字串（前端可直接塞 input）
+        $norm = [];
+        foreach ($values as $k => $v) {
+            $kid = (string)$k;
+            if ($v === '' || $v === null) $norm[$kid] = '0';
+            else $norm[$kid] = (string)$v;
+        }
+
+        return [
+            'withdraw_date' => $withdrawDate,
+            'values' => $norm,
+            'meta' => [
+                'updated_at' => $row['updated_at'] ?? null,
+                'updated_by' => $row['updated_by'] ?? null,
+            ],
+        ];
     }
 
-    public function saveReconciliation(string $date, array $values, ?int $userId): void
+    /**
+     * 儲存對帳（整包覆蓋）
+     * @param array<string,mixed> $values key=category_id
+     */
+    public function saveReconciliation(string $withdrawDate, array $values, ?int $userId): void
     {
-        $stmt = $this->db->prepare(
-            "REPLACE INTO mat_edit_reconciliation
-             (withdraw_date, recon_values_json, updated_by)
-             VALUES (:d, :j, :u)"
+        $withdrawDate = trim($withdrawDate);
+        if (!$this->isValidDate($withdrawDate)) throw new RuntimeException('日期格式不正確');
+
+        // 空值=0；允許小數
+        $norm = [];
+        foreach ($values as $cid => $val) {
+            $cid = (string)$cid;
+            $s = trim((string)$val);
+            if ($s === '') $s = '0';
+
+            // 允許：正數 / 負數 / 小數
+            // 空字串已在前面轉成 0
+            if (!preg_match('/^-?\d+(\.\d+)?$/', $s)) {
+                throw new RuntimeException('對帳數量格式不正確（category_id=' . $cid . '）');
+            }
+
+            // 允許小數
+            if (!preg_match('/^\d+(\.\d+)?$/', $s)) {
+                throw new RuntimeException('對帳數量格式不正確（category_id=' . $cid . '）');
+            }
+            $norm[$cid] = $s;
+        }
+
+        $json = json_encode($norm, JSON_UNESCAPED_UNICODE);
+        if (!is_string($json)) throw new RuntimeException('JSON 編碼失敗');
+
+        $st = $this->pdo->prepare(
+            "INSERT INTO mat_edit_reconciliation (withdraw_date, recon_values_json, updated_by)
+       VALUES (:d, :j, :u)
+       ON DUPLICATE KEY UPDATE
+         recon_values_json = VALUES(recon_values_json),
+         updated_by = VALUES(updated_by),
+         updated_at = CURRENT_TIMESTAMP()"
         );
-        $stmt->execute([
-            ':d' => $date,
-            ':j' => json_encode($values, JSON_UNESCAPED_UNICODE),
-            ':u' => $userId
+        $st->execute([
+            ':d' => $withdrawDate,
+            ':j' => $json,
+            ':u' => $userId,
         ]);
     }
 
-    /* ========= 承辦人 ========= */
-
-    public function getPersonnel(): array
+    /**
+     * 檢查某天是否已匯入提領資料（mat_issue_items.withdraw_date）
+     */
+    public function hasIssueData(string $withdrawDate): bool
     {
-        return $this->db->query(
-            "SELECT shift_code, person_name FROM mat_personnel ORDER BY shift_code"
-        )->fetchAll();
+        $withdrawDate = trim($withdrawDate);
+        if (!$this->isValidDate($withdrawDate)) return false;
+
+        // 你規格：判斷 mat_issue_items.withdraw_date
+        $st = $this->pdo->prepare("SELECT 1 FROM mat_issue_items WHERE withdraw_date = :d LIMIT 1");
+        $st->execute([':d' => $withdrawDate]);
+        return (bool)$st->fetchColumn();
     }
 
-    public function savePersonnel(string $shift, string $name): void
+    /* =========================
+   * Utils
+   * ========================= */
+
+    private function isValidDate(string $d): bool
     {
-        $stmt = $this->db->prepare(
-            "UPDATE mat_personnel SET person_name = :n WHERE shift_code = :s"
-        );
-        $stmt->execute([':n' => $name, ':s' => $shift]);
+        // YYYY-MM-DD
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) return false;
+        $dt = DateTime::createFromFormat('Y-m-d', $d);
+        return $dt && $dt->format('Y-m-d') === $d;
     }
 }
