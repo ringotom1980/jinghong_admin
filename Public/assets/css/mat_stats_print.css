@@ -1,0 +1,41 @@
+/*
+ * Path: Public/assets/css/mat_stats_print.css
+ * 說明: 統計頁列印樣式（window.print）
+ * - 你說不做 PDF：這裡只是「列印版面控制」
+ */
+
+@media print {
+  /* 隱藏導覽/側欄/不需要的 UI */
+  .topbar,
+  .sidebar,
+  .footer,
+  .ms-toolbar__actions,
+  .ms-capsules-wrap,
+  .ms-filter,
+  .ms-status {
+    display: none !important;
+  }
+
+  /* 讓內容滿版 */
+  body {
+    background: #fff !important;
+  }
+
+  .page,
+  .content {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 卡片列印時去陰影 */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  }
+
+  /* 避免表格被切頁切斷 */
+  table, tr, td, th {
+    page-break-inside: avoid;
+  }
+}
