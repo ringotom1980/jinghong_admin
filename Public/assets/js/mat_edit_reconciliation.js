@@ -123,7 +123,7 @@
           if (global.Modal && global.Modal.confirmChoice) {
             global.Modal.confirmChoice(
               '日期確認',
-              j.data.message || ('提領時間為' + d + '當日尚未匯入提領資料(判斷mat_issue_items.withdraw_date)，日期是否正確'),
+              j.data.message || ('提領時間為' + d + '當日尚未匯入提領資料，要儲存的提領日期是否正確'),
               function () { Mod.saveRecon(true); },  // 仍要儲存 → confirm=true
               function () { },                      // 取消
               { confirmText: '仍要儲存', cancelText: '取消' }
