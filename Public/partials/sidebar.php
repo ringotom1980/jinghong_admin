@@ -78,7 +78,7 @@ $u = function (string $path) use ($base): string {
             </div>
             <nav class="drawer__nav" aria-label="領退管理導覽">
                 <a class="nav__item" data-nav="mat_issue" href="<?= htmlspecialchars($u('/mat/issue'), ENT_QUOTES) ?>">提領作業</a>
-                <a class="nav__item" data-nav="mat_edit" href="<?= htmlspecialchars($u('/mat/edit'), ENT_QUOTES) ?>">資料編輯</a>
+                <a class="nav__item" data-nav="mat_edit" href="<?= htmlspecialchars($u('/mat/edit'), ENT_QUOTES) ?>">D班管理</a>
                 <a class="nav__item" data-nav="mat_materials" href="<?= htmlspecialchars($u('/mat/materials'), ENT_QUOTES) ?>">材料管理</a>
                 <a class="nav__item" data-nav="mat_stats" href="<?= htmlspecialchars($u('/mat/stats'), ENT_QUOTES) ?>">領退統計</a>
             </nav>
