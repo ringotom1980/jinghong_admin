@@ -36,6 +36,40 @@
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
+.mat-edit-b .mb-search__wrap {
+  position: relative;
+}
+
+.mat-edit-b .mb-search__input {
+  padding-right: 44px; /* 給 X 按鈕空間 */
+}
+
+.mat-edit-b .mb-search__clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(15, 23, 42, 0.65);
+  cursor: pointer;
+  display: none; /* 有內容才顯示 */
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.mat-edit-b .mb-search__clear:hover {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.mat-edit-b .mb-search__clear.is-show {
+  display: inline-flex;
+}
+
 .mat-edit-b .mb-search__hint {
   margin-top: 6px;
   font-size: 13px;
