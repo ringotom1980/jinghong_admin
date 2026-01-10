@@ -113,7 +113,10 @@
      */
     enableDragSort: function (listEl, itemSelector, handleSelector, onSorted) {
       if (!listEl) return;
+
       var dragging = null;
+      var allowDrag = false;
+      var allowItem = null;
 
       function setDraggableItems(enabled) {
         qsa(itemSelector, listEl).forEach(function (it) {
@@ -121,7 +124,33 @@
         });
       }
 
+      // 預設全部可拖（但 dragstart 仍會被 allowDrag 控制）
       setDraggableItems(true);
+
+      // ✅ 關鍵：只要按在把手上，就允許下一次 dragstart
+      listEl.addEventListener('pointerdown', function (e) {
+        if (!handleSelector) return;
+
+        var t = e.target;
+        var handle = t && (t.matches(handleSelector) ? t : (t.closest ? t.closest(handleSelector) : null));
+        if (!handle) {
+          allowDrag = false;
+          allowItem = null;
+          return;
+        }
+
+        var item = handle.closest ? handle.closest(itemSelector) : null;
+        if (!item) return;
+
+        allowDrag = true;
+        allowItem = item;
+      });
+
+      // 放開就取消允許（避免誤觸）
+      listEl.addEventListener('pointerup', function () {
+        allowDrag = false;
+        allowItem = null;
+      });
 
       listEl.addEventListener('dragstart', function (e) {
         var t = e.target;
@@ -130,23 +159,26 @@
         var item = t.matches(itemSelector) ? t : (t.closest ? t.closest(itemSelector) : null);
         if (!item) return;
 
-        // 必須從把手開始拖
-        var h = e.target;
-        var handle = h && handleSelector ? (h.matches(handleSelector) ? h : (h.closest ? h.closest(handleSelector) : null)) : null;
-        if (!handle) {
+        // ✅ 只允許「剛剛 pointerdown 在把手上」的那一筆 item
+        if (handleSelector && (!allowDrag || allowItem !== item)) {
           e.preventDefault();
           return;
         }
 
         dragging = item;
         item.classList.add('is-dragging');
-        try { e.dataTransfer.effectAllowed = 'move'; } catch (err) {}
+        try { e.dataTransfer.effectAllowed = 'move'; } catch (err) { }
       });
 
       listEl.addEventListener('dragend', function () {
         if (!dragging) return;
+
         dragging.classList.remove('is-dragging');
         dragging = null;
+
+        // reset allow state
+        allowDrag = false;
+        allowItem = null;
 
         if (typeof onSorted === 'function') {
           var ids = qsa(itemSelector, listEl)
@@ -166,6 +198,7 @@
 
         var rect = over.getBoundingClientRect();
         var after = (e.clientY - rect.top) > (rect.height / 2);
+
         if (after) {
           if (over.nextSibling !== dragging) over.parentNode.insertBefore(dragging, over.nextSibling);
         } else {
