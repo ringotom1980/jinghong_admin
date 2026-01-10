@@ -253,3 +253,38 @@
 .me-modal-row.is-disabled {
   opacity: 0.55;
 }
+
+/* ===== mat/edit modal 寬度調整 ===== */
+.mat-edit .modal,
+.mat-edit .modal__dialog {
+  max-width: 980px;   /* 原本多半是 640~720，這裡放大 */
+  width: 92%;
+}
+
+/* ===== mat/edit modal 文字與可讀性微調（在既有規則上補強） ===== */
+
+/* 整體列表字級 */
+.mat-edit .me-modal-list {
+  font-size: 15px;      /* 原本 13 */
+  line-height: 1.6;
+}
+
+/* 每一列高度與呼吸感 */
+.mat-edit .me-modal-row {
+  padding: 10px 8px;    /* 原本 8px 6px，略放鬆 */
+}
+
+/* 材料編號：主視覺 */
+.mat-edit .me-modal-code {
+  font-size: 15px;      /* 保持穩重、不暴衝 */
+}
+
+/* 材料名稱：輔助資訊 */
+.mat-edit .me-modal-name {
+  font-size: 14px;
+}
+
+/* 禁選說明 */
+.mat-edit .me-modal-badge {
+  font-size: 13px;
+}
