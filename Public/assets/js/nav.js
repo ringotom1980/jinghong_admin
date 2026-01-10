@@ -51,6 +51,8 @@
             { key: 'dashboard', match: ['/dashboard'] },
 
             { key: 'mat_issue', match: ['/mat/issue'] },
+            { key: 'mat_personnel', match: ['/mat/mat_personnel'] },
+            { key: 'mat_edit_B', match: ['/mat/mat_edit_B'] },
             { key: 'mat_edit', match: ['/mat/edit'] },
             { key: 'mat_materials', match: ['/mat/materials'] },
             { key: 'mat_stats', match: ['/mat/stats'] },
