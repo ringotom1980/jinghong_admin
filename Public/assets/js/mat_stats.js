@@ -18,8 +18,8 @@
         },
 
         api: {
-            capsules: 'api/mat/stats_capsules.php',
-            stats: 'api/mat/stats.php'
+            capsules: 'api/mat/stats_capsules',
+            stats: 'api/mat/stats'
         },
 
         init: function () {
