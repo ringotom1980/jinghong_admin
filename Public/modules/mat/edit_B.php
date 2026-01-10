@@ -29,7 +29,7 @@ $pageJs  = [
     <?php require __DIR__ . '/../../partials/header.php'; ?>
     <?php require __DIR__ . '/../../partials/sidebar.php'; ?>
 
-    <main class="page mat-edit-b page-enter" role="main" data-nav="mat_edit_B">
+    <main class="page mat-edit-b page-enter" role="main">
         <div class="content">
 
             <header class="page-head">
