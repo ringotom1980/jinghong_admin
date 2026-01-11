@@ -63,8 +63,19 @@
 .ms-filter{
   margin-top: 12px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;     /* ✅ 不換行 */
   gap: 8px;
+  overflow-x: auto;      /* ✅ 超出用橫向捲動 */
+  overflow-y: hidden;
+  padding-bottom: 2px;   /* ✅ 避免捲動條貼到按鈕 */
+  -webkit-overflow-scrolling: touch;
+}
+.ms-filter::-webkit-scrollbar{
+  height: 8px;
+}
+.ms-filter::-webkit-scrollbar-thumb{
+  background: rgba(15,23,42,.16);
+  border-radius: 999px;
 }
 
 .ms-filter__btn{
@@ -76,6 +87,24 @@
   cursor: pointer;
   font-size: 14px;
   color: rgba(15,23,42,.86);
+}
+
+/* ===== Personnel quick buttons (A-鄭建昇) ===== */
+.ms-filter__btn--person{
+  height: 28px;          /* ✅ 比 A/B/C 更扁 */
+  padding: 0 10px;
+  border-radius: 999px;  /* ✅ 做成膠囊，但不影響原本 */
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;   /* ✅ 不換行 */
+  max-width: 180px;      /* ✅ 避免太長把整排擠爆 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* active 狀態：跟原本一致，不用另寫也可；你要更明顯可加這段 */
+.ms-filter__btn--person.is-active{
+  font-weight: 900;
 }
 
 .ms-filter__btn:hover{
