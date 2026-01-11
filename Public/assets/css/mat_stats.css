@@ -326,3 +326,9 @@
   color: #2563eb; /* blue-600 */
   font-weight: 700;
 }
+
+/* 合計列（F班用） */
+.ms-table .ms-tr-sum td{
+  font-weight: 900;
+  background: rgba(15, 23, 42, 0.03);
+}

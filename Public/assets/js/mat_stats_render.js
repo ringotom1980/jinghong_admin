@@ -160,12 +160,22 @@
 
         // ===== 內容 =====
         html += '<tbody>';
+        // ✅ F 班才需要「最下方合計列」：先累加四欄
+        var sumCn = 0, sumCo = 0, sumRn = 0, sumRo = 0;
 
         rows.forEach(function (r, idx) {
             var cn = Number(r.collar_new || 0);
             var co = Number(r.collar_old || 0);
             var rn = Number(r.recede_new || 0);
             var ro = Number(r.recede_old || 0); // ✅ 後端已套用 recede_old+scrap+footprint
+            // ✅ 累加（只要資料有 shift='F' 才加，避免 E 班也被算進去）
+            var sh = String(r.shift || '').toUpperCase();
+            if (sh === 'F') {
+                sumCn += cn;
+                sumCo += co;
+                sumRn += rn;
+                sumRo += ro;
+            }
 
             function v(x, cls) {
                 if (x === 0) return '';
@@ -190,6 +200,43 @@
 
         if (!rows.length) {
             html += '<tr><td colspan="6" class="ms-empty">無資料</td></tr>';
+        }
+        // ✅ 只有 F 班有資料時，才追加「合計」列
+        if (rows.length) {
+            var hasF = rows.some(function (r) { return String(r.shift || '').toUpperCase() === 'F'; });
+            if (hasF) {
+                html += '<tr class="ms-tr-sum">';
+
+                // ✅ 合併「項次 + 材料名稱」
+                html += '<td class="ms-td-num" colspan="2">合計</td>';
+                // 領新：正藍、負紅
+                html += '<td class="ms-td-num">' +
+                    (sumCn === 0 ? '' :
+                        '<span class="' + (sumCn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(sumCn)) + '</span>'
+                    ) +
+                    '</td>';
+                // 領舊：正黑、負紅
+                html += '<td class="ms-td-num">' +
+                    (sumCo === 0 ? '' :
+                        '<span class="' + (sumCo < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(sumCo)) + '</span>'
+                    ) +
+                    '</td>';
+                // 退新：一律紅
+                html += '<td class="ms-td-num">' +
+                    (sumRn === 0 ? '' :
+                        '<span class="ms-neg">' + esc(n(sumRn)) + '</span>'
+                    ) +
+                    '</td>';
+                // 退舊：一律紅
+                html += '<td class="ms-td-num">' +
+                    (sumRo === 0 ? '' :
+                        '<span class="ms-neg">' + esc(n(sumRo)) + '</span>'
+                    ) +
+                    '</td>';
+
+                html += '</tr>';
+
+            }
         }
 
         html += '</tbody></table></div>';
