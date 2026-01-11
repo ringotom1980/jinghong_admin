@@ -1,17 +1,17 @@
 /* Path: Public/assets/js/mat_stats_print.js
  * 說明: 統計頁列印（只印 A-F 表格內容）
- * - 點 #msBtnPrint 時：
- *   1) 建立 #msPrintArea
- *   2) 塞入列印抬頭
- *   3) clone #msContent（A-F 表格）進去
- *   4) window.print()
- *   5) afterprint 清掉 #msPrintArea
+ * 需求：
+ * 1) A4 橫式：由 CSS @page 控制
+ * 2) 抬頭：LOGO + 境宏工程有限公司領退料統計
+ * 3) 每班新頁：由 CSS 對 .ms-section 控制
+ * 4) 頁碼 1/6：以「每班一頁」=「第 i / 總班數」
  */
 
 (function (global) {
   'use strict';
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   var Mod = {
     app: null,
@@ -36,7 +36,6 @@
     },
 
     _getShiftText: function () {
-      // 你目前 shift filter 會標 .is-active
       var b = qs('#msShiftFilter .ms-filter__btn.is-active');
       var t = b ? (b.textContent || '') : '';
       t = String(t).trim();
@@ -44,16 +43,64 @@
     },
 
     _getDateText: function () {
-      // 你的工具列日期是 #msSelectedDate
       var el = qs('#msSelectedDate');
       var t = el ? (el.textContent || '') : '';
       t = String(t).trim();
       return t || '--';
     },
 
+    _escapeHtml: function (s) {
+      s = (s === null || s === undefined) ? '' : String(s);
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    },
+
     _cleanup: function () {
       var old = qs('#msPrintArea');
       if (old && old.parentNode) old.parentNode.removeChild(old);
+    },
+
+    _buildPrintHeader: function () {
+      // LOGO 路徑：你可依實際檔案調整
+      // 建議放在：Public/assets/img/logo128.png
+      var logoSrc = 'assets/img/logo128.png';
+
+      var dateText = this._escapeHtml(this._getDateText());
+      var shiftText = this._escapeHtml(this._getShiftText());
+      var nowText = this._escapeHtml(this._formatNow());
+
+      var wrap = document.createElement('div');
+      wrap.className = 'ms-print-head';
+
+      wrap.innerHTML = ''
+        + '<img class="ms-print-logo" src="' + logoSrc + '" alt="LOGO" />'
+        + '<div>'
+        + '  <div class="ms-print-title">境宏工程有限公司領退料統計</div>'
+        + '  <div class="ms-print-meta">查詢日期：' + dateText + '　｜　班別：' + shiftText + '　｜　列印時間：' + nowText + '</div>'
+        + '</div>';
+
+      return wrap;
+    },
+
+    _stampSectionPageNo: function (contentRoot) {
+      // 只對印出來的班別區塊（.ms-section）做 1/N 標記
+      var sections = qsa('.ms-section', contentRoot);
+      var total = sections.length;
+
+      sections.forEach(function (sec, idx) {
+        var head = qs('.ms-section__head', sec) || sec;
+        var badge = qs('.ms-print-page', head);
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.className = 'ms-print-page';
+          head.appendChild(badge);
+        }
+        badge.textContent = (idx + 1) + '/' + total;
+      });
     },
 
     print: function () {
@@ -67,26 +114,19 @@
       var wrap = document.createElement('div');
       wrap.id = 'msPrintArea';
 
-      // 列印抬頭
-      var head = document.createElement('div');
-      head.className = 'ms-print-head';
-      head.innerHTML = ''
-        + '<div class="ms-print-title">材料領退統計</div>'
-        + '<div class="ms-print-meta">'
-        + '查詢日期：' + this._escapeHtml(this._getDateText())
-        + '　｜　班別：' + this._escapeHtml(this._getShiftText())
-        + '　｜　列印時間：' + this._escapeHtml(this._formatNow())
-        + '</div>';
+      // 抬頭：LOGO + 標題
+      wrap.appendChild(this._buildPrintHeader());
 
-      wrap.appendChild(head);
-
-      // 只印表格內容：clone #msContent
+      // 只印表格內容：clone #msContent（A-F）
       var clone = src.cloneNode(true);
       wrap.appendChild(clone);
 
+      // 對 clone 內每班蓋上 1/N
+      this._stampSectionPageNo(clone);
+
       document.body.appendChild(wrap);
 
-      // afterprint 清理
+      // afterprint 清理（保底）
       var self = this;
       var done = false;
 
@@ -98,21 +138,9 @@
       }
 
       global.addEventListener('afterprint', finish);
-
-      // 部分瀏覽器 afterprint 不穩，保底清除（不影響列印）
-      setTimeout(finish, 2000);
+      setTimeout(finish, 2500);
 
       global.print();
-    },
-
-    _escapeHtml: function (s) {
-      s = (s === null || s === undefined) ? '' : String(s);
-      return s
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
     }
   };
 

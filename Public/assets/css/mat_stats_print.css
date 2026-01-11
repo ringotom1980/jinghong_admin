@@ -1,9 +1,18 @@
 /* Path: Public/assets/css/mat_stats_print.css
- * 說明: 統計頁列印（只印 A-F 表格內容：#msPrintArea）
+ * 說明: 統計頁列印（只印 A-F 表格內容）
+ * 需求：
+ * 1) A4 橫式
+ * 2) 列印抬頭：LOGO + 境宏工程有限公司領退料統計
+ * 3) 每一班從新的一頁開始
+ * 4) 顯示頁碼 1/6（此處以「每班一頁」=「第幾班/總班數」）
  */
 
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
 @media print {
-  /* 顏色校正 */
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -34,7 +43,36 @@
     padding: 0 !important;
   }
 
-  /* 淡框線 + 避免切斷 + 表頭重複 */
+  /* 抬頭 */
+  #msPrintArea .ms-print-head {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 0 10px 0 !important;
+    padding: 0 0 8px 0 !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+  }
+
+  #msPrintArea .ms-print-logo {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+  }
+
+  #msPrintArea .ms-print-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  #msPrintArea .ms-print-meta {
+    font-size: 12px !important;
+    color: #444 !important;
+    margin-top: 4px !important;
+  }
+
+  /* 淡框線 + 表頭重複 + 避免切斷 */
   #msPrintArea table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -47,13 +85,8 @@
     vertical-align: top;
   }
 
-  #msPrintArea thead {
-    display: table-header-group;
-  }
-
-  #msPrintArea tfoot {
-    display: table-footer-group;
-  }
+  #msPrintArea thead { display: table-header-group; }
+  #msPrintArea tfoot { display: table-footer-group; }
 
   #msPrintArea tr,
   #msPrintArea td,
@@ -62,30 +95,27 @@
     break-inside: avoid !important;
   }
 
-  /* 區塊（每班 card）避免被切斷 */
-  #msPrintArea .card,
-  #msPrintArea .ms-section,
-  #msPrintArea .ms-table-wrap {
+  /* 每一班（每個 .ms-section）從新的一頁開始 */
+  #msPrintArea .ms-section {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* 列印抬頭（JS 會塞） */
-  #msPrintArea .ms-print-head {
-    margin: 0 0 10px 0 !important;
-    padding: 0 0 8px 0 !important;
-    border-bottom: 1px solid #e5e5e5 !important;
+  #msPrintArea .ms-section:not(:first-of-type) {
+    break-before: page !important;
+    page-break-before: always !important;
   }
 
-  #msPrintArea .ms-print-title {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
+  /* 每班頁碼（第 i / 總班數，印在每班區塊標題列右側） */
+  #msPrintArea .ms-section__head {
+    position: relative !important;
   }
 
-  #msPrintArea .ms-print-meta {
+  #msPrintArea .ms-print-page {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
     font-size: 12px !important;
     color: #444 !important;
-    margin-top: 4px !important;
   }
 }
