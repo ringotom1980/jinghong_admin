@@ -71,10 +71,8 @@ $pageJs = [
                         <div class="ms-capsules" id="msCapsules"></div>
                     </div>
 
-                    <!-- 班別篩選 -->
                     <div class="ms-filter" id="msShiftFilter" role="group" aria-label="班別篩選">
-                        <button type="button" class="ms-filter__btn is-active" data-shift="all">全部</button>
-                        <!-- A-F 由 mat_stats_filter.js 依 /api/mat/personnel 動態產生（A-姓名 / A） -->
+                        <!-- ✅ 全部 + A-F（A-姓名）一律由 mat_stats_filter.js 統一 render，避免樣式不一致 -->
                     </div>
 
                     <!-- 狀態提示 -->
