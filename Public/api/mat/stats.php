@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/api/mat/stats.php
  * 說明: 統計總控 API
@@ -12,13 +13,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
 
-function _pick_latest_date_3m(): ?string {
-  $sql = "SELECT MAX(withdraw_date) AS d
+function _pick_latest_date_3m(): ?string
+{
+    $sql = "SELECT MAX(withdraw_date) AS d
           FROM mat_issue_batches
           WHERE withdraw_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)";
-  $row = db()->query($sql)->fetch();
-  $d = $row ? (string)($row['d'] ?? '') : '';
-  return $d !== '' ? $d : null;
+    $row = db()->query($sql)->fetch();
+    $d = $row ? (string)($row['d'] ?? '') : '';
+    return $d !== '' ? $d : null;
 }
 
 /**
@@ -26,18 +28,19 @@ function _pick_latest_date_3m(): ?string {
  * - $splitByShift=true：回傳會包含 shift 欄位，並以 shift+material_number 分組（用於 A/C、E/F 拆卡）
  * - $withSortB=true：B 組加 sort_order（保留原有行為）
  */
-function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false, bool $splitByShift = false): array {
-  $pdo = db();
+function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false, bool $splitByShift = false): array
+{
+    $pdo = db();
 
-  if (count($shifts) < 1) return [];
+    if (count($shifts) < 1) return [];
 
-  $in = implode(',', array_fill(0, count($shifts), '?'));
-  $params = array_merge([$d], $shifts);
+    $in = implode(',', array_fill(0, count($shifts), '?'));
+    $params = array_merge([$d], $shifts);
 
-  if ($withSortB) {
-    // B：保留 sort_order（雖然只有 B，但仍可加 shift 欄位不傷害）
-    if ($splitByShift) {
-      $sql = "SELECT
+    if ($withSortB) {
+        // B：保留 sort_order（雖然只有 B，但仍可加 shift 欄位不傷害）
+        if ($splitByShift) {
+            $sql = "SELECT
                 i.shift,
                 i.material_number,
                 MAX(i.material_name) AS material_name,
@@ -55,8 +58,8 @@ function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false,
                 AND i.shift IN ($in)
               GROUP BY i.shift, i.material_number, msb.sort_order
               ORDER BY sort_order ASC, i.material_number ASC";
-    } else {
-      $sql = "SELECT
+        } else {
+            $sql = "SELECT
                 i.material_number,
                 MAX(i.material_name) AS material_name,
                 COALESCE(msb.sort_order, 999999) AS sort_order,
@@ -73,10 +76,10 @@ function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false,
                 AND i.shift IN ($in)
               GROUP BY i.material_number, msb.sort_order
               ORDER BY sort_order ASC, i.material_number ASC";
-    }
-  } else {
-    if ($splitByShift) {
-      $sql = "SELECT
+        }
+    } else {
+        if ($splitByShift) {
+            $sql = "SELECT
                 i.shift,
                 i.material_number,
                 MAX(i.material_name) AS material_name,
@@ -91,8 +94,8 @@ function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false,
                 AND i.shift IN ($in)
               GROUP BY i.shift, i.material_number
               ORDER BY i.shift ASC, i.material_number ASC";
-    } else {
-      $sql = "SELECT
+        } else {
+            $sql = "SELECT
                 i.material_number,
                 MAX(i.material_name) AS material_name,
                 SUM(i.collar_new)  AS collar_new,
@@ -106,36 +109,55 @@ function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false,
                 AND i.shift IN ($in)
               GROUP BY i.material_number
               ORDER BY i.material_number ASC";
+        }
     }
-  }
 
-  $st = $pdo->prepare($sql);
-  $st->execute($params);
-  return $st->fetchAll();
+    $st = $pdo->prepare($sql);
+    $st->execute($params);
+    return $st->fetchAll();
 }
 
 /** 把 splitByShift 的 rows 拆成 map：shift => rows[] */
-function _split_rows_by_shift(array $rows): array {
-  $out = [];
-  foreach ($rows as $r) {
-    $s = strtoupper((string)($r['shift'] ?? ''));
-    if ($s === '') continue;
-    if (!isset($out[$s])) $out[$s] = [];
-    $out[$s][] = $r;
-  }
-  return $out;
+function _split_rows_by_shift(array $rows): array
+{
+    $out = [];
+    foreach ($rows as $r) {
+        $s = strtoupper((string)($r['shift'] ?? ''));
+        if ($s === '') continue;
+        if (!isset($out[$s])) $out[$s] = [];
+        $out[$s][] = $r;
+    }
+    return $out;
 }
 
-function _d_group(string $d): array {
-  $pdo = db();
+function _personnel_map(): array
+{
+    $pdo = db();
+    $sql = "SELECT shift_code, person_name
+          FROM mat_personnel
+          WHERE shift_code IN ('A','B','C','D','E','F')";
+    $rows = $pdo->query($sql)->fetchAll();
 
-  $categories = $pdo->query(
-    "SELECT id, category_name, sort_order
+    $map = [];
+    foreach ($rows as $r) {
+        $k = strtoupper((string)($r['shift_code'] ?? ''));
+        if ($k === '') continue;
+        $map[$k] = (string)($r['person_name'] ?? '');
+    }
+    return $map;
+}
+
+function _d_group(string $d): array
+{
+    $pdo = db();
+
+    $categories = $pdo->query(
+        "SELECT id, category_name, sort_order
      FROM mat_edit_categories
      ORDER BY sort_order ASC, id ASC"
-  )->fetchAll();
+    )->fetchAll();
 
-  $sumSql = "SELECT
+    $sumSql = "SELECT
                cm.category_id,
                SUM(i.collar_new)  AS collar_new,
                SUM(i.collar_old)  AS collar_old,
@@ -150,112 +172,113 @@ function _d_group(string $d): array {
               AND i.shift = 'D'
              GROUP BY cm.category_id
              ORDER BY cm.category_id ASC";
-  $st = $pdo->prepare($sumSql);
-  $st->execute([$d]);
-  $sumRows = $st->fetchAll();
+    $st = $pdo->prepare($sumSql);
+    $st->execute([$d]);
+    $sumRows = $st->fetchAll();
 
-  $sumMap = [];
-  foreach ($sumRows as $r) {
-    $cid = (string)$r['category_id'];
-    $sumMap[$cid] = $r;
-  }
+    $sumMap = [];
+    foreach ($sumRows as $r) {
+        $cid = (string)$r['category_id'];
+        $sumMap[$cid] = $r;
+    }
 
-  $rst = $pdo->prepare(
-    "SELECT withdraw_date, recon_values_json, updated_at, updated_by
+    $rst = $pdo->prepare(
+        "SELECT withdraw_date, recon_values_json, updated_at, updated_by
      FROM mat_edit_reconciliation
      WHERE withdraw_date = ?
      LIMIT 1"
-  );
-  $rst->execute([$d]);
-  $reconRow = $rst->fetch();
+    );
+    $rst->execute([$d]);
+    $reconRow = $rst->fetch();
 
-  $reconJson = null;
-  $reconValues = null;
-  $reconMeta = null;
+    $reconJson = null;
+    $reconValues = null;
+    $reconMeta = null;
 
-  if ($reconRow) {
-    $reconJson = (string)($reconRow['recon_values_json'] ?? '');
-    $decoded = json_decode($reconJson, true);
-    if (is_array($decoded)) $reconValues = $decoded;
+    if ($reconRow) {
+        $reconJson = (string)($reconRow['recon_values_json'] ?? '');
+        $decoded = json_decode($reconJson, true);
+        if (is_array($decoded)) $reconValues = $decoded;
 
-    $reconMeta = [
-      'updated_at' => (string)($reconRow['updated_at'] ?? ''),
-      'updated_by' => $reconRow['updated_by'] ?? null,
+        $reconMeta = [
+            'updated_at' => (string)($reconRow['updated_at'] ?? ''),
+            'updated_by' => $reconRow['updated_by'] ?? null,
+        ];
+    }
+
+    return [
+        'categories' => $categories,
+        'issue_sum_by_category' => $sumMap,
+        'recon' => [
+            'json' => $reconJson,
+            'values' => $reconValues,
+            'meta' => $reconMeta
+        ]
     ];
-  }
-
-  return [
-    'categories' => $categories,
-    'issue_sum_by_category' => $sumMap,
-    'recon' => [
-      'json' => $reconJson,
-      'values' => $reconValues,
-      'meta' => $reconMeta
-    ]
-  ];
 }
 
 try {
-  $shift = strtoupper((string)($_GET['shift'] ?? 'ALL'));
-  $d = (string)($_GET['withdraw_date'] ?? '');
+    $shift = strtoupper((string)($_GET['shift'] ?? 'ALL'));
+    $d = (string)($_GET['withdraw_date'] ?? '');
 
-  if ($d === '') {
-    $latest = _pick_latest_date_3m();
-    if (!$latest) json_ok([
-      'withdraw_date' => null,
-      'shift' => $shift,
-      'groups' => []
-    ]);
-    $d = $latest;
-  }
-
-  if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
-    json_error('withdraw_date 格式不正確（YYYY-MM-DD）', 400);
-  }
-
-  $groups = [];
-
-  if ($shift === 'ALL') {
-    // A/C（同組邏輯，但拆成兩張卡）
-    $acRows = _agg_items_by_shifts($d, ['A','C'], false, true);
-    $acMap = _split_rows_by_shift($acRows);
-    $groups['A'] = ['rows' => $acMap['A'] ?? []];
-    $groups['C'] = ['rows' => $acMap['C'] ?? []];
-
-    // B（單獨）
-    $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
-
-    // D（分類）
-    $groups['D'] = _d_group($d);
-
-    // E/F（同組邏輯，但拆成兩張卡）
-    $efRows = _agg_items_by_shifts($d, ['E','F'], false, true);
-    $efMap = _split_rows_by_shift($efRows);
-    $groups['E'] = ['rows' => $efMap['E'] ?? []];
-    $groups['F'] = ['rows' => $efMap['F'] ?? []];
-  } else {
-    if ($shift === 'A' || $shift === 'C') {
-      $acRows = _agg_items_by_shifts($d, ['A','C'], false, true);
-      $acMap = _split_rows_by_shift($acRows);
-      $groups[$shift] = ['rows' => $acMap[$shift] ?? []];
-    } elseif ($shift === 'E' || $shift === 'F') {
-      $efRows = _agg_items_by_shifts($d, ['E','F'], false, true);
-      $efMap = _split_rows_by_shift($efRows);
-      $groups[$shift] = ['rows' => $efMap[$shift] ?? []];
-    } elseif ($shift === 'B') {
-      $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
-    } elseif ($shift === 'D') {
-      $groups['D'] = _d_group($d);
-    } else {
-      json_error('shift 參數不正確（all|A|B|C|D|E|F）', 400);
+    if ($d === '') {
+        $latest = _pick_latest_date_3m();
+        if (!$latest) json_ok([
+            'withdraw_date' => null,
+            'shift' => $shift,
+            'groups' => []
+        ]);
+        $d = $latest;
     }
-  }
 
-  json_ok([
-    'withdraw_date' => $d,
-    'shift' => $shift,
-    'groups' => $groups
-  ]);
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+        json_error('withdraw_date 格式不正確（YYYY-MM-DD）', 400);
+    }
+
+    $groups = [];
+
+    if ($shift === 'ALL') {
+        // A/C（同組邏輯，但拆成兩張卡）
+        $acRows = _agg_items_by_shifts($d, ['A', 'C'], false, true);
+        $acMap = _split_rows_by_shift($acRows);
+        $groups['A'] = ['rows' => $acMap['A'] ?? []];
+        $groups['C'] = ['rows' => $acMap['C'] ?? []];
+
+        // B（單獨）
+        $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
+
+        // D（分類）
+        $groups['D'] = _d_group($d);
+
+        // E/F（同組邏輯，但拆成兩張卡）
+        $efRows = _agg_items_by_shifts($d, ['E', 'F'], false, true);
+        $efMap = _split_rows_by_shift($efRows);
+        $groups['E'] = ['rows' => $efMap['E'] ?? []];
+        $groups['F'] = ['rows' => $efMap['F'] ?? []];
+    } else {
+        if ($shift === 'A' || $shift === 'C') {
+            $acRows = _agg_items_by_shifts($d, ['A', 'C'], false, true);
+            $acMap = _split_rows_by_shift($acRows);
+            $groups[$shift] = ['rows' => $acMap[$shift] ?? []];
+        } elseif ($shift === 'E' || $shift === 'F') {
+            $efRows = _agg_items_by_shifts($d, ['E', 'F'], false, true);
+            $efMap = _split_rows_by_shift($efRows);
+            $groups[$shift] = ['rows' => $efMap[$shift] ?? []];
+        } elseif ($shift === 'B') {
+            $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
+        } elseif ($shift === 'D') {
+            $groups['D'] = _d_group($d);
+        } else {
+            json_error('shift 參數不正確（all|A|B|C|D|E|F）', 400);
+        }
+    }
+
+    json_ok([
+        'withdraw_date' => $d,
+        'shift' => $shift,
+        'personnel' => _personnel_map(),
+        'groups' => $groups
+    ]);
 } catch (Throwable $e) {
-  json_error($e->getMessage(), 500);
+    json_error($e->getMessage(), 500);
 }
