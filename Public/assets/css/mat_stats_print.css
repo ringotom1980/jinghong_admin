@@ -118,7 +118,6 @@
     align-items: center !important;
     gap: 10px !important;
     padding: 0 0 8px 0 !important;
-    border-bottom: 1px solid #e5e5e5 !important; /* 這是抬頭下分隔線，不是框線 */
   }
 
   #msPrintArea .ms-print-logo {
