@@ -16,9 +16,17 @@
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    /* ===== 列印：取消所有圓角 ===== */
+    #msPrintArea .card,
+    #msPrintArea .ms-section,
+    #msPrintArea .ms-table-wrap,
+    #msPrintArea table {
+      border-radius: 0 !important;
+    }
   }
 
-  html, body {
+  html,
+  body {
     background: #fff !important;
   }
 
@@ -72,21 +80,26 @@
     margin-top: 4px !important;
   }
 
-  /* 淡框線 + 表頭重複 + 避免切斷 */
-  #msPrintArea table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-  }
+  /* ===== 列印：表格框線加深 ===== */
+#msPrintArea table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 1.5px solid #9a9a9a !important;
+}
 
-  #msPrintArea th,
-  #msPrintArea td {
-    border: 1px solid #d9d9d9 !important;
-    padding: 6px 8px !important;
-    vertical-align: top;
-  }
+#msPrintArea th,
+#msPrintArea td {
+  border: 1.2px solid #9a9a9a !important;
+  padding: 6px 8px !important;
+  vertical-align: middle;
+}
 
-  #msPrintArea thead { display: table-header-group; }
-  #msPrintArea tfoot { display: table-footer-group; }
+  #msPrintArea thead {
+    display: table-header-group;
+  }
+  #msPrintArea tfoot {
+    display: table-footer-group;
+  }
 
   #msPrintArea tr,
   #msPrintArea td,
