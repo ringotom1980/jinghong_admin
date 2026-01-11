@@ -2,7 +2,7 @@
  * 說明: 統計頁列印（只印 A-F 表格內容）
  * 需求（最新版）：
  * 1) A4 橫式：由 CSS @page 控制（mat_stats_print.css）
- * 2) 抬頭：放進 table thead（LOGO + 公司名 + 查詢日期 + 班別 + 列印時間 + 班別標題），同班跨頁自動重複
+ * 2) 抬頭：放進 table thead（LOGO + 公司名 + 提領日期 + 班別 + 列印時間 + 班別標題），同班跨頁自動重複
  * 3) 每班新頁：由 CSS 對 .ms-section 控制（mat_stats_print.css）
  * 4) 頁碼：放棄（不做）
  */
@@ -124,7 +124,7 @@
                     '  <div class="ms-print-thead-text">' +
                     '    <div class="ms-print-title">' + titleLine + '</div>' +
                     '    <div class="ms-print-meta">' +
-                    '查詢日期：' + dateText +
+                    '提領日期：' + dateText +
                     '　｜　班別：' + shiftText +
                     '　｜　列印時間：' + nowText +
                     '    </div>' +
