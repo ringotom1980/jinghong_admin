@@ -1,7 +1,7 @@
 /* Path: Public/assets/js/mat_stats_render.js
  * 說明: 統計渲染器
- * - 依 payload.groups 渲染：AC / B / D / EF
- * - D：categories + recon + issue_sum_by_category（目前空陣列也可渲染）
+ * - 依 payload.groups 渲染：A / B / C / D / E / F
+ * - D：categories + recon + issue_sum_by_category
  */
 
 (function (global) {
@@ -10,7 +10,6 @@
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
   function n(v) {
-    // API 回字串 "0.00" 這種，這裡只做顯示安全
     if (v === null || v === undefined) return '0.00';
     return String(v);
   }
@@ -90,7 +89,11 @@
     var cats = Array.isArray(groupD.categories) ? groupD.categories : [];
     var recon = groupD.recon || null;
     var reconValues = (recon && recon.values) ? recon.values : {};
-    var issueSum = Array.isArray(groupD.issue_sum_by_category) ? groupD.issue_sum_by_category : [];
+
+    // ✅ 注意：後端目前回的是 map（category_id => sums），不是 array
+    var issueSumMap = (groupD && groupD.issue_sum_by_category && typeof groupD.issue_sum_by_category === 'object')
+      ? groupD.issue_sum_by_category
+      : {};
 
     var html = '';
 
@@ -117,14 +120,33 @@
     }
     list += '</div>';
 
-    // 2) 來源統計（如果你之後回傳 issue_sum_by_category）
+    // 2) 來源統計（以 map 呈現：category_id => sums）
     var sumHtml = '';
-    if (issueSum.length) {
+    var keys = Object.keys(issueSumMap || {});
+    if (keys.length) {
       sumHtml += '<div class="ms-table-wrap"><table class="table ms-table">';
-      sumHtml += '<thead><tr><th>分類</th><th class="ms-th-num">來源數量</th></tr></thead><tbody>';
-      for (var j = 0; j < issueSum.length; j++) {
-        var s = issueSum[j] || {};
-        sumHtml += '<tr><td>' + esc(String(s.category_name || s.category_id || '')) + '</td><td class="ms-td-num">' + esc(String(s.qty || s.value || 0)) + '</td></tr>';
+      sumHtml += '<thead><tr>'
+        + '<th>分類ID</th>'
+        + '<th class="ms-th-num">領新料</th>'
+        + '<th class="ms-th-num">領舊料</th>'
+        + '<th class="ms-th-num">退新料</th>'
+        + '<th class="ms-th-num">退舊料</th>'
+        + '<th class="ms-th-num">廢料</th>'
+        + '<th class="ms-th-num">下腳</th>'
+        + '</tr></thead><tbody>';
+
+      for (var j = 0; j < keys.length; j++) {
+        var cid = keys[j];
+        var s = issueSumMap[cid] || {};
+        sumHtml += '<tr>'
+          + '<td>' + esc(String(cid)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.collar_new)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.collar_old)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.recede_new)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.recede_old)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.scrap)) + '</td>'
+          + '<td class="ms-td-num">' + esc(n(s.footprint)) + '</td>'
+          + '</tr>';
       }
       sumHtml += '</tbody></table></div>';
     } else {
@@ -143,6 +165,12 @@
     return html;
   }
 
+  function renderShiftCard(groups, shift, subtitle, hasSort) {
+    if (!groups || !groups[shift]) return '';
+    var rows = (groups[shift] && Array.isArray(groups[shift].rows)) ? groups[shift].rows : [];
+    return sectionCard(shift + ' 班', subtitle || '領退明細彙總', buildTable(rows, { hasSort: !!hasSort }));
+  }
+
   var Mod = {
     render: function (payload, opts) {
       opts = opts || {};
@@ -151,36 +179,19 @@
 
       payload = payload || {};
       var groups = payload.groups || {};
-
       var html = '';
 
-      // AC
-      if (groups.AC) {
-        var rowsAC = (groups.AC && Array.isArray(groups.AC.rows)) ? groups.AC.rows : [];
-        html += sectionCard('A + C 組', '領退明細彙總', buildTable(rowsAC, { hasSort: false }));
-      }
+      // 依班別順序渲染（A-F）
+      html += renderShiftCard(groups, 'A', '領退明細彙總', false);
+      html += renderShiftCard(groups, 'B', '材料排序（sort_order）優先', true);
+      html += renderShiftCard(groups, 'C', '領退明細彙總', false);
 
-      // B（含 sort_order）
-      if (groups.B) {
-        var rowsB = (groups.B && Array.isArray(groups.B.rows)) ? groups.B.rows : [];
-        html += sectionCard('B 組', '材料排序（sort_order）優先', buildTable(rowsB, { hasSort: true }));
-      }
+      if (groups.D) html += renderD(groups.D);
 
-      // D（分類 + recon）
-      if (groups.D) {
-        html += renderD(groups.D);
-      }
+      html += renderShiftCard(groups, 'E', '領退明細彙總', false);
+      html += renderShiftCard(groups, 'F', '領退明細彙總', false);
 
-      // EF
-      if (groups.EF) {
-        var rowsEF = (groups.EF && Array.isArray(groups.EF.rows)) ? groups.EF.rows : [];
-        html += sectionCard('E + F 組', '領退明細彙總', buildTable(rowsEF, { hasSort: false }));
-      }
-
-      if (!html) {
-        html = '<div class="ms-empty">無資料</div>';
-      }
-
+      if (!html) html = '<div class="ms-empty">無資料</div>';
       root.innerHTML = html;
     }
   };

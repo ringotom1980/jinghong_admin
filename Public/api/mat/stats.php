@@ -21,45 +21,92 @@ function _pick_latest_date_3m(): ?string {
   return $d !== '' ? $d : null;
 }
 
-function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false): array {
+/**
+ * 依 shifts 彙總 items
+ * - $splitByShift=true：回傳會包含 shift 欄位，並以 shift+material_number 分組（用於 A/C、E/F 拆卡）
+ * - $withSortB=true：B 組加 sort_order（保留原有行為）
+ */
+function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false, bool $splitByShift = false): array {
   $pdo = db();
+
+  if (count($shifts) < 1) return [];
 
   $in = implode(',', array_fill(0, count($shifts), '?'));
   $params = array_merge([$d], $shifts);
 
   if ($withSortB) {
-    $sql = "SELECT
-              i.material_number,
-              MAX(i.material_name) AS material_name,
-              COALESCE(msb.sort_order, 999999) AS sort_order,
-              SUM(i.collar_new)  AS collar_new,
-              SUM(i.collar_old)  AS collar_old,
-              SUM(i.recede_new)  AS recede_new,
-              SUM(i.recede_old)  AS recede_old,
-              SUM(i.scrap)       AS scrap,
-              SUM(i.footprint)   AS footprint
-            FROM mat_issue_items i
-            LEFT JOIN mat_materials_sort_b msb
-                   ON msb.material_number = i.material_number
-            WHERE i.withdraw_date = ?
-              AND i.shift IN ($in)
-            GROUP BY i.material_number, msb.sort_order
-            ORDER BY sort_order ASC, i.material_number ASC";
+    // B：保留 sort_order（雖然只有 B，但仍可加 shift 欄位不傷害）
+    if ($splitByShift) {
+      $sql = "SELECT
+                i.shift,
+                i.material_number,
+                MAX(i.material_name) AS material_name,
+                COALESCE(msb.sort_order, 999999) AS sort_order,
+                SUM(i.collar_new)  AS collar_new,
+                SUM(i.collar_old)  AS collar_old,
+                SUM(i.recede_new)  AS recede_new,
+                SUM(i.recede_old)  AS recede_old,
+                SUM(i.scrap)       AS scrap,
+                SUM(i.footprint)   AS footprint
+              FROM mat_issue_items i
+              LEFT JOIN mat_materials_sort_b msb
+                     ON msb.material_number = i.material_number
+              WHERE i.withdraw_date = ?
+                AND i.shift IN ($in)
+              GROUP BY i.shift, i.material_number, msb.sort_order
+              ORDER BY sort_order ASC, i.material_number ASC";
+    } else {
+      $sql = "SELECT
+                i.material_number,
+                MAX(i.material_name) AS material_name,
+                COALESCE(msb.sort_order, 999999) AS sort_order,
+                SUM(i.collar_new)  AS collar_new,
+                SUM(i.collar_old)  AS collar_old,
+                SUM(i.recede_new)  AS recede_new,
+                SUM(i.recede_old)  AS recede_old,
+                SUM(i.scrap)       AS scrap,
+                SUM(i.footprint)   AS footprint
+              FROM mat_issue_items i
+              LEFT JOIN mat_materials_sort_b msb
+                     ON msb.material_number = i.material_number
+              WHERE i.withdraw_date = ?
+                AND i.shift IN ($in)
+              GROUP BY i.material_number, msb.sort_order
+              ORDER BY sort_order ASC, i.material_number ASC";
+    }
   } else {
-    $sql = "SELECT
-              i.material_number,
-              MAX(i.material_name) AS material_name,
-              SUM(i.collar_new)  AS collar_new,
-              SUM(i.collar_old)  AS collar_old,
-              SUM(i.recede_new)  AS recede_new,
-              SUM(i.recede_old)  AS recede_old,
-              SUM(i.scrap)       AS scrap,
-              SUM(i.footprint)   AS footprint
-            FROM mat_issue_items i
-            WHERE i.withdraw_date = ?
-              AND i.shift IN ($in)
-            GROUP BY i.material_number
-            ORDER BY i.material_number ASC";
+    if ($splitByShift) {
+      $sql = "SELECT
+                i.shift,
+                i.material_number,
+                MAX(i.material_name) AS material_name,
+                SUM(i.collar_new)  AS collar_new,
+                SUM(i.collar_old)  AS collar_old,
+                SUM(i.recede_new)  AS recede_new,
+                SUM(i.recede_old)  AS recede_old,
+                SUM(i.scrap)       AS scrap,
+                SUM(i.footprint)   AS footprint
+              FROM mat_issue_items i
+              WHERE i.withdraw_date = ?
+                AND i.shift IN ($in)
+              GROUP BY i.shift, i.material_number
+              ORDER BY i.shift ASC, i.material_number ASC";
+    } else {
+      $sql = "SELECT
+                i.material_number,
+                MAX(i.material_name) AS material_name,
+                SUM(i.collar_new)  AS collar_new,
+                SUM(i.collar_old)  AS collar_old,
+                SUM(i.recede_new)  AS recede_new,
+                SUM(i.recede_old)  AS recede_old,
+                SUM(i.scrap)       AS scrap,
+                SUM(i.footprint)   AS footprint
+              FROM mat_issue_items i
+              WHERE i.withdraw_date = ?
+                AND i.shift IN ($in)
+              GROUP BY i.material_number
+              ORDER BY i.material_number ASC";
+    }
   }
 
   $st = $pdo->prepare($sql);
@@ -67,8 +114,19 @@ function _agg_items_by_shifts(string $d, array $shifts, bool $withSortB = false)
   return $st->fetchAll();
 }
 
+/** 把 splitByShift 的 rows 拆成 map：shift => rows[] */
+function _split_rows_by_shift(array $rows): array {
+  $out = [];
+  foreach ($rows as $r) {
+    $s = strtoupper((string)($r['shift'] ?? ''));
+    if ($s === '') continue;
+    if (!isset($out[$s])) $out[$s] = [];
+    $out[$s][] = $r;
+  }
+  return $out;
+}
+
 function _d_group(string $d): array {
-  // 直接沿用 stats_d.php 的邏輯（避免你前端打兩次 API 的時候還要合併）
   $pdo = db();
 
   $categories = $pdo->query(
@@ -102,7 +160,6 @@ function _d_group(string $d): array {
     $sumMap[$cid] = $r;
   }
 
-  $reconRow = null;
   $rst = $pdo->prepare(
     "SELECT withdraw_date, recon_values_json, updated_at, updated_by
      FROM mat_edit_reconciliation
@@ -159,17 +216,34 @@ try {
   $groups = [];
 
   if ($shift === 'ALL') {
-    $groups['AC'] = ['rows' => _agg_items_by_shifts($d, ['A','C'])];
-    $groups['B']  = ['rows' => _agg_items_by_shifts($d, ['B'], true)];
-    $groups['D']  = _d_group($d);
-    $groups['EF'] = ['rows' => _agg_items_by_shifts($d, ['E','F'])];
+    // A/C（同組邏輯，但拆成兩張卡）
+    $acRows = _agg_items_by_shifts($d, ['A','C'], false, true);
+    $acMap = _split_rows_by_shift($acRows);
+    $groups['A'] = ['rows' => $acMap['A'] ?? []];
+    $groups['C'] = ['rows' => $acMap['C'] ?? []];
+
+    // B（單獨）
+    $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
+
+    // D（分類）
+    $groups['D'] = _d_group($d);
+
+    // E/F（同組邏輯，但拆成兩張卡）
+    $efRows = _agg_items_by_shifts($d, ['E','F'], false, true);
+    $efMap = _split_rows_by_shift($efRows);
+    $groups['E'] = ['rows' => $efMap['E'] ?? []];
+    $groups['F'] = ['rows' => $efMap['F'] ?? []];
   } else {
     if ($shift === 'A' || $shift === 'C') {
-      $groups['AC'] = ['rows' => _agg_items_by_shifts($d, ['A','C'])];
+      $acRows = _agg_items_by_shifts($d, ['A','C'], false, true);
+      $acMap = _split_rows_by_shift($acRows);
+      $groups[$shift] = ['rows' => $acMap[$shift] ?? []];
     } elseif ($shift === 'E' || $shift === 'F') {
-      $groups['EF'] = ['rows' => _agg_items_by_shifts($d, ['E','F'])];
+      $efRows = _agg_items_by_shifts($d, ['E','F'], false, true);
+      $efMap = _split_rows_by_shift($efRows);
+      $groups[$shift] = ['rows' => $efMap[$shift] ?? []];
     } elseif ($shift === 'B') {
-      $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true)];
+      $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
     } elseif ($shift === 'D') {
       $groups['D'] = _d_group($d);
     } else {
