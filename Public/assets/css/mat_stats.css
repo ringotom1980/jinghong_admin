@@ -173,6 +173,13 @@
   flex: 0 0 auto;
   white-space: nowrap;
   min-width: max-content;   /* 避免內容被壓縮導致斷行 */
+  padding-right: 14px;
+  border-right: 1px solid rgba(15,23,42,.08);
+}
+
+/*月份中間分隔線*/
+.ms-capsules__month:last-child{
+  border-right: 0;
 }
 
 /* 月份標題：純文字（不要膠囊感） */
