@@ -114,17 +114,19 @@
                 var th = document.createElement('th');
                 th.className = 'ms-print-thead-cell';
                 th.colSpan = colCount;
+                // 班別標題（例如：A班－鄭建昇）轉成 A-鄭建昇
+                var secLabel = secTitle ? secTitle.replace(/^([A-F])班[－-]\s*/, '$1-') : '';
+                var titleLine = '境宏工程有限公司領退料統計' + (secLabel ? ('(' + this._escapeHtml(secLabel) + ')') : '');
 
                 th.innerHTML =
                     '<div class="ms-print-thead-wrap">' +
                     '  <img class="ms-print-logo" src="' + logoSrc + '" alt="LOGO" />' +
-                    '  <div>' +
-                    '    <div class="ms-print-title">境宏工程有限公司領退料統計</div>' +
+                    '  <div class="ms-print-thead-text">' +
+                    '    <div class="ms-print-title">' + titleLine + '</div>' +
                     '    <div class="ms-print-meta">' +
                     '查詢日期：' + dateText +
                     '　｜　班別：' + shiftText +
                     '　｜　列印時間：' + nowText +
-                    (secTitle ? ('　｜　' + this._escapeHtml(secTitle)) : '') +
                     '    </div>' +
                     '  </div>' +
                     '</div>';

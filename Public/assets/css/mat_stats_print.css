@@ -82,6 +82,7 @@
   #msPrintArea thead {
     display: table-header-group;
   }
+
   #msPrintArea tfoot {
     display: table-footer-group;
   }
@@ -111,13 +112,39 @@
   #msPrintArea tr.ms-print-thead th.ms-print-thead-cell {
     border: 0 !important;
     padding: 0 0 8px 0 !important;
+
+    /* 1) 標題靠左：避免 th 預設置中 */
+    text-align: left !important;
+
+    /* 2) 遮掉抬頭區的 table 外框線（上/左/右） */
+    position: relative !important;
+    background: #fff !important;
   }
 
+  /* 遮掉抬頭區上/左/右三條外框線（你紅線那三條） */
+  #msPrintArea tr.ms-print-thead th.ms-print-thead-cell::before {
+    content: "";
+    position: absolute;
+    top: -3px;     /* 蓋住上框線 */
+    left: -3px;    /* 蓋住左框線 */
+    right: -3px;   /* 蓋住右框線 */
+    bottom: 0;     /* 不往下蓋到下一列表頭 */
+    background: #fff;
+    z-index: 0;
+  }
+
+  /* 讓抬頭內容浮在白底遮罩上 */
   #msPrintArea .ms-print-thead-wrap {
+    position: relative;
+    z-index: 1;
+
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
     padding: 0 0 8px 0 !important;
+
+    /* 3) 抬頭底下那條線取消：不加任何 border-bottom */
+    border-bottom: 0 !important;
   }
 
   #msPrintArea .ms-print-logo {
