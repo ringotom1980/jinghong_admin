@@ -150,51 +150,52 @@
   border-top-right-radius: 0;
 }
 
-/* ===== Date capsules grouped by month (single row) ===== */
+/* ===== Date capsules grouped by month (month title above, groups in one row) ===== */
 
-/* 外層容器：單列水平捲動、不換行 */
+/* 外層容器：單列水平捲動，不換行（每個「月份群組」並排） */
 .ms-capsules{
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start; /* 讓月份標題從上緣對齊 */
+  gap: 18px;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 6px 0;
   -webkit-overflow-scrolling: touch;
 }
 
-/* 每個月份群組：標題 + 日期，同一列 */
+/* 每個月份群組：標題在上、日期列在下（但群組本身仍是 inline-block 並排） */
 .ms-capsules__month{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;   /* ✅ 月份在上 */
+  align-items: flex-start;
+  gap: 6px;
   flex: 0 0 auto;
   white-space: nowrap;
+  min-width: max-content;   /* 避免內容被壓縮導致斷行 */
 }
 
-/* 月份標題：做成小標籤 */
+/* 月份標題：純文字（不要膠囊感） */
 .ms-capsules__month-title{
   font-size: 13px;
   font-weight: 900;
-  color: rgba(15, 23, 42, 0.7);
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(15,23,42,.04);
-  border: 1px solid rgba(15,23,42,.08);
+  color: rgba(15, 23, 42, 0.65);
+  padding: 0;               /* ✅ 沒有底色/框線 */
+  margin: 0;
+  background: transparent;
+  border: 0;
 }
 
-/* 日期膠囊列：永遠不換行 */
+/* 日期列：同一列，不換行 */
 .ms-capsules__list{
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
-  flex: 0 0 auto;
   white-space: nowrap;
 }
 
-/* 日期膠囊本體（高度壓低） */
+/* 日期膠囊：保持你要的低高度 */
 .ms-capsule{
   height: 28px;
   padding: 0 10px;
@@ -205,7 +206,7 @@
   background: rgba(255,255,255,.9);
   cursor: pointer;
   user-select: none;
-  flex: 0 0 auto; /* 避免被壓縮 */
+  flex: 0 0 auto;
 }
 
 .ms-capsule:hover{
