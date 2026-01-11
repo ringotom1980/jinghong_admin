@@ -256,3 +256,19 @@
   color: rgba(30,58,138,.95);
   font-weight: 900;
 }
+
+/* ===== Stats section cards (A-F) ===== */
+/* 讓卡片標頭不要貼圓角邊界：標題往右內縮 */
+.page.mat-stats .ms-section__head{
+  padding: 12px 16px;
+}
+
+/* 讓標題本身不要有預設外距干擾 */
+.page.mat-stats .ms-section__title{
+  margin: 0;
+}
+
+/* 內容區也同步左右對齊（可選，但通常會更順） */
+.page.mat-stats .ms-section__body{
+  padding: 0 16px 14px;
+}
