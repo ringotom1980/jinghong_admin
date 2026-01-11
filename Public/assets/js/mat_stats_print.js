@@ -66,7 +66,7 @@
 
     _buildPrintHeaderHtml: function (pageNoText) {
       // LOGO 路徑：依你現況
-      var logoSrc = 'assets/img/brand/JH_logo.png';
+      var logoSrc = '/assets/img/brand/JH_logo.png';
 
       var dateText = this._escapeHtml(this._getDateText());
       var shiftText = this._escapeHtml(this._getShiftText());
