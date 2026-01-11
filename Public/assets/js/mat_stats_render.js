@@ -99,6 +99,10 @@
         html += '<tbody>';
 
         rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
             var sumNew = Number(r.total_new || 0);
             var sumOld = Number(r.total_old || 0);
 
