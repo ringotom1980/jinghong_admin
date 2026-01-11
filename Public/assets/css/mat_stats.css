@@ -143,3 +143,20 @@
 .page.mat-stats .ms-toolbar.card{
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.08);
 }
+
+/* 讓 sticky 工具列角落不透出底下內容：加底板 */
+.page.mat-stats .ms-toolbar {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 45;
+  isolation: isolate; /* 確保 ::before 的疊層在此元素內 */
+}
+
+/* 底板：覆蓋圓角外的透明區 */
+.page.mat-stats .ms-toolbar::before {
+  content: "";
+  position: absolute;
+  inset: -12px -12px 0 -12px; /* 上左右多蓋一點；下方可不必太多 */
+  background: rgba(246, 247, 251, 0.92); /* 跟 .page 背景一致 */
+  z-index: -1;
+}
