@@ -272,3 +272,31 @@
 .page.mat-stats .ms-section__body{
   padding: 0 16px 14px;
 }
+
+/* 統計頁所有表格：淡外框 + 淡格線 */
+.ms-table-wrap .ms-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ms-table-wrap .ms-table thead th {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.ms-table-wrap .ms-table th,
+.ms-table-wrap .ms-table td {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.ms-table-wrap .ms-table tr > *:last-child {
+  border-right: 0;
+}
+
+.ms-table-wrap .ms-table tbody tr:last-child td {
+  border-bottom: 0;
+}

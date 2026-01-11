@@ -33,8 +33,8 @@ function mat_stats_ac(string $withdrawDate): array
             SUM(i.recede_old)  AS recede_old,
 
             -- A/C 合計邏輯（定版）
-            SUM(i.collar_new)  + SUM(i.recede_new) AS total_new,
-            SUM(i.collar_old)  + SUM(i.recede_old) AS total_old
+            SUM(i.collar_new)  - SUM(i.recede_new) AS total_new,
+            SUM(i.collar_old)  - SUM(i.recede_old) AS total_old
 
         FROM mat_issue_items i
         WHERE i.withdraw_date = ?
