@@ -52,13 +52,13 @@ $pageJs = [
                 <div class="card__head">
                     <div class="ms-toolbar__head">
                         <h2 class="ms-toolbar__title">
-                            查詢日期：
+                            領退日期：
                             <span class="ms-toolbar__date" id="msSelectedDate">--</span>
                         </h2>
 
                         <div class="ms-toolbar__actions">
                             <button class="btn" type="button" id="msBtnPrint">
-                                列印
+                                列印報表
                             </button>
                         </div>
                     </div>

@@ -1,9 +1,9 @@
 /* Path: Public/assets/js/mat_stats_print.js
  * 說明: 統計頁列印（只印 A-F 表格內容）
  * 需求：
- * 1) A4 橫式：由 CSS @page 控制
- * 2) 抬頭：LOGO + 境宏工程有限公司領退料統計
- * 3) 每班新頁：由 CSS 對 .ms-section 控制
+ * 1) A4 橫式：由 CSS @page 控制（mat_stats_print.css）
+ * 2) 抬頭：每頁重複（每一班頁首插入 LOGO + 境宏工程有限公司領退料統計）
+ * 3) 每班新頁：由 CSS 對 .ms-section 控制（mat_stats_print.css）
  * 4) 頁碼 1/6：以「每班一頁」=「第 i / 總班數」
  */
 
@@ -64,43 +64,47 @@
       if (old && old.parentNode) old.parentNode.removeChild(old);
     },
 
-    _buildPrintHeader: function () {
-      // LOGO 路徑：你可依實際檔案調整
-      // 建議放在：Public/assets/img/logo128.png
-      var logoSrc = 'assets/img/logo128.png';
+    _buildPrintHeaderHtml: function (pageNoText) {
+      // LOGO 路徑：依你現況
+      var logoSrc = 'assets/img/brand/JH_logo.png';
 
       var dateText = this._escapeHtml(this._getDateText());
       var shiftText = this._escapeHtml(this._getShiftText());
       var nowText = this._escapeHtml(this._formatNow());
+      var pageText = this._escapeHtml(pageNoText || '');
 
-      var wrap = document.createElement('div');
-      wrap.className = 'ms-print-head';
-
-      wrap.innerHTML = ''
+      return ''
         + '<img class="ms-print-logo" src="' + logoSrc + '" alt="LOGO" />'
         + '<div>'
         + '  <div class="ms-print-title">境宏工程有限公司領退料統計</div>'
-        + '  <div class="ms-print-meta">查詢日期：' + dateText + '　｜　班別：' + shiftText + '　｜　列印時間：' + nowText + '</div>'
+        + '  <div class="ms-print-meta">'
+        + '查詢日期：' + dateText
+        + '　｜　班別：' + shiftText
+        + '　｜　列印時間：' + nowText
+        + (pageText ? ('　｜　頁次：' + pageText) : '')
+        + '</div>'
         + '</div>';
-
-      return wrap;
     },
 
-    _stampSectionPageNo: function (contentRoot) {
-      // 只對印出來的班別區塊（.ms-section）做 1/N 標記
+    _insertHeaderPerSection: function (contentRoot) {
+      // 對印出來的每個班別區塊（.ms-section），插入一份頁首（達成每頁重複）
       var sections = qsa('.ms-section', contentRoot);
       var total = sections.length;
 
-      sections.forEach(function (sec, idx) {
-        var head = qs('.ms-section__head', sec) || sec;
-        var badge = qs('.ms-print-page', head);
-        if (!badge) {
-          badge = document.createElement('div');
-          badge.className = 'ms-print-page';
-          head.appendChild(badge);
-        }
-        badge.textContent = (idx + 1) + '/' + total;
-      });
+      for (var i = 0; i < sections.length; i++) {
+        var sec = sections[i];
+
+        // 若之前印過殘留（理論上不會，保險）
+        var exist = qs('.ms-print-head', sec);
+        if (exist && exist.parentNode) exist.parentNode.removeChild(exist);
+
+        var head = document.createElement('div');
+        head.className = 'ms-print-head';
+        head.innerHTML = this._buildPrintHeaderHtml((i + 1) + '/' + total);
+
+        // 插在每一班最前面 → 每頁都有相同頁首
+        sec.insertBefore(head, sec.firstChild);
+      }
     },
 
     print: function () {
@@ -114,16 +118,13 @@
       var wrap = document.createElement('div');
       wrap.id = 'msPrintArea';
 
-      // 抬頭：LOGO + 標題
-      wrap.appendChild(this._buildPrintHeader());
-
       // 只印表格內容：clone #msContent（A-F）
       var clone = src.cloneNode(true);
+
+      // ✅ 每班插入頁首（LOGO+標題+日期/班別/時間+頁次）
+      this._insertHeaderPerSection(clone);
+
       wrap.appendChild(clone);
-
-      // 對 clone 內每班蓋上 1/N
-      this._stampSectionPageNo(clone);
-
       document.body.appendChild(wrap);
 
       // afterprint 清理（保底）
