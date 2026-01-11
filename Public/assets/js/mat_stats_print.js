@@ -66,8 +66,7 @@
 
         _buildPrintHeaderHtml: function (pageNoText) {
             // LOGO 路徑：依你現況
-            var base = (document.querySelector('base') && document.querySelector('base').getAttribute('href')) || '';
-            base = String(base || '').replace(/\/+$/, '');
+            var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
             var logoSrc = base + '/assets/img/brand/JH_logo.png';
 
             var dateText = this._escapeHtml(this._getDateText());
