@@ -68,6 +68,64 @@
         return html;
     }
 
+    //A/C 專用表格函式
+    function buildTableAC(rows) {
+        var html = '';
+
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--ac">';
+
+        // ===== 表頭（兩列）=====
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+        html += '<th colspan="2" class="ms-th-group">領料</th>';
+        html += '<th colspan="2" class="ms-th-group">退料</th>';
+        html += '<th colspan="2" class="ms-th-group">領退合計</th>';
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        // ===== 內容 =====
+        html += '<tbody>';
+
+        rows.forEach(function (r, idx) {
+            var sumNew = Number(r.total_new || 0);
+            var sumOld = Number(r.total_old || 0);
+
+            function v(x) {
+                return x === 0 ? '' : esc(n(x));
+            }
+
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+            html += '<td class="ms-td-num">' + v(cn) + '</td>';
+            html += '<td class="ms-td-num">' + v(co) + '</td>';
+            html += '<td class="ms-td-num">' + v(rn) + '</td>';
+            html += '<td class="ms-td-num">' + v(ro) + '</td>';
+            html += '<td class="ms-td-num">' + v(sumNew) + '</td>';
+            html += '<td class="ms-td-num">' + v(sumOld) + '</td>';
+            html += '</tr>';
+        });
+
+        if (!rows.length) {
+            html += '<tr><td colspan="8" class="ms-empty">無資料</td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        return html;
+    }
+
     function sectionCard(title, subtitle, innerHtml) {
         var html = '';
         html += '<section class="ms-section card card--flat">';
@@ -178,6 +236,29 @@
         return sectionCard(title, '', buildTable(rows, { hasSort: !!hasSort }));
     }
 
+    //A/C 專用 renderer
+    function renderGroupAC(groups, personnel) {
+        var html = '';
+
+        ['A', 'C'].forEach(function (shift) {
+            if (!groups[shift]) return;
+
+            var rows = Array.isArray(groups[shift].rows) ? groups[shift].rows : [];
+
+            var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
+            var title = shift + '班' + (name ? ('－' + name) : '');
+
+            // ⚠️ 先沿用現有 buildTable（之後你再換成 AC 專用表頭）
+            html += sectionCard(
+                title,
+                '',
+                buildTableAC(rows)
+            );
+        });
+
+        return html;
+    }
+
     var Mod = {
         render: function (payload, opts) {
             opts = opts || {};
@@ -189,17 +270,21 @@
             var personnel = payload.personnel || {};
             var html = '';
 
-            // 依班別順序渲染（A-F）
-            // ✅ 標題會變成：A班－鄭建昇 / B班－徐智勇 ...（以 payload.personnel 為準）
-            // ✅ 副標一律不顯示
-            html += renderShiftCard(groups, 'A', personnel, false);
-            html += renderShiftCard(groups, 'B', personnel, true);
-            html += renderShiftCard(groups, 'C', personnel, false);
+            // ===== Group Dispatcher =====
 
-            if (groups.D) html += renderD(groups.D);
+            // A / C（先只實作這組）
+            html += renderGroupAC(groups, personnel);
 
-            html += renderShiftCard(groups, 'E', personnel, false);
-            html += renderShiftCard(groups, 'F', personnel, false);
+            // B（預留）
+            // html += renderGroupB(groups, personnel);
+
+            // D（暫時保留你現有的）
+            if (groups.D) {
+                html += renderD(groups.D);
+            }
+
+            // E / F（預留）
+            // html += renderGroupEF(groups, personnel);
 
             if (!html) html = '<div class="ms-empty">無資料</div>';
             root.innerHTML = html;

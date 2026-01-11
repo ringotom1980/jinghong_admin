@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
+require_once __DIR__ . '/stats_ac.php';
 
 function _pick_latest_date_3m(): ?string
 {
@@ -238,11 +239,10 @@ try {
     $groups = [];
 
     if ($shift === 'ALL') {
-        // A/C（同組邏輯，但拆成兩張卡）
-        $acRows = _agg_items_by_shifts($d, ['A', 'C'], false, true);
-        $acMap = _split_rows_by_shift($acRows);
-        $groups['A'] = ['rows' => $acMap['A'] ?? []];
-        $groups['C'] = ['rows' => $acMap['C'] ?? []];
+        // A/C（交給 stats_ac.php）
+        $acGroups = mat_stats_ac($d);
+        $groups['A'] = $acGroups['A'] ?? ['rows' => []];
+        $groups['C'] = $acGroups['C'] ?? ['rows' => []];
 
         // B（單獨）
         $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
@@ -257,9 +257,8 @@ try {
         $groups['F'] = ['rows' => $efMap['F'] ?? []];
     } else {
         if ($shift === 'A' || $shift === 'C') {
-            $acRows = _agg_items_by_shifts($d, ['A', 'C'], false, true);
-            $acMap = _split_rows_by_shift($acRows);
-            $groups[$shift] = ['rows' => $acMap[$shift] ?? []];
+            $acGroups = mat_stats_ac($d);
+            $groups[$shift] = $acGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'E' || $shift === 'F') {
             $efRows = _agg_items_by_shifts($d, ['E', 'F'], false, true);
             $efMap = _split_rows_by_shift($efRows);
