@@ -24,6 +24,23 @@
             .replace(/'/g, '&#039;');
     }
 
+    function fmtQty(v) {
+        if (v === null || v === undefined) return '';
+        var num = Number(v);
+        if (!isFinite(num)) return '';
+
+        // 消除 JS 浮點誤差（關鍵）
+        num = Math.round(num * 100) / 100;
+
+        // 整數 → 不顯示小數
+        if (Number.isInteger(num)) {
+            return String(num);
+        }
+
+        // 小數 → 最多顯示 2 位，去掉多餘 0
+        return num.toFixed(2).replace(/\.?0+$/, '');
+    }
+
     //A/C 專用表格函式
     function buildTableAC(rows) {
         var html = '';
@@ -61,8 +78,9 @@
             var sumOld = Number(r.total_old || 0);
 
             function v(x, cls) {
-                if (x === 0) return '';
-                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
+                var num = Number(x || 0);
+                if (num === 0) return '';
+                return '<span class="' + cls + '">' + esc(fmtQty(num)) + '</span>';
             }
 
             html += '<tr>';
@@ -127,8 +145,9 @@
             }
 
             function v(x, cls) {
-                if (x === 0) return '';
-                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
+                var num = Number(x || 0);
+                if (num === 0) return '';
+                return '<span class="' + cls + '">' + esc(fmtQty(num)) + '</span>';
             }
 
             html += '<tr>';
@@ -152,17 +171,17 @@
                 html += '<td class="ms-td-num" colspan="2">合計</td>';
                 html += '<td class="ms-td-num">' +
                     (sumCn === 0 ? '' :
-                        '<span class="' + (sumCn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(sumCn)) + '</span>') +
+                        '<span class="' + (sumCn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(fmtQty(sumCn)) + '</span>') +
                     '</td>';
                 html += '<td class="ms-td-num">' +
                     (sumCo === 0 ? '' :
-                        '<span class="' + (sumCo < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(sumCo)) + '</span>') +
+                        '<span class="' + (sumCo < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(fmtQty(sumCo)) + '</span>') +
                     '</td>';
                 html += '<td class="ms-td-num">' +
-                    (sumRn === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRn)) + '</span>') +
+                    (sumRn === 0 ? '' : '<span class="ms-neg">' + esc(fmtQty(sumRn)) + '</span>') +
                     '</td>';
                 html += '<td class="ms-td-num">' +
-                    (sumRo === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRo)) + '</span>') +
+                    (sumRo === 0 ? '' : '<span class="ms-neg">' + esc(fmtQty(sumRo)) + '</span>') +
                     '</td>';
                 html += '</tr>';
             }
@@ -217,7 +236,11 @@
             var rnList = (r.recede_new_list === null || r.recede_new_list === undefined) ? '' : String(r.recede_new_list);
             var roList = (r.recede_old_list === null || r.recede_old_list === undefined) ? '' : String(r.recede_old_list);
 
-            function vNum(x) { return x === 0 ? '' : esc(n(x)); }
+            function vNum(x) {
+                var num = Number(x || 0);
+                return num === 0 ? '' : esc(fmtQty(num));
+            }
+
             function vList(s) { return s ? esc(s) : ''; }
 
             html += '<tr>';
@@ -235,11 +258,11 @@
             html += '<td class="ms-td-num">' + vList(roList) + '</td>';
 
             html += '<td class="ms-td-num">' +
-                (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(tn)) + '</span>')) +
+                (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(fmtQty(tn)) + '</span>')) +
                 '</td>';
 
             html += '<td class="ms-td-num">' +
-                (to === 0 ? '' : ('<span class="' + (to < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(to)) + '</span>')) +
+                (to === 0 ? '' : ('<span class="' + (to < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(fmtQty(to)) + '</span>')) +
                 '</td>';
 
             html += '</tr>';
@@ -278,7 +301,7 @@
         function v(x, cls) {
             var num = Number(x || 0);
             if (num === 0) return '';
-            return '<span class="' + cls + '">' + esc(n(num)) + '</span>';
+            return '<span class="' + cls + '">' + esc(fmtQty(num)) + '</span>';
         }
 
         // ✅ 顯示欄位：CAT 顯示分類名稱；ITEM（未分類材料）只顯示材料名稱
