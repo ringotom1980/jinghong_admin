@@ -12,6 +12,10 @@
  * - 領退合計：
  *   total_new = collar_new - recede_new
  *   total_old = collar_old + recon_value - recede_old
+ *
+ * 修正重點（你現在「統計數量沒出來」的原因）：
+ * - 原本用 INNER JOIN 會把沒有對應 D 班資料的分類整列吃掉，導致 sumMap 空
+ * - 改用 LEFT JOIN，且維持條件在 ON（同效果），確保分類存在時仍能回 0
  */
 
 declare(strict_types=1);
@@ -30,14 +34,15 @@ function mat_stats_d(string $d): array
     )->fetchAll();
 
     // 2) 來源統計：依分類彙總（只算 D 班）
+    // ✅ 修正：JOIN -> LEFT JOIN，避免分類被吃掉導致統計全 0
     $sumSql = "SELECT
                  cm.category_id,
-                 SUM(i.collar_new)  AS collar_new,
-                 SUM(i.collar_old)  AS collar_old,
-                 SUM(i.recede_new)  AS recede_new,
-                 SUM(i.recede_old)  AS recede_old
+                 COALESCE(SUM(i.collar_new), 0)  AS collar_new,
+                 COALESCE(SUM(i.collar_old), 0)  AS collar_old,
+                 COALESCE(SUM(i.recede_new), 0)  AS recede_new,
+                 COALESCE(SUM(i.recede_old), 0)  AS recede_old
                FROM mat_edit_category_materials cm
-               JOIN mat_issue_items i
+               LEFT JOIN mat_issue_items i
                  ON i.material_number = cm.material_number
                 AND i.withdraw_date = ?
                 AND i.shift = 'D'
@@ -99,7 +104,7 @@ function mat_stats_d(string $d): array
         }
 
         $rows[] = [
-            'category_id' => (int)$c['id'],
+            'category_id' => (int)($c['id'] ?? 0),
             'category_name' => (string)($c['category_name'] ?? ''),
             'sort_order' => (int)($c['sort_order'] ?? 0),
 
