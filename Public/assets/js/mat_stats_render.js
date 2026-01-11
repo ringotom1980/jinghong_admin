@@ -5,430 +5,434 @@
  */
 
 (function (global) {
-  'use strict';
+    'use strict';
 
-  function qs(sel, root) { return (root || document).querySelector(sel); }
+    function qs(sel, root) { return (root || document).querySelector(sel); }
 
-  function n(v) {
-    if (v === null || v === undefined) return '0';
-    return String(v);
-  }
-
-  function esc(s) {
-    s = (s === null || s === undefined) ? '' : String(s);
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  //A/C 專用表格函式
-  function buildTableAC(rows) {
-    var html = '';
-
-    html += '<div class="ms-table-wrap">';
-    html += '<table class="table ms-table ms-table--ac">';
-
-    html += '<thead>';
-    html += '<tr>';
-    html += '<th rowspan="2" style="width:70px;">項次</th>';
-    html += '<th rowspan="2">材料名稱</th>';
-    html += '<th colspan="2" class="ms-th-group">領料</th>';
-    html += '<th colspan="2" class="ms-th-group">退料</th>';
-    html += '<th colspan="2" class="ms-th-group">領退合計</th>';
-    html += '</tr>';
-
-    html += '<tr>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '</tr>';
-    html += '</thead>';
-
-    html += '<tbody>';
-
-    rows.forEach(function (r, idx) {
-      var cn = Number(r.collar_new || 0);
-      var co = Number(r.collar_old || 0);
-      var rn = Number(r.recede_new || 0);
-      var ro = Number(r.recede_old || 0);
-      var sumNew = Number(r.total_new || 0);
-      var sumOld = Number(r.total_old || 0);
-
-      function v(x, cls) {
-        if (x === 0) return '';
-        return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
-      }
-
-      html += '<tr>';
-      html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
-      html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
-      html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(rn, rn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(ro, ro < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(sumNew, sumNew < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(sumOld, sumOld < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '</tr>';
-    });
-
-    if (!rows.length) {
-      html += '<tr><td colspan="8" class="ms-empty">無資料</td></tr>';
+    function n(v) {
+        if (v === null || v === undefined) return '0';
+        return String(v);
     }
 
-    html += '</tbody></table></div>';
-    return html;
-  }
-
-  // E/F 專用表格函式
-  function buildTableEF(rows) {
-    var html = '';
-
-    html += '<div class="ms-table-wrap">';
-    html += '<table class="table ms-table ms-table--ef">';
-
-    html += '<thead>';
-    html += '<tr>';
-    html += '<th rowspan="2" style="width:70px;">項次</th>';
-    html += '<th rowspan="2">材料名稱</th>';
-    html += '<th colspan="2" class="ms-th-group">領料</th>';
-    html += '<th colspan="2" class="ms-th-group">退料</th>';
-    html += '</tr>';
-
-    html += '<tr>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '</tr>';
-    html += '</thead>';
-
-    html += '<tbody>';
-
-    var sumCn = 0, sumCo = 0, sumRn = 0, sumRo = 0;
-
-    rows.forEach(function (r, idx) {
-      var cn = Number(r.collar_new || 0);
-      var co = Number(r.collar_old || 0);
-      var rn = Number(r.recede_new || 0);
-      var ro = Number(r.recede_old || 0);
-
-      var sh = String(r.shift || '').toUpperCase();
-      if (sh === 'F') {
-        sumCn += cn;
-        sumCo += co;
-        sumRn += rn;
-        sumRo += ro;
-      }
-
-      function v(x, cls) {
-        if (x === 0) return '';
-        return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
-      }
-
-      html += '<tr>';
-      html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
-      html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
-      html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
-      html += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
-      html += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
-      html += '</tr>';
-    });
-
-    if (!rows.length) {
-      html += '<tr><td colspan="6" class="ms-empty">無資料</td></tr>';
+    function esc(s) {
+        s = (s === null || s === undefined) ? '' : String(s);
+        return s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
-    if (rows.length) {
-      var hasF = rows.some(function (r) { return String(r.shift || '').toUpperCase() === 'F'; });
-      if (hasF) {
-        html += '<tr class="ms-tr-sum">';
-        html += '<td class="ms-td-num" colspan="2">合計</td>';
-        html += '<td class="ms-td-num">' +
-          (sumCn === 0 ? '' :
-            '<span class="' + (sumCn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(sumCn)) + '</span>') +
-          '</td>';
-        html += '<td class="ms-td-num">' +
-          (sumCo === 0 ? '' :
-            '<span class="' + (sumCo < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(sumCo)) + '</span>') +
-          '</td>';
-        html += '<td class="ms-td-num">' +
-          (sumRn === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRn)) + '</span>') +
-          '</td>';
-        html += '<td class="ms-td-num">' +
-          (sumRo === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRo)) + '</span>') +
-          '</td>';
+    //A/C 專用表格函式
+    function buildTableAC(rows) {
+        var html = '';
+
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--ac">';
+
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+        html += '<th colspan="2" class="ms-th-group">領料</th>';
+        html += '<th colspan="2" class="ms-th-group">退料</th>';
+        html += '<th colspan="2" class="ms-th-group">領退合計</th>';
         html += '</tr>';
-      }
+
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        html += '<tbody>';
+
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
+            var sumNew = Number(r.total_new || 0);
+            var sumOld = Number(r.total_old || 0);
+
+            function v(x, cls) {
+                if (x === 0) return '';
+                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
+            }
+
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+            html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(rn, rn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(ro, ro < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(sumNew, sumNew < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(sumOld, sumOld < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '</tr>';
+        });
+
+        if (!rows.length) {
+            html += '<tr><td colspan="8" class="ms-empty">無資料</td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        return html;
     }
 
-    html += '</tbody></table></div>';
-    return html;
-  }
+    // E/F 專用表格函式
+    function buildTableEF(rows) {
+        var html = '';
 
-  // B 班專用表格函式（含：筆數欄位）
-  function buildTableB(rows) {
-    var html = '';
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--ef">';
 
-    html += '<div class="ms-table-wrap">';
-    html += '<table class="table ms-table ms-table--b">';
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+        html += '<th colspan="2" class="ms-th-group">領料</th>';
+        html += '<th colspan="2" class="ms-th-group">退料</th>';
+        html += '</tr>';
 
-    html += '<thead>';
-    html += '<tr>';
-    html += '<th rowspan="2" style="width:70px;">項次</th>';
-    html += '<th rowspan="2">材料名稱</th>';
-    html += '<th colspan="4" class="ms-th-group">領料</th>';
-    html += '<th colspan="4" class="ms-th-group">退料</th>';
-    html += '<th colspan="2" class="ms-th-group">領退合計</th>';
-    html += '</tr>';
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
 
-    html += '<tr>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">筆數</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '<th class="ms-th-num">筆數</th>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">筆數</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '<th class="ms-th-num">筆數</th>';
-    html += '<th class="ms-th-num">新</th>';
-    html += '<th class="ms-th-num">舊</th>';
-    html += '</tr>';
-    html += '</thead>';
+        html += '<tbody>';
 
-    html += '<tbody>';
+        var sumCn = 0, sumCo = 0, sumRn = 0, sumRo = 0;
 
-    rows.forEach(function (r, idx) {
-      var cn = Number(r.collar_new || 0);
-      var co = Number(r.collar_old || 0);
-      var rn = Number(r.recede_new || 0);
-      var ro = Number(r.recede_old || 0);
-      var tn = Number(r.total_new || 0);
-      var to = Number(r.total_old || 0);
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
 
-      var cnList = (r.collar_new_list === null || r.collar_new_list === undefined) ? '' : String(r.collar_new_list);
-      var coList = (r.collar_old_list === null || r.collar_old_list === undefined) ? '' : String(r.collar_old_list);
-      var rnList = (r.recede_new_list === null || r.recede_new_list === undefined) ? '' : String(r.recede_new_list);
-      var roList = (r.recede_old_list === null || r.recede_old_list === undefined) ? '' : String(r.recede_old_list);
+            var sh = String(r.shift || '').toUpperCase();
+            if (sh === 'F') {
+                sumCn += cn;
+                sumCo += co;
+                sumRn += rn;
+                sumRo += ro;
+            }
 
-      function vNum(x) { return x === 0 ? '' : esc(n(x)); }
-      function vList(s) { return s ? esc(s) : ''; }
+            function v(x, cls) {
+                if (x === 0) return '';
+                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
+            }
 
-      html += '<tr>';
-      html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
-      html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+            html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
+            html += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
+            html += '</tr>';
+        });
 
-      html += '<td class="ms-td-num">' + vNum(cn) + '</td>';
-      html += '<td class="ms-td-num">' + vList(cnList) + '</td>';
-      html += '<td class="ms-td-num">' + vNum(co) + '</td>';
-      html += '<td class="ms-td-num">' + vList(coList) + '</td>';
+        if (!rows.length) {
+            html += '<tr><td colspan="6" class="ms-empty">無資料</td></tr>';
+        }
 
-      html += '<td class="ms-td-num">' + vNum(rn) + '</td>';
-      html += '<td class="ms-td-num">' + vList(rnList) + '</td>';
-      html += '<td class="ms-td-num">' + vNum(ro) + '</td>';
-      html += '<td class="ms-td-num">' + vList(roList) + '</td>';
+        if (rows.length) {
+            var hasF = rows.some(function (r) { return String(r.shift || '').toUpperCase() === 'F'; });
+            if (hasF) {
+                html += '<tr class="ms-tr-sum">';
+                html += '<td class="ms-td-num" colspan="2">合計</td>';
+                html += '<td class="ms-td-num">' +
+                    (sumCn === 0 ? '' :
+                        '<span class="' + (sumCn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(sumCn)) + '</span>') +
+                    '</td>';
+                html += '<td class="ms-td-num">' +
+                    (sumCo === 0 ? '' :
+                        '<span class="' + (sumCo < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(sumCo)) + '</span>') +
+                    '</td>';
+                html += '<td class="ms-td-num">' +
+                    (sumRn === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRn)) + '</span>') +
+                    '</td>';
+                html += '<td class="ms-td-num">' +
+                    (sumRo === 0 ? '' : '<span class="ms-neg">' + esc(n(sumRo)) + '</span>') +
+                    '</td>';
+                html += '</tr>';
+            }
+        }
 
-      html += '<td class="ms-td-num">' +
-        (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(tn)) + '</span>')) +
-        '</td>';
-
-      html += '<td class="ms-td-num">' +
-        (to === 0 ? '' : ('<span class="' + (to < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(to)) + '</span>')) +
-        '</td>';
-
-      html += '</tr>';
-    });
-
-    if (!rows.length) {
-      html += '<tr><td colspan="12" class="ms-empty">無資料</td></tr>';
+        html += '</tbody></table></div>';
+        return html;
     }
 
-    html += '</tbody></table></div>';
-    return html;
-  }
+    // B 班專用表格函式（含：筆數欄位）
+    function buildTableB(rows) {
+        var html = '';
 
-  function sectionCard(title, subtitle, innerHtml) {
-    var html = '';
-    html += '<section class="ms-section card card--flat">';
-    html += '  <div class="ms-section__head">';
-    html += '    <div>';
-    html += '      <h2 class="ms-section__title">' + esc(title) + '</h2>';
-    html += (subtitle ? ('      <div class="ms-section__sub">' + esc(subtitle) + '</div>') : '');
-    html += '    </div>';
-    html += '  </div>';
-    html += '  <div class="ms-section__body">';
-    html += innerHtml || '';
-    html += '  </div>';
-    html += '</section>';
-    return html;
-  }
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--b">';
 
-  // ✅ D 班：同表顯示 CAT + ITEM
-  function renderD(groupD, personnel) {
-    groupD = groupD || {};
-    var rows = Array.isArray(groupD.rows) ? groupD.rows : [];
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+        html += '<th colspan="4" class="ms-th-group">領料</th>';
+        html += '<th colspan="4" class="ms-th-group">退料</th>';
+        html += '<th colspan="2" class="ms-th-group">領退合計</th>';
+        html += '</tr>';
 
-    function v(x, cls) {
-      var num = Number(x || 0);
-      if (num === 0) return '';
-      return '<span class="' + cls + '">' + esc(n(num)) + '</span>';
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        html += '<tbody>';
+
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
+            var tn = Number(r.total_new || 0);
+            var to = Number(r.total_old || 0);
+
+            var cnList = (r.collar_new_list === null || r.collar_new_list === undefined) ? '' : String(r.collar_new_list);
+            var coList = (r.collar_old_list === null || r.collar_old_list === undefined) ? '' : String(r.collar_old_list);
+            var rnList = (r.recede_new_list === null || r.recede_new_list === undefined) ? '' : String(r.recede_new_list);
+            var roList = (r.recede_old_list === null || r.recede_old_list === undefined) ? '' : String(r.recede_old_list);
+
+            function vNum(x) { return x === 0 ? '' : esc(n(x)); }
+            function vList(s) { return s ? esc(s) : ''; }
+
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+
+            html += '<td class="ms-td-num">' + vNum(cn) + '</td>';
+            html += '<td class="ms-td-num">' + vList(cnList) + '</td>';
+            html += '<td class="ms-td-num">' + vNum(co) + '</td>';
+            html += '<td class="ms-td-num">' + vList(coList) + '</td>';
+
+            html += '<td class="ms-td-num">' + vNum(rn) + '</td>';
+            html += '<td class="ms-td-num">' + vList(rnList) + '</td>';
+            html += '<td class="ms-td-num">' + vNum(ro) + '</td>';
+            html += '<td class="ms-td-num">' + vList(roList) + '</td>';
+
+            html += '<td class="ms-td-num">' +
+                (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(tn)) + '</span>')) +
+                '</td>';
+
+            html += '<td class="ms-td-num">' +
+                (to === 0 ? '' : ('<span class="' + (to < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(to)) + '</span>')) +
+                '</td>';
+
+            html += '</tr>';
+        });
+
+        if (!rows.length) {
+            html += '<tr><td colspan="12" class="ms-empty">無資料</td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        return html;
     }
 
-    function labelForRow(r) {
-      var kind = String(r.row_kind || '').toUpperCase();
-      if (kind === 'ITEM') {
-        var mn = String(r.material_number || '');
-        var name = String(r.material_name || '');
-        // 你要同一張表：未分類材料列就把材料編號放前面
-        return (mn ? (mn + ' ') : '') + name;
-      }
-      // CAT（或沒帶 row_kind）：顯示分類名稱
-      return String(r.category_name || '');
+    function sectionCard(title, subtitle, innerHtml) {
+        var html = '';
+        html += '<section class="ms-section card card--flat">';
+        html += '  <div class="ms-section__head">';
+        html += '    <div>';
+        html += '      <h2 class="ms-section__title">' + esc(title) + '</h2>';
+        html += (subtitle ? ('      <div class="ms-section__sub">' + esc(subtitle) + '</div>') : '');
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <div class="ms-section__body">';
+        html += innerHtml || '';
+        html += '  </div>';
+        html += '</section>';
+        return html;
     }
 
-    function reconCell(r) {
-      var kind = String(r.row_kind || '').toUpperCase();
-      if (kind === 'ITEM') return '<span class="ms-muted">-</span>';
-      var rv = Number(r.recon_value || 0);
-      return v(rv, rv < 0 ? 'ms-neg' : 'ms-pos');
-    }
+    // ✅ D 班：同表顯示 CAT + ITEM
+    // D 班專用表格函式（分類列 + 未分類材料列：只顯示材料名稱，不顯示材料編號）
+    function renderD(groupD, personnel) {
+        groupD = groupD || {};
+        var rows = Array.isArray(groupD.rows) ? groupD.rows : [];
 
-    var tableHtml = '';
-    tableHtml += '<div class="ms-table-wrap">';
-    tableHtml += '<table class="table ms-table ms-table--d">';
-    tableHtml += '<thead>';
-    tableHtml += '<tr>';
-    tableHtml += '<th rowspan="2" style="width:70px;">項次</th>';
-    tableHtml += '<th rowspan="2">分類 / 未分類材料</th>';
-    tableHtml += '<th colspan="2" class="ms-th-group">領料</th>';
-    tableHtml += '<th colspan="2" class="ms-th-group">退料</th>';
-    tableHtml += '<th rowspan="2" class="ms-th-num">對帳</th>';
-    tableHtml += '<th colspan="2" class="ms-th-group">領退合計</th>';
-    tableHtml += '</tr>';
+        function v(x, cls) {
+            var num = Number(x || 0);
+            if (num === 0) return '';
+            return '<span class="' + cls + '">' + esc(n(num)) + '</span>';
+        }
 
-    tableHtml += '<tr>';
-    tableHtml += '<th class="ms-th-num">新</th>';
-    tableHtml += '<th class="ms-th-num">舊</th>';
-    tableHtml += '<th class="ms-th-num">新</th>';
-    tableHtml += '<th class="ms-th-num">舊</th>';
-    tableHtml += '<th class="ms-th-num">新</th>';
-    tableHtml += '<th class="ms-th-num">舊</th>';
-    tableHtml += '</tr>';
-    tableHtml += '</thead>';
+        // ✅ 顯示欄位：CAT 顯示分類名稱；ITEM（未分類材料）只顯示材料名稱
+        function labelForRow(r) {
+            var kind = String(r.row_kind || '').toUpperCase();
+            if (kind === 'ITEM') {
+                return String(r.material_name || ''); // 不顯示材料編號
+            }
+            return String(r.category_name || '');
+        }
 
-    tableHtml += '<tbody>';
+        // ✅ 對帳：分類列顯示數值；未分類材料列顯示 '-'
+        function reconCell(r) {
+            var kind = String(r.row_kind || '').toUpperCase();
+            if (kind === 'ITEM') return '<span class="ms-muted">-</span>';
+            var rv = Number(r.recon_value || 0);
+            return v(rv, rv < 0 ? 'ms-neg' : 'ms-pos');
+        }
 
-    rows.forEach(function (r, idx) {
-      var cn = Number(r.collar_new || 0);
-      var co = Number(r.collar_old || 0);
-      var rn = Number(r.recede_new || 0);
-      var ro = Number(r.recede_old || 0);
+        var tableHtml = '';
+        tableHtml += '<div class="ms-table-wrap">';
+        tableHtml += '<table class="table ms-table ms-table--d">';
+        tableHtml += '<thead>';
+        tableHtml += '<tr>';
+        tableHtml += '<th rowspan="2" style="width:70px;">項次</th>';
+        tableHtml += '<th rowspan="2">分類 / 未分類材料</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">領料</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">退料</th>';
+        tableHtml += '<th rowspan="2" class="ms-th-num">對帳</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">領退合計</th>';
+        tableHtml += '</tr>';
 
-      var tn = Number(r.total_new || 0);
-      var to = Number(r.total_old || 0);
+        tableHtml += '<tr>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '</tr>';
+        tableHtml += '</thead>';
 
-      var kind = String(r.row_kind || '').toUpperCase();
-      var trCls = (kind === 'ITEM') ? ' class="ms-tr-sub"' : '';
+        tableHtml += '<tbody>';
 
-      tableHtml += '<tr' + trCls + '>';
-      tableHtml += '<td class="ms-td-num">' + (idx + 1) + '</td>';
-      tableHtml += '<td class="ms-td-name">' + esc(labelForRow(r)) + '</td>';
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
 
-      tableHtml += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
-      tableHtml += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            var tn = Number(r.total_new || 0);
+            var to = Number(r.total_old || 0);
 
-      tableHtml += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
-      tableHtml += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
+            var kind = String(r.row_kind || '').toUpperCase();
+            var trCls = (kind === 'ITEM') ? ' class="ms-tr-sub"' : '';
 
-      tableHtml += '<td class="ms-td-num">' + reconCell(r) + '</td>';
+            tableHtml += '<tr' + trCls + '>';
+            tableHtml += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            tableHtml += '<td class="ms-td-name">' + esc(labelForRow(r)) + '</td>';
 
-      tableHtml += '<td class="ms-td-num">' + v(tn, tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
-      tableHtml += '<td class="ms-td-num">' + v(to, to < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            // 領料
+            tableHtml += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-      tableHtml += '</tr>';
-    });
+            // 退料（全紅）
+            tableHtml += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
 
-    if (!rows.length) {
-      tableHtml += '<tr><td colspan="9" class="ms-empty">無資料</td></tr>';
-    }
+            // 對帳（分類列才有）
+            tableHtml += '<td class="ms-td-num">' + reconCell(r) + '</td>';
 
-    tableHtml += '</tbody></table></div>';
+            // 領退合計
+            tableHtml += '<td class="ms-td-num">' + v(tn, tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(to, to < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-    return sectionCard(
-      'D班' + ((personnel && personnel.D) ? ('－' + String(personnel.D)) : ''),
-      '',
-      tableHtml
-    );
-  }
+            tableHtml += '</tr>';
+        });
 
-  function renderGroupB(groups, personnel) {
-    if (!groups || !groups.B) return '';
-    var rows = (groups.B && Array.isArray(groups.B.rows)) ? groups.B.rows : [];
-    var name = (personnel && personnel.B) ? String(personnel.B) : '';
-    var title = 'B班' + (name ? ('－' + name) : '');
-    return sectionCard(title, '', buildTableB(rows));
-  }
+        if (!rows.length) {
+            tableHtml += '<tr><td colspan="9" class="ms-empty">無資料</td></tr>';
+        }
 
-  var Mod = {
-    render: function (payload, opts) {
-      opts = opts || {};
-      var root = qs('#msContent');
-      if (!root) return;
+        tableHtml += '</tbody></table></div>';
 
-      payload = payload || {};
-      var groups = payload.groups || {};
-      var personnel = payload.personnel || {};
-      var html = '';
-
-      if (groups.A) {
-        html += sectionCard(
-          'A班' + ((personnel && personnel.A) ? ('－' + String(personnel.A)) : ''),
-          '',
-          buildTableAC(Array.isArray(groups.A.rows) ? groups.A.rows : [])
+        // ✅ 標題比照其他班：D班－姓名
+        return sectionCard(
+            'D班' + ((personnel && personnel.D) ? ('－' + String(personnel.D)) : ''),
+            '',
+            tableHtml
         );
-      }
-
-      html += renderGroupB(groups, personnel);
-
-      if (groups.C) {
-        html += sectionCard(
-          'C班' + ((personnel && personnel.C) ? ('－' + String(personnel.C)) : ''),
-          '',
-          buildTableAC(Array.isArray(groups.C.rows) ? groups.C.rows : [])
-        );
-      }
-
-      if (groups.D) {
-        html += renderD(groups.D, personnel);
-      }
-
-      if (groups.E) {
-        html += sectionCard(
-          'E班' + ((personnel && personnel.E) ? ('－' + String(personnel.E)) : ''),
-          '',
-          buildTableEF(Array.isArray(groups.E.rows) ? groups.E.rows : [])
-        );
-      }
-
-      if (groups.F) {
-        html += sectionCard(
-          'F班' + ((personnel && personnel.F) ? ('－' + String(personnel.F)) : ''),
-          '',
-          buildTableEF(Array.isArray(groups.F.rows) ? groups.F.rows : [])
-        );
-      }
-
-      if (!html) html = '<div class="ms-empty">無資料</div>';
-      root.innerHTML = html;
     }
-  };
 
-  global.MatStatsRender = Mod;
+    function renderGroupB(groups, personnel) {
+        if (!groups || !groups.B) return '';
+        var rows = (groups.B && Array.isArray(groups.B.rows)) ? groups.B.rows : [];
+        var name = (personnel && personnel.B) ? String(personnel.B) : '';
+        var title = 'B班' + (name ? ('－' + name) : '');
+        return sectionCard(title, '', buildTableB(rows));
+    }
+
+    var Mod = {
+        render: function (payload, opts) {
+            opts = opts || {};
+            var root = qs('#msContent');
+            if (!root) return;
+
+            payload = payload || {};
+            var groups = payload.groups || {};
+            var personnel = payload.personnel || {};
+            var html = '';
+
+            if (groups.A) {
+                html += sectionCard(
+                    'A班' + ((personnel && personnel.A) ? ('－' + String(personnel.A)) : ''),
+                    '',
+                    buildTableAC(Array.isArray(groups.A.rows) ? groups.A.rows : [])
+                );
+            }
+
+            html += renderGroupB(groups, personnel);
+
+            if (groups.C) {
+                html += sectionCard(
+                    'C班' + ((personnel && personnel.C) ? ('－' + String(personnel.C)) : ''),
+                    '',
+                    buildTableAC(Array.isArray(groups.C.rows) ? groups.C.rows : [])
+                );
+            }
+
+            if (groups.D) {
+                html += renderD(groups.D, personnel);
+            }
+
+            if (groups.E) {
+                html += sectionCard(
+                    'E班' + ((personnel && personnel.E) ? ('－' + String(personnel.E)) : ''),
+                    '',
+                    buildTableEF(Array.isArray(groups.E.rows) ? groups.E.rows : [])
+                );
+            }
+
+            if (groups.F) {
+                html += sectionCard(
+                    'F班' + ((personnel && personnel.F) ? ('－' + String(personnel.F)) : ''),
+                    '',
+                    buildTableEF(Array.isArray(groups.F.rows) ? groups.F.rows : [])
+                );
+            }
+
+            if (!html) html = '<div class="ms-empty">無資料</div>';
+            root.innerHTML = html;
+        }
+    };
+
+    global.MatStatsRender = Mod;
 
 })(window);
