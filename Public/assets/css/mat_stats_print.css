@@ -1,148 +1,91 @@
-/*
- * Path: Public/assets/css/mat_stats_print.css
- * 說明: 統計頁列印樣式（A4 橫式）
- * - 只影響列印（@media print）
+/* Path: Public/assets/css/mat_stats_print.css
+ * 說明: 統計頁列印（只印 A-F 表格內容：#msPrintArea）
  */
 
-@page {
-  size: A4 landscape;
-  margin: 10mm 8mm;
-}
-
 @media print {
-
-  /* 基礎：去掉背景與陰影，避免瀏覽器節省墨水造成灰底 */
-  html, body {
-    background: #fff !important;
+  /* 顏色校正 */
+  * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* 隱藏導覽/側欄/不需要 UI（你已寫的延伸） */
-  .topbar,
-  .sidebar,
-  .footer,
-  .ms-toolbar__actions,
-  .ms-capsules-wrap,
-  .ms-filter,
-  .ms-status {
-    display: none !important;
+  html, body {
+    background: #fff !important;
   }
 
-  /* 內容滿版 */
-  .page,
-  .page.mat-stats .content,
-  .content {
-    max-width: none !important;
-    width: 100% !important;
+  /* 先把整頁都隱藏 */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 只讓列印區可見 */
+  #msPrintArea,
+  #msPrintArea * {
+    visibility: visible !important;
+  }
+
+  /* 列印區定位到頁面左上 */
+  #msPrintArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* 列印時把「卡片」變成純容器 */
-  .card {
-    box-shadow: none !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-  }
-
-  /* 標題區：保留「統計查詢 + 日期」但更像報表 */
-  .page-head {
-    margin: 0 0 6mm 0 !important;
-  }
-
-  .page-head h1 {
-    font-size: 16pt !important;
-    margin: 0 0 2mm 0 !important;
-  }
-
-  .page-sub {
-    font-size: 10pt !important;
-    margin: 0 0 2mm 0 !important;
-    color: #333 !important;
-  }
-
-  /* 工具列卡片本體不顯示卡片樣式，但保留查詢日期文字 */
-  .ms-toolbar {
-    border: 0 !important;
-    padding: 0 !important;
-    margin: 0 0 4mm 0 !important;
-  }
-
-  .ms-toolbar__head {
-    display: block !important;
-  }
-
-  .ms-toolbar__title {
-    font-size: 12pt !important;
-    margin: 0 !important;
-  }
-
-  .ms-toolbar__date {
-    font-weight: 800 !important;
-    color: #000 !important;
-  }
-
-  /* 表格列印規格：統一成「報表表格」 */
-  table {
+  /* 淡框線 + 避免切斷 + 表頭重複 */
+  #msPrintArea table {
     width: 100% !important;
     border-collapse: collapse !important;
-    table-layout: fixed !important; /* 關鍵：防止欄位爆開 */
-    font-size: 9.5pt !important;
   }
 
-  th, td {
-    border: 1px solid #666 !important;
-    padding: 2.2mm 2mm !important;
-    vertical-align: top !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+  #msPrintArea th,
+  #msPrintArea td {
+    border: 1px solid #d9d9d9 !important;
+    padding: 6px 8px !important;
+    vertical-align: top;
   }
 
-  th {
-    font-weight: 800 !important;
-    text-align: center !important;
-    background: #f2f2f2 !important;
-  }
-
-  /* 數字欄右對齊（你 render.js 若有數字 class，這裡可擴充；先用通用策略） */
-  td[data-col="collar_new"],
-  td[data-col="collar_old"],
-  td[data-col="recede_new"],
-  td[data-col="recede_old"],
-  td[data-col="scrap"],
-  td[data-col="footprint"] {
-    text-align: right !important;
-    white-space: nowrap !important;
-  }
-
-  /* 群組卡片間距：縮小讓一頁容納更多 */
-  .ms-content {
-    gap: 6mm !important;
-    margin-top: 0 !important;
-  }
-
-  /* 分頁控制：避免「群組標題 + 第一列」被拆開 */
-  .ms-group,
-  .ms-block,
-  .ms-section,
-  .ms-card {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  thead {
+  #msPrintArea thead {
     display: table-header-group;
   }
 
-  tfoot {
+  #msPrintArea tfoot {
     display: table-footer-group;
   }
 
-  /* 行別盡量不要被切（但如果表格很長，瀏覽器仍可能切） */
-  tr, th, td {
-    break-inside: avoid;
-    page-break-inside: avoid;
+  #msPrintArea tr,
+  #msPrintArea td,
+  #msPrintArea th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 區塊（每班 card）避免被切斷 */
+  #msPrintArea .card,
+  #msPrintArea .ms-section,
+  #msPrintArea .ms-table-wrap {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 列印抬頭（JS 會塞） */
+  #msPrintArea .ms-print-head {
+    margin: 0 0 10px 0 !important;
+    padding: 0 0 8px 0 !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+  }
+
+  #msPrintArea .ms-print-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+  }
+
+  #msPrintArea .ms-print-meta {
+    font-size: 12px !important;
+    color: #444 !important;
+    margin-top: 4px !important;
   }
 }
