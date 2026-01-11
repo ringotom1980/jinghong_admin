@@ -23,6 +23,22 @@
     #msPrintArea table {
       border-radius: 0 !important;
     }
+    /* ===== 列印：非表格區塊不顯示任何框線 ===== */
+
+    /* 公司 LOGO + 標題（列印抬頭） */
+    #msPrintArea .ms-print-head {
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    /* 班別卡片（A班 - XXX 那一塊） */
+    #msPrintArea .ms-section,
+    #msPrintArea .ms-section__head,
+    #msPrintArea .ms-section__body {
+      border: 0 !important;
+      box-shadow: none !important;
+      outline: 0 !important;
+    }
   }
 
   html,
@@ -81,18 +97,18 @@
   }
 
   /* ===== 列印：表格框線加深 ===== */
-#msPrintArea table {
-  width: 100% !important;
-  border-collapse: collapse !important;
-  border: 1.5px solid #9a9a9a !important;
-}
+  #msPrintArea table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #9a9a9a !important;
+  }
 
-#msPrintArea th,
-#msPrintArea td {
-  border: 1.2px solid #9a9a9a !important;
-  padding: 6px 8px !important;
-  vertical-align: middle;
-}
+  #msPrintArea th,
+  #msPrintArea td {
+    border: 1.2px solid #9a9a9a !important;
+    padding: 6px 8px !important;
+    vertical-align: middle;
+  }
 
   #msPrintArea thead {
     display: table-header-group;
