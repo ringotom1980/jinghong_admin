@@ -125,3 +125,21 @@
     align-items: flex-start;
   }
 }
+
+/* ===== Sticky toolbar (under topbar) ===== */
+/* 讓統計工具列卡片捲動到 topbar 時固定 */
+.page.mat-stats .ms-toolbar{
+  position: sticky;
+  top: calc(var(--topbar-h) + 10px);
+  z-index: 45; /* < topbar(50) 但 > 內容 */
+}
+
+/* sticky 時避免背景透明造成內容穿透 */
+.page.mat-stats .ms-toolbar.card{
+  background: #fff;
+}
+
+/* 視覺：黏住時看起來像浮在內容上（可微調） */
+.page.mat-stats .ms-toolbar.card{
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.08);
+}
