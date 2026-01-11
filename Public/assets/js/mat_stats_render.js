@@ -304,7 +304,7 @@
         tableHtml += '<thead>';
         tableHtml += '<tr>';
         tableHtml += '<th rowspan="2" style="width:70px;">項次</th>';
-        tableHtml += '<th rowspan="2">分類 / 未分類材料</th>';
+        tableHtml += '<th rowspan="2">材料名稱</th>';
         tableHtml += '<th colspan="2" class="ms-th-group">領料</th>';
         tableHtml += '<th colspan="2" class="ms-th-group">退料</th>';
         tableHtml += '<th rowspan="2" class="ms-th-num">對帳</th>';

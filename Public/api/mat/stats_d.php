@@ -67,7 +67,7 @@ function mat_stats_d(string $d): array
                     COALESCE(SUM(i.collar_new), 0)  AS collar_new,
                     COALESCE(SUM(i.collar_old), 0)  AS collar_old,
                     COALESCE(SUM(i.recede_new), 0)  AS recede_new,
-                    COALESCE(SUM(i.recede_old), 0)  AS recede_old
+                    (COALESCE(SUM(i.recede_old), 0) + COALESCE(SUM(i.scrap), 0) + COALESCE(SUM(i.footprint), 0)) AS recede_old
                   FROM mat_edit_category_materials cm
                   JOIN mat_issue_items i
                     ON i.material_number = cm.material_number
@@ -92,7 +92,7 @@ function mat_stats_d(string $d): array
                      COALESCE(SUM(i.collar_new), 0)  AS collar_new,
                      COALESCE(SUM(i.collar_old), 0)  AS collar_old,
                      COALESCE(SUM(i.recede_new), 0)  AS recede_new,
-                     COALESCE(SUM(i.recede_old), 0)  AS recede_old
+                     (COALESCE(SUM(i.recede_old), 0) + COALESCE(SUM(i.scrap), 0) + COALESCE(SUM(i.footprint), 0)) AS recede_old
                    FROM mat_issue_items i
                    LEFT JOIN mat_edit_category_materials cm
                      ON cm.material_number = i.material_number
