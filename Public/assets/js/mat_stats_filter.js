@@ -59,21 +59,36 @@
                 var existed = self.el.querySelectorAll('.ms-filter__btn--person');
                 if (existed && existed.length) return;
 
+                // 固定順序 A-F
+                var order = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+                // rows -> map
+                var map = {};
                 for (var i = 0; i < rows.length; i++) {
                     var p = rows[i];
                     if (!p || !p.shift_code) continue;
+                    var sc = String(p.shift_code).toUpperCase();
+                    var nm = String(p.person_name || '').trim();
+                    if (/^[A-F]$/.test(sc)) map[sc] = nm;
+                }
 
-                    var shift = String(p.shift_code).toUpperCase();
-                    var name = String(p.person_name);
+                // 避免重複 append（如果 init 被呼叫多次）
+                var existed = self.el.querySelectorAll('.ms-filter__btn[data-shift="A"], .ms-filter__btn[data-shift="B"], .ms-filter__btn[data-shift="C"], .ms-filter__btn[data-shift="D"], .ms-filter__btn[data-shift="E"], .ms-filter__btn[data-shift="F"]');
+                if (existed && existed.length) return;
+
+                for (var k = 0; k < order.length; k++) {
+                    var shift = order[k];
+                    var name = map[shift] || '';
 
                     var btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = 'ms-filter__btn ms-filter__btn--person';
+                    btn.className = 'ms-filter__btn ms-filter__btn--person'; // ✅ 用同一套樣式（你已寫 CSS）
                     btn.setAttribute('data-shift', shift);
-                    btn.setAttribute('data-person', name);
-                    btn.textContent = shift + '-' + name;
+                    if (name) btn.setAttribute('data-person', name);
 
-                    // 不用綁 click（事件委派已處理）
+                    // ✅ 有名字：A-鄭建昇；沒名字：A
+                    btn.textContent = name ? (shift + '-' + name) : shift;
+
                     self.el.appendChild(btn);
                 }
             }).catch(function () {
