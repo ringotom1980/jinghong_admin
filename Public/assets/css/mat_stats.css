@@ -130,7 +130,7 @@
 /* 讓統計工具列卡片捲動到 topbar 時固定 */
 .page.mat-stats .ms-toolbar{
   position: sticky;
-  top: calc(var(--topbar-h) + 10px);
+  top: calc(var(--topbar-h));
   z-index: 45; /* < topbar(50) 但 > 內容 */
 }
 
