@@ -64,10 +64,30 @@
             if (old && old.parentNode) old.parentNode.removeChild(old);
         },
 
+        _preloadLogo: function (logoSrc, cb) {
+            // 目標：確保列印前 LOGO 已完成下載 / 快取，避免偶發空白
+            try {
+                var img = new Image();
+                img.onload = function () { cb && cb(true); };
+                img.onerror = function () { cb && cb(false); };
+
+                // 保險：若你要用版本號固定快取（建議），可在呼叫端加 ?v=xxx
+                img.src = logoSrc;
+
+                // 若圖片已在快取，onload 可能不觸發（部分瀏覽器狀況），給一個極短保底
+                setTimeout(function () {
+                    // naturalWidth > 0 代表已可用
+                    if (img && img.naturalWidth > 0) cb && cb(true);
+                }, 50);
+            } catch (e) {
+                cb && cb(false);
+            }
+        },
+
         _insertHeaderIntoEachTableThead: function (contentRoot) {
             // 把抬頭塞進每個班別的 table thead 第一列，讓同班跨頁自動重複
             var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
-            var logoSrc = base + '/assets/img/brand/JH_logo.png';
+            var logoSrc = base + '/assets/img/brand/JH_logo.png?v=1';
 
             var dateText = this._escapeHtml(this._getDateText());
             var shiftText = this._escapeHtml(this._getShiftText());
@@ -150,37 +170,48 @@
             var src = qs('#msContent');
             if (!src) return;
 
-            this._cleanup();
-
-            var wrap = document.createElement('div');
-            wrap.id = 'msPrintArea';
-
-            // 只印表格內容：clone #msContent（A-F）
-            var clone = src.cloneNode(true);
-
-            // 1) 抬頭塞進每個 table thead（跨頁重複）
-            this._insertHeaderIntoEachTableThead(clone);
-
-            // 2) 移除原本卡片式班別標題，避免重複
-            this._stripSectionCardTitle(clone);
-
-            wrap.appendChild(clone);
-            document.body.appendChild(wrap);
-
             var self = this;
-            var done = false;
 
-            function finish() {
-                if (done) return;
-                done = true;
-                self._cleanup();
-                global.removeEventListener('afterprint', finish);
-            }
+            // 先算出跟 _insertHeaderIntoEachTableThead 一樣的 logoSrc（必須一致）
+            var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
+            // ✅ 建議加版本號避免某些快取狀態不穩（你也可改成 filemtime 版本）
+            var logoSrc = base + '/assets/img/brand/JH_logo.png?v=1';
 
-            global.addEventListener('afterprint', finish);
-            setTimeout(finish, 2500);
+            // 先清掉舊列印區，避免殘留
+            self._cleanup();
 
-            global.print();
+            // ✅ 核心：先預載 LOGO，載好才進列印
+            self._preloadLogo(logoSrc, function () {
+
+                var wrap = document.createElement('div');
+                wrap.id = 'msPrintArea';
+
+                // 只印表格內容：clone #msContent（A-F）
+                var clone = src.cloneNode(true);
+
+                // 1) 抬頭塞進每個 table thead（跨頁重複）
+                self._insertHeaderIntoEachTableThead(clone);
+
+                // 2) 移除原本卡片式班別標題，避免重複
+                self._stripSectionCardTitle(clone);
+
+                wrap.appendChild(clone);
+                document.body.appendChild(wrap);
+
+                var done = false;
+
+                function finish() {
+                    if (done) return;
+                    done = true;
+                    self._cleanup();
+                    global.removeEventListener('afterprint', finish);
+                }
+
+                global.addEventListener('afterprint', finish);
+                setTimeout(finish, 2500);
+
+                global.print();
+            });
         }
     };
 
