@@ -514,7 +514,7 @@
 
             // A
             if (groups.A) {
-                html += renderGroupAC(
+                html += sectionCard(
                     'A班' + ((personnel && personnel.A) ? ('－' + String(personnel.A)) : ''),
                     '',
                     buildTableAC(Array.isArray(groups.A.rows) ? groups.A.rows : [])
@@ -526,7 +526,7 @@
 
             // C
             if (groups.C) {
-                html += renderGroupAC(
+                html += sectionCard(
                     'C班' + ((personnel && personnel.C) ? ('－' + String(personnel.C)) : ''),
                     '',
                     buildTableAC(Array.isArray(groups.C.rows) ? groups.C.rows : [])
@@ -540,7 +540,7 @@
 
             // E
             if (groups.E) {
-                html += renderGroupEF(
+                html += sectionCard(
                     'E班' + ((personnel && personnel.E) ? ('－' + String(personnel.E)) : ''),
                     '',
                     buildTableEF(Array.isArray(groups.E.rows) ? groups.E.rows : [])
@@ -549,7 +549,7 @@
 
             // F
             if (groups.F) {
-                html += renderGroupEF(
+                html += sectionCard(
                     'F班' + ((personnel && personnel.F) ? ('－' + String(personnel.F)) : ''),
                     '',
                     buildTableEF(Array.isArray(groups.F.rows) ? groups.F.rows : [])
