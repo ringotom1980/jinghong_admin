@@ -64,23 +64,32 @@
             if (old && old.parentNode) old.parentNode.removeChild(old);
         },
 
-        _preloadLogo: function (logoSrc, cb) {
+                _preloadLogo: function (logoSrc, cb) {
             // 目標：確保列印前 LOGO 已完成下載 / 快取，避免偶發空白
+            // ✅ 但 callback 必須只觸發一次，避免 window.print() 被叫兩次
+            var done = false;
+
+            function finish(ok) {
+                if (done) return;
+                done = true;
+                if (cb) cb(!!ok);
+            }
+
             try {
                 var img = new Image();
-                img.onload = function () { cb && cb(true); };
-                img.onerror = function () { cb && cb(false); };
+                img.onload = function () { finish(true); };
+                img.onerror = function () { finish(false); };
 
-                // 保險：若你要用版本號固定快取（建議），可在呼叫端加 ?v=xxx
                 img.src = logoSrc;
 
-                // 若圖片已在快取，onload 可能不觸發（部分瀏覽器狀況），給一個極短保底
+                // 保底：避免某些情況 onload 沒觸發
                 setTimeout(function () {
-                    // naturalWidth > 0 代表已可用
-                    if (img && img.naturalWidth > 0) cb && cb(true);
-                }, 50);
+                    if (done) return;
+                    if (img && img.naturalWidth > 0) finish(true);
+                    else finish(false);
+                }, 150);
             } catch (e) {
-                cb && cb(false);
+                finish(false);
             }
         },
 
