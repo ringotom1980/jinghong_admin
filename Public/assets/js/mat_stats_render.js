@@ -362,19 +362,21 @@
             tableHtml += '<td class="ms-td-num">' + (idx + 1) + '</td>';
             tableHtml += '<td class="ms-td-name">' + esc(labelForRow(r)) + '</td>';
 
-            // 領料
-            tableHtml += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            // 領料（新、舊）：正黑、負紅
+            tableHtml += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
             tableHtml += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-            // 退料（全紅）
-            tableHtml += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
-            tableHtml += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
+            // 退料（新、舊）：正黑、負紅
+            tableHtml += '<td class="ms-td-num">' + v(rn, rn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(ro, ro < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-            // 對帳（分類列才有）
+            // 對帳（分類列才有）：正黑、負紅
             tableHtml += '<td class="ms-td-num">' + reconCell(r) + '</td>';
 
             // 領退合計
+            // 新：正藍、負紅
             tableHtml += '<td class="ms-td-num">' + v(tn, tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            // 舊：正黑、負紅
             tableHtml += '<td class="ms-td-num">' + v(to, to < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
             tableHtml += '</tr>';
