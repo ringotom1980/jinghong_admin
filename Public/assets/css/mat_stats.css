@@ -309,3 +309,20 @@
 .ms-table-wrap .ms-table tbody tr:last-child td {
   border-bottom: 0;
 }
+
+/* 一般正數（黑色，維持現況） */
+.ms-pos {
+  color: inherit;
+}
+
+/* 負數（紅色） */
+.ms-neg {
+  color: #dc2626; /* red-600 */
+  font-weight: 600;
+}
+
+/* 領退合計（新）正數：藍色 */
+.ms-sum-pos {
+  color: #2563eb; /* blue-600 */
+  font-weight: 700;
+}

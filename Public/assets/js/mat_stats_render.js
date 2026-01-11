@@ -106,19 +106,23 @@
             var sumNew = Number(r.total_new || 0);
             var sumOld = Number(r.total_old || 0);
 
-            function v(x) {
-                return x === 0 ? '' : esc(n(x));
+            function v(x, cls) {
+                if (x === 0) return '';
+                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
             }
 
             html += '<tr>';
             html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
             html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
-            html += '<td class="ms-td-num">' + v(cn) + '</td>';
-            html += '<td class="ms-td-num">' + v(co) + '</td>';
-            html += '<td class="ms-td-num">' + v(rn) + '</td>';
-            html += '<td class="ms-td-num">' + v(ro) + '</td>';
-            html += '<td class="ms-td-num">' + v(sumNew) + '</td>';
-            html += '<td class="ms-td-num">' + v(sumOld) + '</td>';
+            // 領新 / 領舊 / 退新 / 退舊：負數才紅
+            html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(rn, rn < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            html += '<td class="ms-td-num">' + v(ro, ro < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            // 領退合計（新）：正藍、負紅
+            html += '<td class="ms-td-num">' + v(sumNew, sumNew < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            // 領退合計（舊）：正黑、負紅
+            html += '<td class="ms-td-num">' + v(sumOld, sumOld < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
             html += '</tr>';
         });
 
