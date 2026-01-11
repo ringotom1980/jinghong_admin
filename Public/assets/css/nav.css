@@ -183,20 +183,20 @@
   line-height: 1.1;
 }
 
-.rail__tab:hover{
+.rail__tab:hover {
   color: var(--nav-text);
   background: var(--primary-soft);
-  border-color: rgba(47, 63, 122, .22);
+  border-color: rgba(47, 63, 122, 0.22);
 }
 
 .rail__tab:hover .tab__icon i {
   color: var(--nav-accent-blue);
 }
 
-.rail__tab.is-active{
+.rail__tab.is-active {
   color: var(--nav-text);
   background: var(--primary-soft);
-  border-color: rgba(47, 63, 122, .26);
+  border-color: rgba(47, 63, 122, 0.26);
 }
 
 .rail__tab.is-active .tab__icon i {
@@ -308,15 +308,15 @@
   white-space: nowrap; /* ✅ 避免換行造成看起來歪 */
 }
 
-.nav__item:hover{
+.nav__item:hover {
   background: var(--primary-soft);
-  border-color: rgba(47, 63, 122, .18);
+  border-color: rgba(47, 63, 122, 0.18);
   color: rgba(15, 23, 42, 0.92);
 }
 
-.nav__item.is-active{
+.nav__item.is-active {
   background: var(--primary-soft);
-  border-color: rgba(47, 63, 122, .22);
+  border-color: rgba(47, 63, 122, 0.22);
   color: rgba(15, 23, 42, 0.96);
 }
 
@@ -332,7 +332,9 @@
   padding: 18px 18px 24px 18px;
 
   /* ✅ 關鍵：給主內容區一層「工作底板」，避免露出 body 漸層造成雙層感 */
-  background: rgba(246, 247, 251, 0.92);
+  --page-bg: rgba(246, 247, 251, 0.92);
+  background: var(--page-bg);
+
   border-left: 1px solid rgba(15, 23, 42, 0.06);
 
   /* 讓內容至少撐滿視窗高度（扣掉 topbar） */
@@ -345,7 +347,8 @@
   padding: 14px 18px 18px 18px;
 
   /* ✅ 同一塊底板：視覺連續 */
-  background: rgba(246, 247, 251, 0.92);
+  background: var(--page-bg);
+
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   border-left: 1px solid rgba(15, 23, 42, 0.06);
 
