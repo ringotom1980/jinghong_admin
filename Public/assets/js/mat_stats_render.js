@@ -313,14 +313,6 @@
             return String(r.category_name || '');
         }
 
-        // ✅ 對帳：分類列顯示數值；未分類材料列顯示 '-'
-        function reconCell(r) {
-            var kind = String(r.row_kind || '').toUpperCase();
-            if (kind === 'ITEM') return '<span class="ms-muted">-</span>';
-            var rv = Number(r.recon_value || 0);
-            return v(rv, rv < 0 ? 'ms-neg' : 'ms-pos');
-        }
-
         var tableHtml = '';
         tableHtml += '<div class="ms-table-wrap">';
         tableHtml += '<table class="table ms-table ms-table--d">';
@@ -371,7 +363,13 @@
             tableHtml += '<td class="ms-td-num">' + v(ro, ro < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
             // 對帳（分類列才有）：正黑、負紅
-            tableHtml += '<td class="ms-td-num">' + reconCell(r) + '</td>';
+            var kind = String(r.row_kind || '').toUpperCase();
+            var rv = Number(r.recon_value || 0);
+
+            tableHtml += '<td class="ms-td-num">' +
+                (kind === 'ITEM' ? '' : v(rv, rv < 0 ? 'ms-neg' : 'ms-pos')) +
+                '</td>';
+
 
             // 領退合計
             // 新：正藍、負紅
