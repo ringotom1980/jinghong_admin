@@ -512,19 +512,49 @@
 
             // ===== Group Dispatcher =====
 
-            // A / C（先只實作這組）
-            html += renderGroupAC(groups, personnel);
+            // A
+            if (groups.A) {
+                html += sectionCard(
+                    'A班' + ((personnel && personnel.A) ? ('－' + String(personnel.A)) : ''),
+                    '',
+                    buildTableAC(Array.isArray(groups.A.rows) ? groups.A.rows : [])
+                );
+            }
 
             // B
             html += renderGroupB(groups, personnel);
 
-            // D（暫時保留你現有的）
+            // C
+            if (groups.C) {
+                html += sectionCard(
+                    'C班' + ((personnel && personnel.C) ? ('－' + String(personnel.C)) : ''),
+                    '',
+                    buildTableAC(Array.isArray(groups.C.rows) ? groups.C.rows : [])
+                );
+            }
+
+            // D
             if (groups.D) {
                 html += renderD(groups.D);
             }
 
-            // E / F
-            html += renderGroupEF(groups, personnel);
+            // E
+            if (groups.E) {
+                html += sectionCard(
+                    'E班' + ((personnel && personnel.E) ? ('－' + String(personnel.E)) : ''),
+                    '',
+                    buildTableEF(Array.isArray(groups.E.rows) ? groups.E.rows : [])
+                );
+            }
+
+            // F
+            if (groups.F) {
+                html += sectionCard(
+                    'F班' + ((personnel && personnel.F) ? ('－' + String(personnel.F)) : ''),
+                    '',
+                    buildTableEF(Array.isArray(groups.F.rows) ? groups.F.rows : [])
+                );
+            }
 
             if (!html) html = '<div class="ms-empty">無資料</div>';
             root.innerHTML = html;
