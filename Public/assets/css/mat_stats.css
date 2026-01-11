@@ -285,6 +285,15 @@
 .ms-table-wrap .ms-table thead th {
   border-bottom: 1px solid rgba(15, 23, 42, 0.10);
   background: rgba(15, 23, 42, 0.02);
+  /* ✅ 表頭文字置中 */
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 數值欄位內容置中（新/舊/合計等） */
+.ms-table-wrap .ms-table td.ms-td-num {
+  text-align: center;
+  vertical-align: middle;
 }
 
 .ms-table-wrap .ms-table th,
