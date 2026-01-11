@@ -134,6 +134,68 @@
         return html;
     }
 
+    // E/F 專用表格函式
+    function buildTableEF(rows) {
+        var html = '';
+
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--ef">';
+
+        // ===== 表頭（兩列）=====
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+        html += '<th colspan="2" class="ms-th-group">領料</th>';
+        html += '<th colspan="2" class="ms-th-group">退料</th>';
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        // ===== 內容 =====
+        html += '<tbody>';
+
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0); // ✅ 後端已套用 recede_old+scrap+footprint
+
+            function v(x, cls) {
+                if (x === 0) return '';
+                return '<span class="' + cls + '">' + esc(n(x)) + '</span>';
+            }
+
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+
+            // 領料(新)：正藍、負紅
+            html += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            // 領料(舊)：正黑、負紅
+            html += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
+            // 退料(新)：一律紅
+            html += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
+            // 退料(舊)：一律紅
+            html += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
+
+            html += '</tr>';
+        });
+
+        if (!rows.length) {
+            html += '<tr><td colspan="6" class="ms-empty">無資料</td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        return html;
+    }
+
     function sectionCard(title, subtitle, innerHtml) {
         var html = '';
         html += '<section class="ms-section card card--flat">';
@@ -256,11 +318,32 @@
             var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
             var title = shift + '班' + (name ? ('－' + name) : '');
 
-            // ⚠️ 先沿用現有 buildTable（之後你再換成 AC 專用表頭）
             html += sectionCard(
                 title,
                 '',
                 buildTableAC(rows)
+            );
+        });
+
+        return html;
+    }
+
+    // E/F 專用 renderer
+    function renderGroupEF(groups, personnel) {
+        var html = '';
+
+        ['E', 'F'].forEach(function (shift) {
+            if (!groups[shift]) return;
+
+            var rows = Array.isArray(groups[shift].rows) ? groups[shift].rows : [];
+
+            var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
+            var title = shift + '班' + (name ? ('－' + name) : '');
+
+            html += sectionCard(
+                title,
+                '',
+                buildTableEF(rows)
             );
         });
 
@@ -291,8 +374,8 @@
                 html += renderD(groups.D);
             }
 
-            // E / F（預留）
-            // html += renderGroupEF(groups, personnel);
+            // E / F
+            html += renderGroupEF(groups, personnel);
 
             if (!html) html = '<div class="ms-empty">無資料</div>';
             root.innerHTML = html;

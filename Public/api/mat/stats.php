@@ -13,6 +13,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
 require_once __DIR__ . '/stats_ac.php';
+require_once __DIR__ . '/stats_ef.php';
 
 function _pick_latest_date_3m(): ?string
 {
@@ -250,19 +251,18 @@ try {
         // D（分類）
         $groups['D'] = _d_group($d);
 
-        // E/F（同組邏輯，但拆成兩張卡）
-        $efRows = _agg_items_by_shifts($d, ['E', 'F'], false, true);
-        $efMap = _split_rows_by_shift($efRows);
-        $groups['E'] = ['rows' => $efMap['E'] ?? []];
-        $groups['F'] = ['rows' => $efMap['F'] ?? []];
+        // E/F（交給 stats_ef.php，定版：退舊 = recede_old + scrap + footprint）
+        $efGroups = mat_stats_ef($d);
+        $groups['E'] = $efGroups['E'] ?? ['rows' => []];
+        $groups['F'] = $efGroups['F'] ?? ['rows' => []];
     } else {
         if ($shift === 'A' || $shift === 'C') {
             $acGroups = mat_stats_ac($d);
             $groups[$shift] = $acGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'E' || $shift === 'F') {
-            $efRows = _agg_items_by_shifts($d, ['E', 'F'], false, true);
-            $efMap = _split_rows_by_shift($efRows);
-            $groups[$shift] = ['rows' => $efMap[$shift] ?? []];
+            // E/F（交給 stats_ef.php，定版邏輯）
+            $efGroups = mat_stats_ef($d);
+            $groups[$shift] = $efGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'B') {
             $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
         } elseif ($shift === 'D') {
