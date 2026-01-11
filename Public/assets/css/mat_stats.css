@@ -150,38 +150,53 @@
   border-top-right-radius: 0;
 }
 
-/* ===== Date capsules grouped by month ===== */
-.ms-capsules {
+/* ===== Date capsules grouped by month (single row) ===== */
+
+/* 外層容器：單列水平捲動、不換行 */
+.ms-capsules{
   display: flex;
-  flex-direction: column;
-  gap: 10px; /* 月份之間 */
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* 月份群組 */
-.ms-capsules__month {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* 每個月份群組：標題 + 日期，同一列 */
+.ms-capsules__month{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
-/* 月份標題 */
-.ms-capsules__month-title {
+/* 月份標題：做成小標籤 */
+.ms-capsules__month-title{
   font-size: 13px;
   font-weight: 900;
   color: rgba(15, 23, 42, 0.7);
-  padding-left: 2px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
 }
 
-/* 日期膠囊列 */
-.ms-capsules__list {
-  display: flex;
-  flex-wrap: wrap;
+/* 日期膠囊列：永遠不換行 */
+.ms-capsules__list{
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 6px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* 日期膠囊本體（高度壓低） */
-.ms-capsule {
-  height: 28px;                 /* 🔑 關鍵：不要太高 */
+.ms-capsule{
+  height: 28px;
   padding: 0 10px;
   border-radius: 8px;
   font-size: 13px;
@@ -190,14 +205,15 @@
   background: rgba(255,255,255,.9);
   cursor: pointer;
   user-select: none;
+  flex: 0 0 auto; /* 避免被壓縮 */
 }
 
-.ms-capsule:hover {
+.ms-capsule:hover{
   background: rgba(255,255,255,1);
   border-color: rgba(15,23,42,.3);
 }
 
-.ms-capsule.is-active {
+.ms-capsule.is-active{
   background: rgba(37,99,235,.12);
   border-color: rgba(37,99,235,.35);
   color: rgba(30,58,138,.95);
