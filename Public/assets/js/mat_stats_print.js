@@ -1,151 +1,176 @@
 /* Path: Public/assets/js/mat_stats_print.js
  * 說明: 統計頁列印（只印 A-F 表格內容）
- * 需求：
+ * 需求（最新版）：
  * 1) A4 橫式：由 CSS @page 控制（mat_stats_print.css）
- * 2) 抬頭：每頁重複（每一班頁首插入 LOGO + 境宏工程有限公司領退料統計）
+ * 2) 抬頭：放進 table thead（LOGO + 公司名 + 查詢日期 + 班別 + 列印時間 + 班別標題），同班跨頁自動重複
  * 3) 每班新頁：由 CSS 對 .ms-section 控制（mat_stats_print.css）
- * 4) 頁碼 1/6：以「每班一頁」=「第 i / 總班數」
+ * 4) 頁碼：放棄（不做）
  */
 
 (function (global) {
-    'use strict';
+  'use strict';
 
-    function qs(sel, root) { return (root || document).querySelector(sel); }
-    function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-    var Mod = {
-        app: null,
+  var Mod = {
+    app: null,
 
-        init: function (app) {
-            this.app = app || null;
+    init: function (app) {
+      this.app = app || null;
 
-            var btn = qs('#msBtnPrint');
-            if (!btn) return;
+      var btn = qs('#msBtnPrint');
+      if (!btn) return;
 
-            var self = this;
-            btn.addEventListener('click', function () {
-                self.print();
-            });
-        },
+      var self = this;
+      btn.addEventListener('click', function () {
+        self.print();
+      });
+    },
 
-        _formatNow: function () {
-            var d = new Date();
-            var pad = function (n) { return n < 10 ? ('0' + n) : String(n); };
-            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
-                ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-        },
+    _formatNow: function () {
+      var d = new Date();
+      var pad = function (n) { return n < 10 ? ('0' + n) : String(n); };
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+        ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    },
 
-        _getShiftText: function () {
-            var b = qs('#msShiftFilter .ms-filter__btn.is-active');
-            var t = b ? (b.textContent || '') : '';
-            t = String(t).trim();
-            return t || '全部';
-        },
+    _getShiftText: function () {
+      var b = qs('#msShiftFilter .ms-filter__btn.is-active');
+      var t = b ? (b.textContent || '') : '';
+      t = String(t).trim();
+      return t || '全部';
+    },
 
-        _getDateText: function () {
-            var el = qs('#msSelectedDate');
-            var t = el ? (el.textContent || '') : '';
-            t = String(t).trim();
-            return t || '--';
-        },
+    _getDateText: function () {
+      var el = qs('#msSelectedDate');
+      var t = el ? (el.textContent || '') : '';
+      t = String(t).trim();
+      return t || '--';
+    },
 
-        _escapeHtml: function (s) {
-            s = (s === null || s === undefined) ? '' : String(s);
-            return s
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        },
+    _escapeHtml: function (s) {
+      s = (s === null || s === undefined) ? '' : String(s);
+      return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    },
 
-        _cleanup: function () {
-            var old = qs('#msPrintArea');
-            if (old && old.parentNode) old.parentNode.removeChild(old);
-        },
+    _cleanup: function () {
+      var old = qs('#msPrintArea');
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+    },
 
-        _buildPrintHeaderHtml: function (pageNoText) {
-            // LOGO 路徑：依你現況
-            var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
-            var logoSrc = base + '/assets/img/brand/JH_logo.png';
+    _insertHeaderIntoEachTableThead: function (contentRoot) {
+      // 把抬頭塞進每個班別的 table thead 第一列，讓同班跨頁自動重複
+      var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
+      var logoSrc = base + '/assets/img/brand/JH_logo.png';
 
-            var dateText = this._escapeHtml(this._getDateText());
-            var shiftText = this._escapeHtml(this._getShiftText());
-            var nowText = this._escapeHtml(this._formatNow());
-            var pageText = this._escapeHtml(pageNoText || '');
+      var dateText = this._escapeHtml(this._getDateText());
+      var shiftText = this._escapeHtml(this._getShiftText());
+      var nowText = this._escapeHtml(this._formatNow());
 
-            return ''
-                + '<img class="ms-print-logo" src="' + logoSrc + '" alt="LOGO" />'
-                + '<div>'
-                + '  <div class="ms-print-title">境宏工程有限公司領退料統計</div>'
-                + '  <div class="ms-print-meta">'
-                + '查詢日期：' + dateText
-                + '　｜　班別：' + shiftText
-                + '　｜　列印時間：' + nowText
-                + (pageText ? ('　｜　頁次：' + pageText) : '')
-                + '</div>'
-                + '</div>';
-        },
+      var sections = qsa('.ms-section', contentRoot);
 
-        _insertHeaderPerSection: function (contentRoot) {
-            // 對印出來的每個班別區塊（.ms-section），插入一份頁首（達成每頁重複）
-            var sections = qsa('.ms-section', contentRoot);
-            var total = sections.length;
+      for (var i = 0; i < sections.length; i++) {
+        var sec = sections[i];
 
-            for (var i = 0; i < sections.length; i++) {
-                var sec = sections[i];
+        var table = qs('table', sec);
+        if (!table) continue;
 
-                // 若之前印過殘留（理論上不會，保險）
-                var exist = qs('.ms-print-head', sec);
-                if (exist && exist.parentNode) exist.parentNode.removeChild(exist);
+        var thead = qs('thead', table);
+        if (!thead) continue;
 
-                var head = document.createElement('div');
-                head.className = 'ms-print-head';
-                head.innerHTML = this._buildPrintHeaderHtml((i + 1) + '/' + total);
+        // 班別標題（例如：A班－鄭建昇）
+        var secTitleEl = qs('.ms-section__title', sec);
+        var secTitle = secTitleEl ? String(secTitleEl.textContent || '').trim() : '';
 
-                // 插在每一班最前面 → 每頁都有相同頁首
-                sec.insertBefore(head, sec.firstChild);
-            }
-        },
+        // 取表頭第一列 th/td 數量當 colspan
+        var firstRow = qs('tr', thead);
+        var colCount = firstRow ? firstRow.querySelectorAll('th,td').length : 0;
+        if (!colCount) colCount = 1;
 
-        print: function () {
-            var src = qs('#msContent');
-            if (!src) return;
+        // 移除舊的列印抬頭（避免重複插入）
+        var old = qs('tr.ms-print-thead', thead);
+        if (old && old.parentNode) old.parentNode.removeChild(old);
 
-            // 先清一次避免殘留
-            this._cleanup();
+        var tr = document.createElement('tr');
+        tr.className = 'ms-print-thead';
 
-            // 建列印容器
-            var wrap = document.createElement('div');
-            wrap.id = 'msPrintArea';
+        var th = document.createElement('th');
+        th.className = 'ms-print-thead-cell';
+        th.colSpan = colCount;
 
-            // 只印表格內容：clone #msContent（A-F）
-            var clone = src.cloneNode(true);
+        th.innerHTML =
+          '<div class="ms-print-thead-wrap">' +
+          '  <img class="ms-print-logo" src="' + logoSrc + '" alt="LOGO" />' +
+          '  <div>' +
+          '    <div class="ms-print-title">境宏工程有限公司領退料統計</div>' +
+          '    <div class="ms-print-meta">' +
+          '查詢日期：' + dateText +
+          '　｜　班別：' + shiftText +
+          '　｜　列印時間：' + nowText +
+          (secTitle ? ('　｜　' + this._escapeHtml(secTitle)) : '') +
+          '    </div>' +
+          '  </div>' +
+          '</div>';
 
-            // ✅ 每班插入頁首（LOGO+標題+日期/班別/時間+頁次）
-            this._insertHeaderPerSection(clone);
+        tr.appendChild(th);
 
-            wrap.appendChild(clone);
-            document.body.appendChild(wrap);
+        // 插在 thead 最前面：確保每頁重複抬頭
+        thead.insertBefore(tr, thead.firstChild);
+      }
+    },
 
-            // afterprint 清理（保底）
-            var self = this;
-            var done = false;
+    _stripSectionCardTitle: function (contentRoot) {
+      // 因為班別資訊已進入 thead 抬頭列，避免重複顯示「A班－xx」的卡片標題
+      var heads = qsa('.ms-section__head', contentRoot);
+      heads.forEach(function (h) {
+        if (h && h.parentNode) h.parentNode.removeChild(h);
+      });
+    },
 
-            function finish() {
-                if (done) return;
-                done = true;
-                self._cleanup();
-                global.removeEventListener('afterprint', finish);
-            }
+    print: function () {
+      var src = qs('#msContent');
+      if (!src) return;
 
-            global.addEventListener('afterprint', finish);
-            setTimeout(finish, 2500);
+      this._cleanup();
 
-            global.print();
-        }
-    };
+      var wrap = document.createElement('div');
+      wrap.id = 'msPrintArea';
 
-    global.MatStatsPrint = Mod;
+      // 只印表格內容：clone #msContent（A-F）
+      var clone = src.cloneNode(true);
+
+      // 1) 抬頭塞進每個 table thead（跨頁重複）
+      this._insertHeaderIntoEachTableThead(clone);
+
+      // 2) 移除原本卡片式班別標題，避免重複
+      this._stripSectionCardTitle(clone);
+
+      wrap.appendChild(clone);
+      document.body.appendChild(wrap);
+
+      var self = this;
+      var done = false;
+
+      function finish() {
+        if (done) return;
+        done = true;
+        self._cleanup();
+        global.removeEventListener('afterprint', finish);
+      }
+
+      global.addEventListener('afterprint', finish);
+      setTimeout(finish, 2500);
+
+      global.print();
+    }
+  };
+
+  global.MatStatsPrint = Mod;
 
 })(window);
