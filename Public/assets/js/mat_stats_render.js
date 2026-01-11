@@ -243,6 +243,90 @@
         return html;
     }
 
+    // B 班專用表格函式（含：筆數欄位）
+    function buildTableB(rows) {
+        var html = '';
+
+        html += '<div class="ms-table-wrap">';
+        html += '<table class="table ms-table ms-table--b">';
+
+        // ===== 表頭（兩列）=====
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th rowspan="2" style="width:70px;">項次</th>';
+        html += '<th rowspan="2">材料名稱</th>';
+
+        html += '<th colspan="4" class="ms-th-group">領料</th>';
+        html += '<th colspan="4" class="ms-th-group">退料</th>';
+        html += '<th colspan="2" class="ms-th-group">領退合計</th>';
+        html += '</tr>';
+
+        html += '<tr>';
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '<th class="ms-th-num">筆數</th>';
+
+        html += '<th class="ms-th-num">新</th>';
+        html += '<th class="ms-th-num">舊</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        // ===== 內容 =====
+        html += '<tbody>';
+
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
+            var tn = Number(r.total_new || 0);
+            var to = Number(r.total_old || 0);
+
+            var cnList = (r.collar_new_list === null || r.collar_new_list === undefined) ? '' : String(r.collar_new_list);
+            var coList = (r.collar_old_list === null || r.collar_old_list === undefined) ? '' : String(r.collar_old_list);
+            var rnList = (r.recede_new_list === null || r.recede_new_list === undefined) ? '' : String(r.recede_new_list);
+            var roList = (r.recede_old_list === null || r.recede_old_list === undefined) ? '' : String(r.recede_old_list);
+
+            function vNum(x) { return x === 0 ? '' : esc(n(x)); }
+            function vList(s) { return s ? esc(s) : ''; }
+
+            html += '<tr>';
+            html += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
+
+            // 領料 新/筆數、舊/筆數
+            html += '<td class="ms-td-num">' + vNum(cn) + '</td>';
+            html += '<td class="ms-td-num">' + vList(cnList) + '</td>';
+            html += '<td class="ms-td-num">' + vNum(co) + '</td>';
+            html += '<td class="ms-td-num">' + vList(coList) + '</td>';
+
+            // 退料 新/筆數、舊/筆數
+            html += '<td class="ms-td-num">' + vNum(rn) + '</td>';
+            html += '<td class="ms-td-num">' + vList(rnList) + '</td>';
+            html += '<td class="ms-td-num">' + vNum(ro) + '</td>';
+            html += '<td class="ms-td-num">' + vList(roList) + '</td>';
+
+            // 合計 新/舊
+            html += '<td class="ms-td-num">' + vNum(tn) + '</td>';
+            html += '<td class="ms-td-num">' + vNum(to) + '</td>';
+
+            html += '</tr>';
+        });
+
+        if (!rows.length) {
+            html += '<tr><td colspan="12" class="ms-empty">無資料</td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        return html;
+    }
+
     function sectionCard(title, subtitle, innerHtml) {
         var html = '';
         html += '<section class="ms-section card card--flat">';
@@ -375,6 +459,17 @@
         return html;
     }
 
+    // B 班 renderer
+    function renderGroupB(groups, personnel) {
+        if (!groups || !groups.B) return '';
+
+        var rows = (groups.B && Array.isArray(groups.B.rows)) ? groups.B.rows : [];
+        var name = (personnel && personnel.B) ? String(personnel.B) : '';
+        var title = 'B班' + (name ? ('－' + name) : '');
+
+        return sectionCard(title, '', buildTableB(rows));
+    }
+
     // E/F 專用 renderer
     function renderGroupEF(groups, personnel) {
         var html = '';
@@ -413,8 +508,8 @@
             // A / C（先只實作這組）
             html += renderGroupAC(groups, personnel);
 
-            // B（預留）
-            // html += renderGroupB(groups, personnel);
+            // B
+            html += renderGroupB(groups, personnel);
 
             // D（暫時保留你現有的）
             if (groups.D) {

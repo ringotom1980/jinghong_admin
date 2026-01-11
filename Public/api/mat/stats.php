@@ -14,6 +14,7 @@ require_once __DIR__ . '/../../../app/bootstrap.php';
 require_login();
 require_once __DIR__ . '/stats_ac.php';
 require_once __DIR__ . '/stats_ef.php';
+require_once __DIR__ . '/stats_b.php';
 
 function _pick_latest_date_3m(): ?string
 {
@@ -245,8 +246,9 @@ try {
         $groups['A'] = $acGroups['A'] ?? ['rows' => []];
         $groups['C'] = $acGroups['C'] ?? ['rows' => []];
 
-        // B（單獨）
-        $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
+        // B（交給 stats_b.php：含 sort_order + 筆數字串）
+        $bGroups = mat_stats_b($d);
+        $groups['B'] = $bGroups['B'] ?? ['rows' => []];
 
         // D（分類）
         $groups['D'] = _d_group($d);
@@ -264,7 +266,8 @@ try {
             $efGroups = mat_stats_ef($d);
             $groups[$shift] = $efGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'B') {
-            $groups['B'] = ['rows' => _agg_items_by_shifts($d, ['B'], true, false)];
+            $bGroups = mat_stats_b($d);
+            $groups['B'] = $bGroups['B'] ?? ['rows' => []];
         } elseif ($shift === 'D') {
             $groups['D'] = _d_group($d);
         } else {
