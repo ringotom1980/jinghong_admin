@@ -1,21 +1,22 @@
 <?php
 /**
  * Path: Public/api/mat/stats_d.php
- * 說明: D 班（分類對帳）統計
+ * 說明: D 班（分類對帳）統計 — 含「分類彙總 + 未分類材料明細」
  *
- * 規則（定版）：
- * - 依 mat_edit_categories 產生列（排序 sort_order asc）
- * - 依 mat_edit_category_materials.material_number 將 mat_issue_items 歸類到 category_id
- * - 統計欄位（皆為 D 班、指定 withdraw_date）
- *   collar_new, collar_old, recede_new, recede_old
- * - 對帳資料：mat_edit_reconciliation.recon_values_json（key=category_id）
- * - 領退合計：
- *   total_new = collar_new - recede_new
- *   total_old = collar_old + recon_value - recede_old
+ * 你要的規則（已照做）：
+ * 1) 先用 mat_edit_category_materials 把 D 班資料歸類 → 依 category 彙總（分類一列）
+ * 2) 沒有出現在分類表的 D 班材料 → 不歸類，直接以材料彙總（材料一列）
  *
- * 修正重點（你現在「統計數量沒出來」的原因）：
- * - 原本用 INNER JOIN 會把沒有對應 D 班資料的分類整列吃掉，導致 sumMap 空
- * - 改用 LEFT JOIN，且維持條件在 ON（同效果），確保分類存在時仍能回 0
+ * 共同統計欄位（兩種列都會有）：
+ * - collar_new, collar_old, recede_new, recede_old
+ *
+ * 額外欄位：
+ * - 分類列：recon_value（來自 mat_edit_reconciliation JSON key=category_id）
+ * - 材料列：recon_value 固定 0
+ *
+ * 合計（兩種列都會算）：
+ * - total_new = collar_new - recede_new
+ * - total_old = collar_old + recon_value - recede_old
  */
 
 declare(strict_types=1);
@@ -26,41 +27,16 @@ function mat_stats_d(string $d): array
 {
     $pdo = db();
 
-    // 1) 分類主檔
+    // ===== 0) 類別主檔（排序）=====
     $cats = $pdo->query(
         "SELECT id, category_name, sort_order
          FROM mat_edit_categories
          ORDER BY sort_order ASC, id ASC"
     )->fetchAll();
 
-    // 2) 來源統計：依分類彙總（只算 D 班）
-    // ✅ 修正：JOIN -> LEFT JOIN，避免分類被吃掉導致統計全 0
-    $sumSql = "SELECT
-                 cm.category_id,
-                 COALESCE(SUM(i.collar_new), 0)  AS collar_new,
-                 COALESCE(SUM(i.collar_old), 0)  AS collar_old,
-                 COALESCE(SUM(i.recede_new), 0)  AS recede_new,
-                 COALESCE(SUM(i.recede_old), 0)  AS recede_old
-               FROM mat_edit_category_materials cm
-               LEFT JOIN mat_issue_items i
-                 ON i.material_number = cm.material_number
-                AND i.withdraw_date = ?
-                AND i.shift = 'D'
-               GROUP BY cm.category_id";
-    $st = $pdo->prepare($sumSql);
-    $st->execute([$d]);
-    $sumRows = $st->fetchAll();
-
-    $sumMap = [];
-    foreach ($sumRows as $r) {
-        $cid = (string)($r['category_id'] ?? '');
-        if ($cid === '') continue;
-        $sumMap[$cid] = $r;
-    }
-
-    // 3) 對帳資料（json key=category_id）
+    // ===== 1) 對帳資料（json key=category_id）=====
     $rst = $pdo->prepare(
-        "SELECT withdraw_date, recon_values_json, updated_at, updated_by
+        "SELECT recon_values_json, updated_at, updated_by
          FROM mat_edit_reconciliation
          WHERE withdraw_date = ?
          LIMIT 1"
@@ -84,29 +60,80 @@ function mat_stats_d(string $d): array
         ];
     }
 
-    // 4) 產出 rows（每個 category 一列）
+    // ===== 2) 已歸類：依分類彙總（category 一列）=====
+    // 這裡用 JOIN（只抓得到有對應分類表的材料）是正確的
+    $sumSqlCat = "SELECT
+                    cm.category_id,
+                    COALESCE(SUM(i.collar_new), 0)  AS collar_new,
+                    COALESCE(SUM(i.collar_old), 0)  AS collar_old,
+                    COALESCE(SUM(i.recede_new), 0)  AS recede_new,
+                    COALESCE(SUM(i.recede_old), 0)  AS recede_old
+                  FROM mat_edit_category_materials cm
+                  JOIN mat_issue_items i
+                    ON i.material_number = cm.material_number
+                   AND i.withdraw_date = ?
+                   AND i.shift = 'D'
+                  GROUP BY cm.category_id";
+    $st = $pdo->prepare($sumSqlCat);
+    $st->execute([$d]);
+    $sumRowsCat = $st->fetchAll();
+
+    $sumCatMap = [];
+    foreach ($sumRowsCat as $r) {
+        $cid = (string)($r['category_id'] ?? '');
+        if ($cid === '') continue;
+        $sumCatMap[$cid] = $r;
+    }
+
+    // ===== 3) 未歸類：不在分類表的材料 → 以材料彙總（材料一列）=====
+    $sumSqlItem = "SELECT
+                     i.material_number,
+                     MAX(i.material_name) AS material_name,
+                     COALESCE(SUM(i.collar_new), 0)  AS collar_new,
+                     COALESCE(SUM(i.collar_old), 0)  AS collar_old,
+                     COALESCE(SUM(i.recede_new), 0)  AS recede_new,
+                     COALESCE(SUM(i.recede_old), 0)  AS recede_old
+                   FROM mat_issue_items i
+                   LEFT JOIN mat_edit_category_materials cm
+                     ON cm.material_number = i.material_number
+                   WHERE i.withdraw_date = ?
+                     AND i.shift = 'D'
+                     AND cm.material_number IS NULL
+                   GROUP BY i.material_number
+                   ORDER BY i.material_number ASC";
+    $st2 = $pdo->prepare($sumSqlItem);
+    $st2->execute([$d]);
+    $sumRowsItem = $st2->fetchAll();
+
+    // ===== 4) 組 rows：先放分類列（依 sort_order）=====
     $rows = [];
+
     foreach ($cats as $c) {
         $cid = (string)($c['id'] ?? '');
         if ($cid === '') continue;
 
-        $s = $sumMap[$cid] ?? [];
+        $s = $sumCatMap[$cid] ?? [];
 
         $cn = (float)($s['collar_new'] ?? 0);
         $co = (float)($s['collar_old'] ?? 0);
         $rn = (float)($s['recede_new'] ?? 0);
         $ro = (float)($s['recede_old'] ?? 0);
 
-        // recon 可能是字串，強制轉數字
         $rv = 0.0;
         if (array_key_exists($cid, $reconValues)) {
             $rv = (float)$reconValues[$cid];
         }
 
         $rows[] = [
+            'row_kind' => 'CAT', // ✅ 分類列
+
             'category_id' => (int)($c['id'] ?? 0),
             'category_name' => (string)($c['category_name'] ?? ''),
             'sort_order' => (int)($c['sort_order'] ?? 0),
+
+            // 材料欄位（分類列留空）
+            'material_number' => '',
+            'material_name' => '',
 
             'collar_new' => $cn,
             'collar_old' => $co,
@@ -115,7 +142,39 @@ function mat_stats_d(string $d): array
 
             'recon_value' => $rv,
 
-            // ✅ 定版公式
+            // ✅ 定版公式（兩種列都算）
+            'total_new' => $cn - $rn,
+            'total_old' => $co + $rv - $ro,
+        ];
+    }
+
+    // ===== 5) 再放未分類材料列 =====
+    foreach ($sumRowsItem as $r) {
+        $cn = (float)($r['collar_new'] ?? 0);
+        $co = (float)($r['collar_old'] ?? 0);
+        $rn = (float)($r['recede_new'] ?? 0);
+        $ro = (float)($r['recede_old'] ?? 0);
+
+        $rv = 0.0; // 未分類材料列沒有對帳值
+
+        $rows[] = [
+            'row_kind' => 'ITEM', // ✅ 材料列
+
+            // 分類欄位（材料列留空）
+            'category_id' => null,
+            'category_name' => '',
+            'sort_order' => null,
+
+            'material_number' => (string)($r['material_number'] ?? ''),
+            'material_name' => (string)($r['material_name'] ?? ''),
+
+            'collar_new' => $cn,
+            'collar_old' => $co,
+            'recede_new' => $rn,
+            'recede_old' => $ro,
+
+            'recon_value' => $rv,
+
             'total_new' => $cn - $rn,
             'total_old' => $co + $rv - $ro,
         ];
