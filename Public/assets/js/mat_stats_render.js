@@ -312,9 +312,16 @@
             html += '<td class="ms-td-num">' + vNum(ro) + '</td>';
             html += '<td class="ms-td-num">' + vList(roList) + '</td>';
 
-            // 合計 新/舊
-            html += '<td class="ms-td-num">' + vNum(tn) + '</td>';
-            html += '<td class="ms-td-num">' + vNum(to) + '</td>';
+            // 合計 新/舊（定版顏色）
+            // - 合計(新)：正數藍 ms-sum-pos、負數紅 ms-neg
+            // - 合計(舊)：正數黑 ms-pos、負數紅 ms-neg
+            html += '<td class="ms-td-num">' +
+                (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(n(tn)) + '</span>')) +
+                '</td>';
+
+            html += '<td class="ms-td-num">' +
+                (to === 0 ? '' : ('<span class="' + (to < 0 ? 'ms-neg' : 'ms-pos') + '">' + esc(n(to)) + '</span>')) +
+                '</td>';
 
             html += '</tr>';
         });
