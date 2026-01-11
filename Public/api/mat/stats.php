@@ -15,6 +15,7 @@ require_login();
 require_once __DIR__ . '/stats_ac.php';
 require_once __DIR__ . '/stats_ef.php';
 require_once __DIR__ . '/stats_b.php';
+require_once __DIR__ . '/stats_d.php';
 
 function _pick_latest_date_3m(): ?string
 {
@@ -150,76 +151,6 @@ function _personnel_map(): array
     return $map;
 }
 
-function _d_group(string $d): array
-{
-    $pdo = db();
-
-    $categories = $pdo->query(
-        "SELECT id, category_name, sort_order
-     FROM mat_edit_categories
-     ORDER BY sort_order ASC, id ASC"
-    )->fetchAll();
-
-    $sumSql = "SELECT
-               cm.category_id,
-               SUM(i.collar_new)  AS collar_new,
-               SUM(i.collar_old)  AS collar_old,
-               SUM(i.recede_new)  AS recede_new,
-               SUM(i.recede_old)  AS recede_old,
-               SUM(i.scrap)       AS scrap,
-               SUM(i.footprint)   AS footprint
-             FROM mat_edit_category_materials cm
-             JOIN mat_issue_items i
-               ON i.material_number = cm.material_number
-              AND i.withdraw_date = ?
-              AND i.shift = 'D'
-             GROUP BY cm.category_id
-             ORDER BY cm.category_id ASC";
-    $st = $pdo->prepare($sumSql);
-    $st->execute([$d]);
-    $sumRows = $st->fetchAll();
-
-    $sumMap = [];
-    foreach ($sumRows as $r) {
-        $cid = (string)$r['category_id'];
-        $sumMap[$cid] = $r;
-    }
-
-    $rst = $pdo->prepare(
-        "SELECT withdraw_date, recon_values_json, updated_at, updated_by
-     FROM mat_edit_reconciliation
-     WHERE withdraw_date = ?
-     LIMIT 1"
-    );
-    $rst->execute([$d]);
-    $reconRow = $rst->fetch();
-
-    $reconJson = null;
-    $reconValues = null;
-    $reconMeta = null;
-
-    if ($reconRow) {
-        $reconJson = (string)($reconRow['recon_values_json'] ?? '');
-        $decoded = json_decode($reconJson, true);
-        if (is_array($decoded)) $reconValues = $decoded;
-
-        $reconMeta = [
-            'updated_at' => (string)($reconRow['updated_at'] ?? ''),
-            'updated_by' => $reconRow['updated_by'] ?? null,
-        ];
-    }
-
-    return [
-        'categories' => $categories,
-        'issue_sum_by_category' => $sumMap,
-        'recon' => [
-            'json' => $reconJson,
-            'values' => $reconValues,
-            'meta' => $reconMeta
-        ]
-    ];
-}
-
 try {
     $shift = strtoupper((string)($_GET['shift'] ?? 'ALL'));
     $d = (string)($_GET['withdraw_date'] ?? '');
@@ -250,8 +181,9 @@ try {
         $bGroups = mat_stats_b($d);
         $groups['B'] = $bGroups['B'] ?? ['rows' => []];
 
-        // D（分類）
-        $groups['D'] = _d_group($d);
+        // ✅ D（交給 stats_d.php）
+        $dGroups = mat_stats_d($d);
+        $groups['D'] = $dGroups['D'] ?? ['rows' => []];
 
         // E/F（交給 stats_ef.php，定版：退舊 = recede_old + scrap + footprint）
         $efGroups = mat_stats_ef($d);
@@ -262,14 +194,15 @@ try {
             $acGroups = mat_stats_ac($d);
             $groups[$shift] = $acGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'E' || $shift === 'F') {
-            // E/F（交給 stats_ef.php，定版邏輯）
             $efGroups = mat_stats_ef($d);
             $groups[$shift] = $efGroups[$shift] ?? ['rows' => []];
         } elseif ($shift === 'B') {
             $bGroups = mat_stats_b($d);
             $groups['B'] = $bGroups['B'] ?? ['rows' => []];
         } elseif ($shift === 'D') {
-            $groups['D'] = _d_group($d);
+            // ✅ D（交給 stats_d.php）
+            $dGroups = mat_stats_d($d);
+            $groups['D'] = $dGroups['D'] ?? ['rows' => []];
         } else {
             json_error('shift 參數不正確（all|A|B|C|D|E|F）', 400);
         }

@@ -350,120 +350,85 @@
         return html;
     }
 
-    function renderD(groupD) {
+    // D 班專用表格函式
+    function renderD(groupD, personnel) {
         groupD = groupD || {};
-        var cats = Array.isArray(groupD.categories) ? groupD.categories : [];
-        var recon = groupD.recon || null;
-        var reconValues = (recon && recon.values) ? recon.values : {};
+        var rows = Array.isArray(groupD.rows) ? groupD.rows : [];
 
-        // ✅ 注意：後端目前回的是 map（category_id => sums），不是 array
-        var issueSumMap = (groupD && groupD.issue_sum_by_category && typeof groupD.issue_sum_by_category === 'object')
-            ? groupD.issue_sum_by_category
-            : {};
-
-        var html = '';
-
-        // 1) 類別清單
-        var list = '<div class="ms-d-grid">';
-        if (!cats.length) {
-            list += '<div class="ms-empty">尚無分類</div>';
-        } else {
-            list += '<div class="ms-d-cats">';
-            for (var i = 0; i < cats.length; i++) {
-                var c = cats[i];
-                var val = (reconValues && (reconValues[String(c.id)] !== undefined)) ? String(reconValues[String(c.id)]) : '';
-                list += ''
-                    + '<div class="ms-d-cat">'
-                    + '  <div class="ms-d-cat__name">' + esc(c.category_name) + '</div>'
-                    + '  <div class="ms-d-cat__meta">ID ' + esc(String(c.id)) + '｜排序 ' + esc(String(c.sort_order)) + '</div>'
-                    + '  <div class="ms-d-cat__recon">'
-                    + '    <span class="ms-d-chip">對帳</span>'
-                    + '    <span class="ms-d-val">' + (val !== '' ? esc(val) : '<span class="ms-d-muted">（未填）</span>') + '</span>'
-                    + '  </div>'
-                    + '</div>';
-            }
-            list += '</div>';
-        }
-        list += '</div>';
-
-        // 2) 來源統計（以 map 呈現：category_id => sums）
-        var sumHtml = '';
-        var keys = Object.keys(issueSumMap || {});
-        if (keys.length) {
-            sumHtml += '<div class="ms-table-wrap"><table class="table ms-table">';
-            sumHtml += '<thead><tr>'
-                + '<th>分類ID</th>'
-                + '<th class="ms-th-num">領新料</th>'
-                + '<th class="ms-th-num">領舊料</th>'
-                + '<th class="ms-th-num">退新料</th>'
-                + '<th class="ms-th-num">退舊料</th>'
-                + '<th class="ms-th-num">廢料</th>'
-                + '<th class="ms-th-num">下腳</th>'
-                + '</tr></thead><tbody>';
-
-            for (var j = 0; j < keys.length; j++) {
-                var cid = keys[j];
-                var s = issueSumMap[cid] || {};
-                sumHtml += '<tr>'
-                    + '<td>' + esc(String(cid)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.collar_new)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.collar_old)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.recede_new)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.recede_old)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.scrap)) + '</td>'
-                    + '<td class="ms-td-num">' + esc(n(s.footprint)) + '</td>'
-                    + '</tr>';
-            }
-            sumHtml += '</tbody></table></div>';
-        } else {
-            sumHtml = '<div class="ms-empty">來源統計尚未提供（issue_sum_by_category 為空）</div>';
+        function v(x, cls) {
+            var num = Number(x || 0);
+            if (num === 0) return '';
+            return '<span class="' + cls + '">' + esc(n(num)) + '</span>';
         }
 
-        // 3) recon meta
-        var metaHtml = '';
-        if (recon && recon.meta) {
-            metaHtml = '最後更新：' + esc(String(recon.meta.updated_at || '')) + '｜更新者：' + esc(String(recon.meta.updated_by || ''));
-        } else {
-            metaHtml = '尚無對帳紀錄';
-        }
+        var tableHtml = '';
+        tableHtml += '<div class="ms-table-wrap">';
+        tableHtml += '<table class="table ms-table ms-table--d">';
+        tableHtml += '<thead>';
+        tableHtml += '<tr>';
+        tableHtml += '<th rowspan="2" style="width:70px;">項次</th>';
+        tableHtml += '<th rowspan="2">分類名稱</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">領料</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">退料</th>';
+        tableHtml += '<th rowspan="2" class="ms-th-num">對帳</th>';
+        tableHtml += '<th colspan="2" class="ms-th-group">領退合計</th>';
+        tableHtml += '</tr>';
 
-        html += sectionCard('D 組（分類對帳）', metaHtml, list + '<div class="ms-gap"></div>' + sumHtml);
-        return html;
-    }
+        tableHtml += '<tr>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '<th class="ms-th-num">新</th>';
+        tableHtml += '<th class="ms-th-num">舊</th>';
+        tableHtml += '</tr>';
+        tableHtml += '</thead>';
 
-    function renderShiftCard(groups, shift, personnel, hasSort) {
-        if (!groups || !groups[shift]) return '';
+        tableHtml += '<tbody>';
 
-        var rows = (groups[shift] && Array.isArray(groups[shift].rows)) ? groups[shift].rows : [];
+        rows.forEach(function (r, idx) {
+            var cn = Number(r.collar_new || 0);
+            var co = Number(r.collar_old || 0);
+            var rn = Number(r.recede_new || 0);
+            var ro = Number(r.recede_old || 0);
+            var rv = Number(r.recon_value || 0);
 
-        // 標題：A班－姓名（若沒有姓名就只顯示 A班）
-        var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
-        var title = shift + '班' + (name ? ('－' + name) : '');
+            var tn = Number(r.total_new || 0); // collar_new - recede_new
+            var to = Number(r.total_old || 0); // collar_old + recon_value - recede_old
 
-        // ✅ 副標一律不顯示
-        return sectionCard(title, '', buildTable(rows, { hasSort: !!hasSort }));
-    }
+            tableHtml += '<tr>';
+            tableHtml += '<td class="ms-td-num">' + (idx + 1) + '</td>';
+            tableHtml += '<td class="ms-td-name">' + esc(r.category_name || '') + '</td>';
 
-    //A/C 專用 renderer
-    function renderGroupAC(groups, personnel) {
-        var html = '';
+            // 領料
+            tableHtml += '<td class="ms-td-num">' + v(cn, cn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(co, co < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-        ['A', 'C'].forEach(function (shift) {
-            if (!groups[shift]) return;
+            // 退料（全紅）
+            tableHtml += '<td class="ms-td-num">' + v(rn, 'ms-neg') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(ro, 'ms-neg') + '</td>';
 
-            var rows = Array.isArray(groups[shift].rows) ? groups[shift].rows : [];
+            // 對帳（正黑負紅）
+            tableHtml += '<td class="ms-td-num">' + v(rv, rv < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-            var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
-            var title = shift + '班' + (name ? ('－' + name) : '');
+            // 領退合計
+            tableHtml += '<td class="ms-td-num">' + v(tn, tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '</td>';
+            tableHtml += '<td class="ms-td-num">' + v(to, to < 0 ? 'ms-neg' : 'ms-pos') + '</td>';
 
-            html += sectionCard(
-                title,
-                '',
-                buildTableAC(rows)
-            );
+            tableHtml += '</tr>';
         });
 
-        return html;
+        if (!rows.length) {
+            tableHtml += '<tr><td colspan="9" class="ms-empty">無資料</td></tr>';
+        }
+
+        tableHtml += '</tbody></table></div>';
+
+        // ✅ 標題比照其他班：D班－姓名（無副標題）
+        var name = (personnel && personnel.D) ? String(personnel.D) : '';
+        var title = 'D班' + (name ? ('－' + name) : '');
+
+        return sectionCard(title, '', tableHtml);
     }
 
     // B 班 renderer
@@ -475,28 +440,6 @@
         var title = 'B班' + (name ? ('－' + name) : '');
 
         return sectionCard(title, '', buildTableB(rows));
-    }
-
-    // E/F 專用 renderer
-    function renderGroupEF(groups, personnel) {
-        var html = '';
-
-        ['E', 'F'].forEach(function (shift) {
-            if (!groups[shift]) return;
-
-            var rows = Array.isArray(groups[shift].rows) ? groups[shift].rows : [];
-
-            var name = (personnel && personnel[shift]) ? String(personnel[shift]) : '';
-            var title = shift + '班' + (name ? ('－' + name) : '');
-
-            html += sectionCard(
-                title,
-                '',
-                buildTableEF(rows)
-            );
-        });
-
-        return html;
     }
 
     var Mod = {
