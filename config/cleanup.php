@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 return [
+  //領退匯入資料
   [
     'name'      => 'mat_issue_items_by_withdraw_date',
     'table'     => 'mat_issue_items',
@@ -17,14 +18,15 @@ return [
     'where'     => '',              // 需要額外條件可加：AND xxx=...
   ],
 
-  // （可選，先不要開）刪掉「超過半年且已無明細」的 batches，避免留下空批次
-  // [
-  //   'name'      => 'mat_issue_batches_no_items',
-  //   'table'     => 'mat_issue_batches',
-  //   'date_col'  => 'withdraw_date',
-  //   'keep_days' => 183,
-  //   'pk_col'    => 'batch_id',
-  //   'batch'     => 1000,
-  //   'where'     => "AND NOT EXISTS (SELECT 1 FROM mat_issue_items i WHERE i.batch_id = mat_issue_batches.batch_id)",
-  // ],
+  // 對帳資料表
+    [
+    'name'      => 'mat_edit_reconciliation_by_withdraw_date',
+    'table'     => 'mat_edit_reconciliation',
+    'date_col'  => 'withdraw_date',  // DATE 欄位
+    'keep_days' => 183,              // 依你要保留多久調整
+    'pk_col'    => 'withdraw_date',  // 這張表 PK 就是 withdraw_date
+    'batch'     => 5000,             // 這張表一天一筆，其實 1000 也夠
+    'where'     => '',
+  ],
+
 ];
