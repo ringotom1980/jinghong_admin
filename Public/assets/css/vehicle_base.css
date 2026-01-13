@@ -1,0 +1,360 @@
+/* Path: Public/assets/css/vehicle_base.css
+ * 說明: 車輛基本資料頁樣式（列表+明細+tabs）
+ */
+
+.vb{
+  max-width: var(--maxw);
+}
+
+.vb-grid{
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 1100px){
+  .vb-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== List ===== */
+.vb-list__head{
+  display: grid;
+  gap: 10px;
+}
+
+.vb-list__title{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vb-badges{
+  display: inline-flex;
+  gap: 8px;
+}
+
+.vb-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.78);
+  color: rgba(15,23,42,.74);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.vb-list__tools{
+  display: grid;
+  gap: 10px;
+}
+
+.vb-search input{
+  height: 40px;
+}
+
+.vb-filters{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vb-check{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  color: rgba(15,23,42,.72);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.vb-check input{
+  width: 16px;
+  height: 16px;
+}
+
+.vb-check--big{
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.vb-list__body{
+  padding-top: 12px;
+}
+
+.vb-tableWrap{
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,.86);
+}
+
+.vb-table{
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.vb-table tbody tr{
+  cursor: pointer;
+}
+
+.vb-table tbody tr:hover{
+  background: rgba(37,99,235,.06);
+}
+
+.vb-table tbody tr.is-active{
+  background: rgba(47,63,122,.10);
+}
+
+.vb-empty{
+  padding: 14px 10px;
+  text-align: center;
+  color: rgba(15,23,42,.52);
+  font-weight: 700;
+}
+
+.vb-status{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.10);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .02em;
+}
+
+.vb-status--on{
+  background: rgba(21,128,61,.10);
+  color: rgba(6,95,70,.88);
+  border-color: rgba(21,128,61,.18);
+}
+
+.vb-status--off{
+  background: rgba(190,18,60,.10);
+  color: rgba(136,19,55,.88);
+  border-color: rgba(190,18,60,.18);
+}
+
+.vb-hint{
+  margin-top: 10px;
+  color: rgba(15,23,42,.55);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ===== Detail ===== */
+.vb-detail__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vb-detail__title{
+  min-width: 240px;
+}
+
+.vb-detail__meta{
+  margin-top: 4px;
+  color: rgba(15,23,42,.56);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vb-detail__actions{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.vb-tabs{
+  display: inline-flex;
+  gap: 8px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.70);
+  border-radius: 999px;
+  padding: 6px;
+  margin-bottom: 14px;
+}
+
+.vb-tab{
+  border: 0;
+  background: transparent;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(15,23,42,.68);
+}
+
+.vb-tab:hover{
+  background: rgba(15,23,42,.05);
+  color: rgba(15,23,42,.82);
+}
+
+.vb-tab.is-active{
+  background: rgba(47,63,122,.12);
+  border: 1px solid rgba(47,63,122,.20);
+  color: rgba(15,23,42,.92);
+}
+
+.vb-panel{
+  display: none;
+}
+
+.vb-panel.is-active{
+  display: block;
+}
+
+.vb-form__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 860px){
+  .vb-form__grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.vb-field{
+  display: grid;
+  gap: 6px;
+}
+
+.vb-field--full{
+  grid-column: 1 / -1;
+}
+
+.vb-field--row{
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.vb-help{
+  font-size: 12px;
+  color: rgba(15,23,42,.52);
+  line-height: 1.45;
+}
+
+/* ===== Inspections ===== */
+.vb-inspectHead{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.vb-inspectTitle h3{
+  margin: 0;
+}
+
+.vb-inspections{
+  display: grid;
+  gap: 10px;
+}
+
+.vb-ins-row{
+  display: grid;
+  grid-template-columns: 1fr 180px 160px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,.86);
+}
+
+@media (max-width: 900px){
+  .vb-ins-row{
+    grid-template-columns: 1fr;
+  }
+}
+
+.vb-ins-name{
+  font-weight: 900;
+  color: rgba(15,23,42,.84);
+}
+
+.vb-ins-date input{
+  height: 40px;
+}
+
+.vb-ins-req{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  color: rgba(15,23,42,.72);
+  font-weight: 850;
+}
+
+.vb-ins-req input{
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Photo ===== */
+.vb-photoHead{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.vb-photoActions{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vb-file{
+  width: 260px;
+  max-width: 60vw;
+}
+
+.vb-photoBox{
+  position: relative;
+  border: 1px dashed rgba(15,23,42,.16);
+  border-radius: 16px;
+  background: rgba(255,255,255,.74);
+  padding: 12px;
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.vb-photoImg{
+  max-height: 420px;
+  width: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: 0 10px 24px rgba(2,6,23,.10);
+  display: none;
+}
