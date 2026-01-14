@@ -160,7 +160,6 @@
       for (var i = 0; i < this._view.length; i++) {
         var v = this._view[i];
 
-        // badges：只顯示快到期/已逾期
         var badges = [];
         if (n(v.overdue_count) > 0) badges.push('<span class="badge badge--over">已逾期 ' + n(v.overdue_count) + '</span>');
         if (n(v.soon_count) > 0) badges.push('<span class="badge badge--soon">快到期 ' + n(v.soon_count) + '</span>');
@@ -173,12 +172,6 @@
           + '    <div class="carb-item__plate">' + esc(v.plate_no || '') + '</div>'
           + '  </div>'
           + '</div>';
-
-        if (badges.length) {
-          html += '  <div class="carb-item__meta">' + badges.join('') + '  </div>';
-        }
-
-        html += '</div>';
       }
 
       listEl.innerHTML = html;

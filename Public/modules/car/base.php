@@ -51,9 +51,10 @@ $pageJs = [
             <button type="button" class="carb-pill" data-filter="soon">快到期</button>
             <button type="button" class="carb-pill" data-filter="overdue">已逾期</button>
             <button type="button" class="carb-pill" data-filter="na">不需檢查</button>
+
             <input type="hidden" id="carbSort" value="vehicle_code_asc" />
           </div>
-        </div><!-- ✅ carb-left__head 結束 -->
+        </div>
 
         <div class="carb-left__body">
           <div class="carb-list" id="carbList" aria-live="polite"></div>

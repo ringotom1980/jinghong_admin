@@ -61,31 +61,21 @@
   overflow: auto; /* ✅ 左側清單欄內捲動 */
 }
 
-/* filters (4 pills, equal width) */
+/* filters (pills fit text) */
 .carb-filters{
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   gap: 8px;
   align-items: center;
-}
-
-@media (max-width: 420px){
-  .carb-filters{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  justify-content: center; /* 置中排列 */
+  flex-wrap: wrap;         /* 螢幕太窄才換行 */
 }
 
 .carb-pill{
-  width: 100%;
+  width: auto;             /* ✅ 不要 100% */
+  display: inline-flex;    /* ✅ 讓置中生效 */
   justify-content: center;
-  border: 1px solid rgba(15,23,42,.12);
-  background: rgba(255,255,255,.76);
-  border-radius: 999px;
-  height: 34px;
-  padding: 0 10px;
-  cursor: pointer;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(15,23,42,.72);
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  white-space: nowrap;     /* ✅ 不讓「不需檢查」斷行 */
+  padding: 0 12px;         /* 稍加大，避免擠字 */
 }
 
 .carb-pill:hover{
@@ -173,9 +163,6 @@
 
 .badge--over{ border-color: rgba(190,18,60,.22); background: rgba(190,18,60,.10); color: #7f1d1d; }
 .badge--soon{ border-color: rgba(180,83,9,.22); background: rgba(180,83,9,.10); color: #78350f; }
-/* 如果你確定清單永遠不顯示 OK/NA，可刪掉下面兩行 */
-.badge--ok{ border-color: rgba(21,128,61,.22); background: rgba(21,128,61,.10); color: #065f46; }
-.badge--na{ border-color: rgba(100,116,139,.22); background: rgba(100,116,139,.10); color: #334155; }
 
 .carb-empty, .carb-loading{
   text-align: center;
