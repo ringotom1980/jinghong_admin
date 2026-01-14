@@ -1,7 +1,7 @@
 <?php
 /**
- * Path: Public/api/vehicle/vehicle_dicts.php
- * 說明: 車輛字典（類型/廠牌/吊臂型式/檢查項目）
+ * Path: Public/api/car/car_list.php
+ * 說明: 左側清單用：車輛基本欄位 + 檢查狀態聚合所需資料
  */
 
 declare(strict_types=1);
@@ -12,7 +12,7 @@ require_login();
 require_once __DIR__ . '/../../../app/services/VehicleService.php';
 
 try {
-  $data = VehicleService::dicts();
+  $data = VehicleService::listVehiclesWithInspectionAgg();
   json_ok($data);
 } catch (Throwable $e) {
   json_error($e->getMessage(), 500);
