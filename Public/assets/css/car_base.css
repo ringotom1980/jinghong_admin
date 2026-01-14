@@ -156,10 +156,11 @@
   display: flex;
   gap: 6px;
   justify-content: flex-start;
-  flex-wrap: wrap;              /* ✅ 允許第二顆換行 */
+  align-items: center;
+  flex-wrap: nowrap;            /* ✅ 不允許換行：兩顆同列 */
   overflow: visible;            /* ✅ 不裁切 */
-  line-height: 1;               /* badge 行距緊一點 */
-  max-height: 28px;             /* ✅ 最多兩行（約 2 * 14） */
+  line-height: 1;
+  min-width: 0;                 /* ✅ 防止 grid/flex 計算怪異 */
 }
 
 .badge{
