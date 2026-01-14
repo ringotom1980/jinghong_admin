@@ -195,6 +195,53 @@
   min-height: 0;
 }
 
+/* ✅ 右側載入遮罩（選車載入中） */
+.carb-right{
+  position: relative; /* overlay 需要定位基準 */
+}
+
+.carb-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.62);
+  backdrop-filter: blur(2px);
+}
+
+.carb-overlay__panel{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.92);
+  box-shadow: var(--shadow-sm);
+  font-weight: 900;
+  color: rgba(15,23,42,.78);
+  font-size: 13px;
+}
+
+.carb-spinner{
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(15,23,42,.18);
+  border-top-color: rgba(15,23,42,.62);
+  animation: carbSpin .8s linear infinite;
+}
+
+@keyframes carbSpin{
+  to { transform: rotate(360deg); }
+}
+
+/* loading 時避免右側內容被點到 */
+.carb-right.is-loading{
+  pointer-events: none;
+}
+
 .carb-right__head{
   display: flex;
   align-items: center;

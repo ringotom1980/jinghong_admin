@@ -15,13 +15,16 @@
       activeId: null,
       active: null, // { vehicle, inspections, rules }
       editMode: false,
-      loading: false
+      loading: false,
+      rightLoading: false,
+      reqSeq: 0
     },
 
     els: {},
 
     init: function () {
       this.cacheEls();
+      this.ensureRightOverlay(); // ✅ 右側遮罩（載入中）
       this.bindTabs();
       this.bindHeaderActions();
 
@@ -34,7 +37,7 @@
       // 先載字典 → 再載清單
       this.loadDicts()
         .then(this.loadList.bind(this))
-        .then(function () {})
+        .then(function () { })
         .catch(function (e) {
           Toast && Toast.show({ type: 'danger', title: '初始化失敗', message: (e && e.message) ? e.message : '未知錯誤' });
         });
@@ -57,6 +60,10 @@
 
       this.els.tabs = qsa('.carb-tab');
       this.els.panels = qsa('.carb-panel');
+
+      this.els.right = qs('.carb-right');
+      this.els.rightOverlay = qs('#carbRightOverlay');
+
     },
 
     bindTabs: function () {
@@ -149,6 +156,59 @@
     setLoading: function (loading) {
       this.state.loading = !!loading;
       if (this.els.loading) this.els.loading.hidden = !this.state.loading;
+    },
+
+    ensureRightOverlay: function () {
+      if (!this.els.right) this.els.right = qs('.carb-right');
+      if (!this.els.right) return;
+
+      var exist = qs('#carbRightOverlay', this.els.right);
+      if (exist) {
+        this.els.rightOverlay = exist;
+        return;
+      }
+
+      var div = document.createElement('div');
+      div.id = 'carbRightOverlay';
+      div.className = 'carb-overlay';
+      div.hidden = true;
+      div.innerHTML = ''
+        + '<div class="carb-overlay__panel" role="status" aria-live="polite">'
+        + '  <span class="carb-spinner" aria-hidden="true"></span>'
+        + '  <span class="carb-overlay__text">載入中…</span>'
+        + '</div>';
+
+      this.els.right.appendChild(div);
+      this.els.rightOverlay = div;
+    },
+
+    setRightLoading: function (loading) {
+      loading = !!loading;
+      this.state.rightLoading = loading;
+
+      this.ensureRightOverlay();
+      if (!this.els.rightOverlay) return;
+
+      // ✅ 避免閃一下：延遲顯示（150ms）
+      var self = this;
+      if (!this._rightLoadingTimer) this._rightLoadingTimer = null;
+
+      if (loading) {
+        if (this._rightLoadingTimer) clearTimeout(this._rightLoadingTimer);
+        this._rightLoadingTimer = setTimeout(function () {
+          // 仍在 loading 才顯示
+          if (!self.state.rightLoading) return;
+          self.els.rightOverlay.hidden = false;
+          self.els.right.classList.add('is-loading');
+        }, 150);
+      } else {
+        if (this._rightLoadingTimer) {
+          clearTimeout(this._rightLoadingTimer);
+          this._rightLoadingTimer = null;
+        }
+        this.els.rightOverlay.hidden = true;
+        if (this.els.right) this.els.right.classList.remove('is-loading');
+      }
     },
 
     loadDicts: function () {
