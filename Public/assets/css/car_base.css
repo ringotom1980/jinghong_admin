@@ -210,6 +210,11 @@
   backdrop-filter: blur(2px);
 }
 
+/* ✅ 保證 hidden 一定會隱藏 overlay（避免被 reset 覆蓋） */
+.carb-overlay[hidden]{
+  display: none !important;
+}
+
 .carb-overlay__panel{
   display: inline-flex;
   align-items: center;
