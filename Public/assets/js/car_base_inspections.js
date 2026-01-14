@@ -14,8 +14,8 @@
   }
 
   function statusLabel(st) {
-    if (st === 'OVERDUE') return '逾期';
-    if (st === 'DUE_SOON') return '將到期';
+    if (st === 'OVERDUE') return '已逾期';
+    if (st === 'DUE_SOON') return '快到期';
     if (st === 'OK') return '正常';
     if (st === 'NA') return '不需檢查';
     return '未設定';
@@ -64,8 +64,8 @@
 
       if (this.sum) {
         this.sum.innerHTML = ''
-          + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">逾期</div><div class="carb-insp__sumVal">' + c.OVERDUE + '</div></div>'
-          + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">將到期</div><div class="carb-insp__sumVal">' + c.DUE_SOON + '</div></div>'
+          + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">已逾期</div><div class="carb-insp__sumVal">' + c.OVERDUE + '</div></div>'
+          + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">快到期</div><div class="carb-insp__sumVal">' + c.DUE_SOON + '</div></div>'
           + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">正常</div><div class="carb-insp__sumVal">' + c.OK + '</div></div>'
           + '<div class="carb-insp__sumRow"><div class="carb-insp__sumKey">不需檢查</div><div class="carb-insp__sumVal">' + c.NA + '</div></div>';
       }

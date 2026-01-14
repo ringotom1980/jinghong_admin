@@ -110,10 +110,10 @@
         var v = this._view[i];
 
         var badges = [];
-        if (Number(v.overdue_count || 0) > 0) badges.push('<span class="badge badge--over">逾期 ' + Number(v.overdue_count) + '</span>');
-        if (Number(v.soon_count || 0) > 0) badges.push('<span class="badge badge--soon">將到期 ' + Number(v.soon_count) + '</span>');
+        if (Number(v.overdue_count || 0) > 0) badges.push('<span class="badge badge--over">已逾期 ' + Number(v.overdue_count) + '</span>');
+        if (Number(v.soon_count || 0) > 0) badges.push('<span class="badge badge--soon">快到期 ' + Number(v.soon_count) + '</span>');
         if (Number(v.ok_count || 0) > 0) badges.push('<span class="badge badge--ok">正常 ' + Number(v.ok_count) + '</span>');
-        if (Number(v.na_count || 0) > 0) badges.push('<span class="badge badge--na">免檢 ' + Number(v.na_count) + '</span>');
+        if (Number(v.na_count || 0) > 0) badges.push('<span class="badge badge--na">不需檢查 ' + Number(v.na_count) + '</span>');
 
         html += ''
           + '<div class="carb-item" data-id="' + esc(v.id) + '">'
