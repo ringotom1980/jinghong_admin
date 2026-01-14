@@ -33,7 +33,7 @@ $pageJs = [
 <main class="page car-base" role="main">
   <section class="page-head">
     <h1>車輛管理｜基本資料</h1>
-    <p class="page-sub">左側選車；右側可編輯基本資料、即改即存檢查到期日、覆蓋更新照片。</p>
+    <p class="page-sub">左側選單選擇車輛，右側顯示基本資料，點擊編輯可修改基本資料(含照片)、檢查項目日期即改即存。</p>
   </section>
 
   <div class="carb-shell">
@@ -83,7 +83,7 @@ $pageJs = [
 
       <nav class="carb-tabs" aria-label="功能分頁">
         <button type="button" class="carb-tab is-active" data-tab="detail" id="carbTabDetail" disabled>基本資料</button>
-        <button type="button" class="carb-tab" data-tab="insp" id="carbTabInsp" disabled>六項檢查</button>
+        <button type="button" class="carb-tab" data-tab="insp" id="carbTabInsp" disabled>各項檢查</button>
         <button type="button" class="carb-tab" data-tab="photo" id="carbTabPhoto" disabled>照片</button>
       </nav>
 
@@ -95,7 +95,6 @@ $pageJs = [
               <div class="carb-field">
                 <label class="form-label">車輛編號</label>
                 <input class="input" name="vehicle_code" type="text" placeholder="例：C-01" disabled />
-                <div class="carb-hint">車輛編號全站唯一；此頁預設不允許修改。</div>
               </div>
 
               <div class="carb-field">
@@ -199,7 +198,7 @@ $pageJs = [
                   </thead>
                   <tbody id="carbInspTbody"></tbody>
                 </table>
-                <div class="carb-hint">到期日：變更後立即儲存；「需求」由規則（rules）控制。</div>
+                <div class="carb-hint">到期日變更後會立即儲存。</div>
               </div>
             </div>
           </div>
@@ -221,8 +220,6 @@ $pageJs = [
                   <span class="btn__text">覆蓋上傳</span><span class="btn__spinner" aria-hidden="true"></span>
                 </button>
               </div>
-
-              <div class="carb-hint">上傳後會覆蓋成 vehicle_{id}.jpg，並自動 cache-busting。</div>
             </div>
           </div>
         </section>
