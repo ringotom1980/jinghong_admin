@@ -51,16 +51,15 @@ $pageJs = [
             <button type="button" class="carb-pill" data-filter="soon">快到期</button>
             <button type="button" class="carb-pill" data-filter="overdue">已逾期</button>
             <button type="button" class="carb-pill" data-filter="na">不需檢查</button>
-
-            <!-- 保留（隱藏）排序值，避免其他程式碼仍讀取 #carbSort -->
             <input type="hidden" id="carbSort" value="vehicle_code_asc" />
           </div>
+        </div><!-- ✅ carb-left__head 結束 -->
 
-          <div class="carb-left__body">
-            <div class="carb-list" id="carbList" aria-live="polite"></div>
-            <div class="carb-empty" id="carbEmpty" hidden>目前沒有車輛資料</div>
-            <div class="carb-loading" id="carbLoading" hidden>載入中…</div>
-          </div>
+        <div class="carb-left__body">
+          <div class="carb-list" id="carbList" aria-live="polite"></div>
+          <div class="carb-empty" id="carbEmpty" hidden>目前沒有車輛資料</div>
+          <div class="carb-loading" id="carbLoading" hidden>載入中…</div>
+        </div>
       </aside>
 
       <!-- RIGHT: workspace -->

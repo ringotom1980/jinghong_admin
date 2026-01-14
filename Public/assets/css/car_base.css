@@ -3,36 +3,32 @@
  * 說明: 車輛基本資料頁樣式（左清單 + 右工作區）
  */
 
- /* 左清單 + 右工作區都在可視區內；需要捲動時改成欄內捲動 */
+/* 左清單 + 右工作區都在可視區內；需要捲動時改成欄內捲動 */
 .page.car-base{
-  /* 若你的 topbar 實際不是 56，可在這裡改或用變數覆蓋 */
   --topbar-h: 56px;
 
   height: calc(100vh - var(--topbar-h));
-  overflow: hidden;            /* 禁止整頁捲動，改成欄內捲動 */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-/* page-head 仍在上方，但不撐爆，剩下空間給 shell */
 .page.car-base .page-head{
   flex: 0 0 auto;
 }
 
 .carb-shell{
-  flex: 1 1 auto;              /* 吃掉 page-head 以下的剩餘高度 */
+  flex: 1 1 auto;
   min-height: 0;
   display: grid;
   grid-template-columns: 360px 1fr;
   gap: 16px;
-  align-items: stretch;        /* 兩欄同高（很重要） */
+  align-items: stretch; /* 兩欄同高 */
 }
 
 @media (max-width: 980px){
-  .carb-shell{
-    grid-template-columns: 1fr;
-  }
+  .carb-shell{ grid-template-columns: 1fr; }
 }
 
 /* LEFT */
@@ -42,7 +38,7 @@
   background: rgba(255,255,255,.82);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  /* 新增：讓 head 固定、body 吃剩餘並自己捲動 */
+
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -56,44 +52,35 @@
   background: linear-gradient(180deg, rgba(246,247,251,.92), rgba(255,255,255,0));
 }
 
-.carb-sort{
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.carb-sort__label{
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(15,23,42,.7);
-}
-
 .carb-left__body{
   position: relative;
   padding: 10px;
 
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
-
-  /* 移除原本 max-height: calc(100vh - 56px - 220px); */
+  overflow: auto; /* ✅ 左側清單欄內捲動 */
 }
 
-/* filters (replace sort) */
+/* filters (4 pills, equal width) */
 .carb-filters{
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  flex-wrap: wrap;
   align-items: center;
 }
 
+@media (max-width: 420px){
+  .carb-filters{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .carb-pill{
+  width: 100%;
+  justify-content: center;
   border: 1px solid rgba(15,23,42,.12);
   background: rgba(255,255,255,.76);
   border-radius: 999px;
   height: 34px;
-  padding: 0 12px;
+  padding: 0 10px;
   cursor: pointer;
   font-weight: 900;
   font-size: 13px;
@@ -111,12 +98,6 @@
   background: rgba(47,63,122,.12);
   border-color: rgba(47,63,122,.24);
   color: rgba(15,23,42,.92);
-}
-
-@media (max-width: 980px){
-  .carb-left__body{
-    max-height: none;
-  }
 }
 
 .carb-list{
@@ -144,30 +125,36 @@
   background: rgba(47,63,122,.10);
 }
 
-.carb-item__top{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+/* list row: code | badges | plate (single line) */
+.carb-item__row{
+  display: grid;
+  grid-template-columns: 72px 1fr 96px;
+  align-items: center;
   gap: 10px;
+  min-height: 40px;
 }
 
 .carb-item__code{
   font-weight: 900;
   letter-spacing: .02em;
   color: rgba(15,23,42,.92);
+  white-space: nowrap;
 }
 
 .carb-item__plate{
   font-size: 13px;
   color: rgba(15,23,42,.64);
   font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .carb-item__meta{
-  margin-top: 6px;
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .badge{
@@ -181,10 +168,12 @@
   font-size: 12px;
   font-weight: 800;
   color: rgba(15,23,42,.72);
+  white-space: nowrap;
 }
 
 .badge--over{ border-color: rgba(190,18,60,.22); background: rgba(190,18,60,.10); color: #7f1d1d; }
 .badge--soon{ border-color: rgba(180,83,9,.22); background: rgba(180,83,9,.10); color: #78350f; }
+/* 如果你確定清單永遠不顯示 OK/NA，可刪掉下面兩行 */
 .badge--ok{ border-color: rgba(21,128,61,.22); background: rgba(21,128,61,.10); color: #065f46; }
 .badge--na{ border-color: rgba(100,116,139,.22); background: rgba(100,116,139,.10); color: #334155; }
 
@@ -198,7 +187,6 @@
 /* RIGHT */
 .carb-right{
   overflow: hidden;
-  /* 新增：讓 head/tabs 固定，panels 區塊吃剩餘並捲動 */
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -272,18 +260,13 @@
 
 .carb-panels{
   padding: 14px 16px 16px 16px;
-
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;   /* ✅ 右側內容區欄內捲動 */
+  overflow: auto; /* ✅ 右側內容區欄內捲動 */
 }
 
-.carb-panel{
-  display: none;
-}
-.carb-panel.is-active{
-  display: block;
-}
+.carb-panel{ display: none; }
+.carb-panel.is-active{ display: block; }
 
 /* form */
 .carb-grid{
@@ -293,29 +276,15 @@
 }
 
 @media (max-width: 980px){
-  .carb-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .carb-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px){
-  .carb-grid{
-    grid-template-columns: 1fr;
-  }
+  .carb-grid{ grid-template-columns: 1fr; }
 }
 
-.carb-field{
-  display: grid;
-  gap: 6px;
-}
-
-.carb-field--full{
-  grid-column: 1 / -1;
-}
-
-.carb-field--row{
-  grid-column: 1 / -1;
-  padding-top: 2px;
-}
+.carb-field{ display: grid; gap: 6px; }
+.carb-field--full{ grid-column: 1 / -1; }
+.carb-field--row{ grid-column: 1 / -1; padding-top: 2px; }
 
 .carb-hint{
   font-size: 12px;
@@ -331,10 +300,7 @@
   color: rgba(15,23,42,.82);
   user-select: none;
 }
-.carb-switch input{
-  width: 18px;
-  height: 18px;
-}
+.carb-switch input{ width: 18px; height: 18px; }
 
 /* inspections */
 .carb-insp{
@@ -345,9 +311,7 @@
 }
 
 @media (max-width: 980px){
-  .carb-insp{
-    grid-template-columns: 1fr;
-  }
+  .carb-insp{ grid-template-columns: 1fr; }
 }
 
 .carb-insp__summary{
@@ -391,10 +355,7 @@
 .tag--over{ border-color: rgba(190,18,60,.22); background: rgba(190,18,60,.10); color: #7f1d1d; }
 .tag--na{ border-color: rgba(100,116,139,.22); background: rgba(100,116,139,.10); color: #334155; }
 
-.carb-insp__summaryBody{
-  display: grid;
-  gap: 8px;
-}
+.carb-insp__summaryBody{ display: grid; gap: 8px; }
 
 .carb-insp__sumRow{
   display: flex;
@@ -407,19 +368,10 @@
   background: rgba(255,255,255,.82);
 }
 
-.carb-insp__sumKey{
-  font-weight: 900;
-  color: rgba(15,23,42,.86);
-}
+.carb-insp__sumKey{ font-weight: 900; color: rgba(15,23,42,.86); }
+.carb-insp__sumVal{ font-weight: 900; color: rgba(15,23,42,.72); }
 
-.carb-insp__sumVal{
-  font-weight: 900;
-  color: rgba(15,23,42,.72);
-}
-
-.carb-insp__tableWrap .table{
-  border-radius: 16px;
-}
+.carb-insp__tableWrap .table{ border-radius: 16px; }
 
 /* photo */
 .carb-photo__preview{
@@ -462,7 +414,7 @@
   flex-wrap: wrap;
 }
 
-/* ✅ 手機版：不要鎖整頁高度，改回正常頁面捲動（只加一次，放檔案最後） */
+/* 手機版：不鎖整頁高度（保留你的需求） */
 @media (max-width: 980px){
   .page.car-base{
     height: auto;
@@ -473,16 +425,11 @@
   .carb-shell{
     flex: none;
     min-height: auto;
-    align-items: start; /* 一欄時不需要同高 */
+    align-items: start;
   }
 
   .carb-left,
   .carb-right{
     min-height: auto;
-  }
-
-  .carb-left__body,
-  .carb-panels{
-    overflow: visible; /* 一欄時用整頁捲動即可 */
   }
 }

@@ -167,10 +167,12 @@
 
         html += ''
           + '<div class="carb-item" data-id="' + esc(v.id) + '">'
-          + '  <div class="carb-item__top">'
+          + '  <div class="carb-item__row">'
           + '    <div class="carb-item__code">' + esc(v.vehicle_code || '') + '</div>'
+          + '    <div class="carb-item__meta">' + (badges.length ? badges.join('') : '') + '</div>'
           + '    <div class="carb-item__plate">' + esc(v.plate_no || '') + '</div>'
-          + '  </div>';
+          + '  </div>'
+          + '</div>';
 
         if (badges.length) {
           html += '  <div class="carb-item__meta">' + badges.join('') + '  </div>';
