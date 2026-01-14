@@ -134,7 +134,7 @@
   grid-template-columns: 72px 1fr 96px;
   align-items: center;
   gap: 10px;
-  min-height: 40px;
+  min-height: 44px;             /* 統一高度感 */
 }
 
 .carb-item__code{
@@ -156,8 +156,10 @@
   display: flex;
   gap: 6px;
   justify-content: flex-start;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  flex-wrap: wrap;              /* ✅ 允許第二顆換行 */
+  overflow: visible;            /* ✅ 不裁切 */
+  line-height: 1;               /* badge 行距緊一點 */
+  max-height: 28px;             /* ✅ 最多兩行（約 2 * 14） */
 }
 
 .badge{
