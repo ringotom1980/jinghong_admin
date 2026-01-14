@@ -200,18 +200,24 @@
   position: relative; /* overlay 需要定位基準 */
 }
 
-.carb-overlay{
+/* ✅ 預設一律隱藏（不靠 hidden） */
+.carb-right .carb-overlay{
   position: absolute;
   inset: 0;
   z-index: 20;
-  display: grid;
+  display: none;                 /* ✅ 關鍵：預設不顯示 */
   place-items: center;
   background: rgba(255,255,255,.62);
   backdrop-filter: blur(2px);
 }
 
-/* ✅ 保證 hidden 一定會隱藏 overlay（避免被 reset 覆蓋） */
-.carb-overlay[hidden]{
+/* ✅ 只有 loading 時才顯示遮罩 */
+.carb-right.is-loading .carb-overlay{
+  display: grid;                 /* ✅ 關鍵：只有這時候才顯示 */
+}
+
+/* ✅ 保險：就算有人用 hidden，也一定隱藏 */
+.carb-right .carb-overlay[hidden]{
   display: none !important;
 }
 
