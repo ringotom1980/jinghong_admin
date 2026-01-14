@@ -540,3 +540,56 @@
     min-height: auto;
   }
 }
+
+/* ===== Detail split (photo left / fields right) ===== */
+.carb-detailSplit{
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* 左 1/3 右 2/3 */
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 980px){
+  .carb-detailSplit{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LEFT photo column keep nice width */
+.carb-detailPhoto{
+  min-width: 0;
+}
+
+/* ===== Section title (淡分隔線 + 置中文字) ===== */
+.carb-sectionTitle{
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0 0 10px 0;
+  padding: 6px 0;
+}
+
+.carb-sectionTitle::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(15,23,42,.10);  /* 淡分隔線 */
+  transform: translateY(-50%);
+}
+
+.carb-sectionTitle > span{
+  position: relative;
+  z-index: 1;
+  padding: 0 10px;                 /* 讓文字蓋住線 */
+  background: rgba(255,255,255,.86); /* 與 card 背景一致感 */
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: rgba(15,23,42,.62);
+}

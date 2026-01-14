@@ -93,6 +93,9 @@ $pageJs = [
               <div class="carb-detailSplit">
                 <!-- LEFT 1/3: photo -->
                 <aside class="carb-detailPhoto" aria-label="車輛照片">
+                  <div class="carb-sectionTitle">
+                    <span>車輛實照</span>
+                  </div>
                   <div class="carb-photo__preview card card--flat">
                     <div class="carb-photo__imgWrap">
                       <img id="carbPhotoImg" alt="車輛照片" />
