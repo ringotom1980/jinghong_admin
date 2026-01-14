@@ -176,8 +176,8 @@ $pageJs = [
                   <h3>檢查狀態</h3>
                   <div class="carb-insp__legend">
                     <span class="tag tag--ok">正常</span>
-                    <span class="tag tag--soon">將到期</span>
-                    <span class="tag tag--over">逾期</span>
+                    <span class="tag tag--soon">快到期</span>
+                    <span class="tag tag--over">已逾期</span>
                     <span class="tag tag--na">不需檢查</span>
                   </div>
                 </div>
