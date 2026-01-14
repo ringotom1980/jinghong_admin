@@ -73,27 +73,49 @@
       payload = payload || {};
       var v = payload.vehicle || null;
 
-      this._pickedFile = null;
-      if (this.file) this.file.value = '';
+      var self = this;
 
-      if (!v) {
-        if (this.img) this.img.removeAttribute('src');
-        if (this.empty) this.empty.hidden = false;
-        this.setEnabled(false);
-        return;
-      }
+      // 回傳 Promise：讓外部可以等照片載入後再關遮罩
+      return new Promise(function (resolve) {
+        self._pickedFile = null;
+        if (self.file) self.file.value = '';
 
-      // 顯示目前照片（若有）
-      var p = v.photo_url || '';
-      if (p) {
-        if (this.img) this.img.src = p;
-        if (this.empty) this.empty.hidden = true;
-      } else {
-        if (this.img) this.img.removeAttribute('src');
-        if (this.empty) this.empty.hidden = false;
-      }
+        if (!v) {
+          if (self.img) self.img.removeAttribute('src');
+          if (self.empty) self.empty.hidden = false;
+          self.setEnabled(false);
+          resolve(true);
+          return;
+        }
 
-      this.setEnabled(true);
+        // 顯示目前照片（若有）
+        var p = v.photo_url || '';
+        if (!p) {
+          if (self.img) self.img.removeAttribute('src');
+          if (self.empty) self.empty.hidden = false;
+          self.setEnabled(true);
+          resolve(true);
+          return;
+        }
+
+        // ✅ 等圖片 load / error 再 resolve
+        if (self.img) {
+          self.img.onload = function () { resolve(true); };
+          self.img.onerror = function () { resolve(true); };
+
+          self.img.src = p;
+
+          // 若瀏覽器已從 cache 直接完成，避免 onload 沒觸發的邊界狀況
+          if (self.img.complete) {
+            resolve(true);
+          }
+        } else {
+          resolve(true);
+        }
+
+        if (self.empty) self.empty.hidden = true;
+        self.setEnabled(true);
+      });
     },
 
     upload: function () {

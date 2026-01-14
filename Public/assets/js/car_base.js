@@ -274,11 +274,22 @@
 
           if (global.CarBaseDetail) global.CarBaseDetail.bindData(self.state.active);
           if (global.CarBaseInspections) global.CarBaseInspections.bindData(self.state.active);
-          if (global.CarBasePhoto) global.CarBasePhoto.bindData(self.state.active);
+
+          // ✅ 等照片載入完成再關遮罩
+          var photoReady = Promise.resolve(true);
+          if (global.CarBasePhoto && global.CarBasePhoto.bindData) {
+            photoReady = global.CarBasePhoto.bindData(self.state.active) || Promise.resolve(true);
+          }
 
           self.enableWorkspace(true);
-          self.setRightLoading(false);
-          return true;
+
+          return photoReady.then(function () {
+            // 若這個回應已經不是最新選車，直接忽略（避免連點造成遮罩亂跳）
+            if (seq !== self.state.reqSeq) return true;
+            self.setRightLoading(false);
+            return true;
+          });
+
         })
         .catch(function (e) {
           // 若不是最新選車的錯誤，也不要跳錯誤 toast（避免連點造成干擾）
