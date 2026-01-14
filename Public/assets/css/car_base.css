@@ -64,29 +64,42 @@
 /* filters (pills fit text) */
 .carb-filters{
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;   /* 置中排 */
   align-items: center;
-  justify-content: center; /* 置中排列 */
-  flex-wrap: wrap;         /* 螢幕太窄才換行 */
 }
 
 .carb-pill{
-  width: auto;             /* ✅ 不要 100% */
-  display: inline-flex;    /* ✅ 讓置中生效 */
+  display: inline-flex;              /* ✅ 讓置中、對齊生效 */
+  align-items: center;
   justify-content: center;
-  white-space: nowrap;     /* ✅ 不讓「不需檢查」斷行 */
-  padding: 0 12px;         /* 稍加大，避免擠字 */
+
+  white-space: nowrap;               /* ✅ 不換行 */
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(255,255,255,.86);
+  color: rgba(15,23,42,.78);
+
+  font-weight: 900;
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
 .carb-pill:hover{
-  background: rgba(255,255,255,.92);
-  border-color: rgba(15,23,42,.16);
+  background: rgba(255,255,255,.96);
+  border-color: rgba(15,23,42,.20);
   transform: translateY(-0.5px);
 }
 
 .carb-pill.is-active{
   background: rgba(47,63,122,.12);
-  border-color: rgba(47,63,122,.24);
+  border-color: rgba(47,63,122,.26);
   color: rgba(15,23,42,.92);
 }
 
