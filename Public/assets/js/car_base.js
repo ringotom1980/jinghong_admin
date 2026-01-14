@@ -247,26 +247,38 @@
       vehicleId = Number(vehicleId || 0);
       if (!vehicleId) return;
 
+      // ✅ request 序號，避免連點車輛時舊回應覆蓋新回應
+      self.state.reqSeq = (self.state.reqSeq || 0) + 1;
+      var seq = self.state.reqSeq;
+
       self.state.activeId = vehicleId;
       self.setEditMode(false);
-      self.enableWorkspace(false); // 等 get 完再開
+      self.enableWorkspace(false);     // 等 get 完再開
+      self.setRightLoading(true);      // ✅ 右側遮罩轉圈
 
       return apiGet('/api/car/car_get?id=' + encodeURIComponent(vehicleId))
         .then(function (j) {
+          // 若這個回應已經不是最新選車，直接忽略
+          if (seq !== self.state.reqSeq) return true;
+
           if (!j || !j.success) throw new Error((j && j.error) ? j.error : 'car_get 失敗');
 
           self.state.active = j.data || null;
           self.setActiveMeta();
-          self.enableWorkspace(true);
 
           if (global.CarBaseDetail) global.CarBaseDetail.bindData(self.state.active);
           if (global.CarBaseInspections) global.CarBaseInspections.bindData(self.state.active);
           if (global.CarBasePhoto) global.CarBasePhoto.bindData(self.state.active);
 
-          // 預設留在目前 tab；若沒 active tab 就回 detail
+          self.enableWorkspace(true);
+          self.setRightLoading(false);
           return true;
         })
         .catch(function (e) {
+          // 若不是最新選車的錯誤，也不要跳錯誤 toast（避免連點造成干擾）
+          if (seq !== self.state.reqSeq) return;
+
+          self.setRightLoading(false);
           Toast && Toast.show({ type: 'danger', title: '載入車輛失敗', message: (e && e.message) ? e.message : '未知錯誤' });
           throw e;
         });
