@@ -232,7 +232,13 @@
 
           self.state.list = (j.data && j.data.vehicles) ? j.data.vehicles : [];
           if (global.CarBaseList) global.CarBaseList.render(self.state.list);
-
+          /* ✅ 初始自動選第一台（僅在尚未選車時） */
+          if (!self.state.activeId && self.state.list && self.state.list.length) {
+            var first = self.state.list[0];
+            // 依你的 list 資料結構，通常是 id 或 vehicle_id，兩者都防呆
+            var firstId = Number(first.id || first.vehicle_id || 0);
+            if (firstId) self.selectVehicle(firstId);
+          }
           self.setLoading(false);
           return true;
         })
