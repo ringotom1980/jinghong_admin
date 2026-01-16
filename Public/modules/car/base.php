@@ -50,7 +50,7 @@ $pageJs = [
             <button type="button" class="carb-pill is-active" data-filter="all">全部</button>
             <button type="button" class="carb-pill" data-filter="soon">快到期</button>
             <button type="button" class="carb-pill" data-filter="overdue">已逾期</button>
-            <button type="button" class="carb-pill" data-filter="na">不需檢查</button>
+            <button type="button" class="carb-pill" data-filter="na">停用中</button>
 
             <input type="hidden" id="carbSort" value="vehicle_code_asc" />
           </div>
@@ -209,7 +209,7 @@ $pageJs = [
                       <span class="tag tag--ok">正常</span>
                       <span class="tag tag--soon">快到期</span>
                       <span class="tag tag--over">已逾期</span>
-                      <span class="tag tag--na">不需檢查</span>
+                      <span class="tag tag--na">停用中</span>
                     </div>
                   </div>
                   <div class="carb-insp__summaryBody" id="carbInspSummary"></div>

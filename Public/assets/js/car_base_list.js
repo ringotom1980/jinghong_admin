@@ -23,6 +23,8 @@
   }
 
   function n(v) { return Number(v || 0); }
+  function isDisabled(v) { return String(v && v.is_active) === '0'; }
+  function isActive(v) { return !isDisabled(v); }
 
   var Mod = {
     app: null,
@@ -114,17 +116,22 @@
         });
       }
 
-      // pill filter（依「有沒有該狀態」做篩選）
+      // pill filter
+      // ✅ 定版：停用中(is_active=0) 只在「停用中」膠囊顯示；其餘膠囊一律排除停用車
       var f = this._filter;
-      if (f === 'soon') {
-        rows = rows.filter(function (v) { return n(v.soon_count) > 0; });
-      } else if (f === 'overdue') {
-        rows = rows.filter(function (v) { return n(v.overdue_count) > 0; });
-      } else if (f === 'na') {
-        // 解讀：「不需檢查」= 只有不需檢查，且沒有快到期/逾期
-        rows = rows.filter(function (v) {
-          return n(v.na_count) > 0 && n(v.overdue_count) === 0 && n(v.soon_count) === 0;
-        });
+
+      if (f === 'na') {
+        // 「停用中」
+        rows = rows.filter(function (v) { return isDisabled(v); });
+      } else {
+        // all / soon / overdue：只看使用中
+        rows = rows.filter(function (v) { return isActive(v); });
+
+        if (f === 'soon') {
+          rows = rows.filter(function (v) { return n(v.soon_count) > 0; });
+        } else if (f === 'overdue') {
+          rows = rows.filter(function (v) { return n(v.overdue_count) > 0; });
+        }
       }
 
       // sort（保留既有規則）
