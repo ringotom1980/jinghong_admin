@@ -29,6 +29,7 @@
       this.app = app;
       this.form = qs('#carbDetailForm');
       this.bindVehicleCode();
+      this.bindNewOptionToggles();
     },
 
     applyDicts: function (dicts) {
@@ -53,6 +54,7 @@
           var it = items[i];
           html += '<option value="' + String(it.id) + '">' + String(it.name || it[labelKey] || '') + '</option>';
         }
+        html += '<option value="__NEW__">＋新增…</option>';
         sel.innerHTML = html;
       }
 
@@ -129,6 +131,37 @@
         is_active: 1,
         note: ''
       });
+    },
+
+    bindNewOptionToggles: function () {
+      var form = this.form;
+      if (!form) return;
+
+      function wire(selectName, inputName) {
+        var sel = qs('select[name="' + selectName + '"]', form);
+        var inp = qs('input[name="' + inputName + '"]', form);
+        if (!sel || !inp) return;
+
+        function sync() {
+          var isNew = (String(sel.value || '') === '__NEW__');
+          inp.hidden = !isNew;
+          inp.disabled = !isNew;
+
+          if (!isNew) {
+            inp.value = '';
+          } else {
+            // 進入新輸入模式時，自動 focus
+            setTimeout(function () { try { inp.focus(); } catch (e) { } }, 0);
+          }
+        }
+
+        sel.addEventListener('change', sync);
+        sync();
+      }
+
+      wire('vehicle_type_id', 'vehicle_type_new');
+      wire('brand_id', 'brand_new');
+      wire('boom_type_id', 'boom_type_new');
     },
 
     bindVehicleCode: function () {
@@ -271,6 +304,18 @@
         var el = qs('[name="' + editable[i] + '"]', form);
         if (el) el.disabled = !on;
       }
+      // ✅ 新增文字欄位：跟著 CREATE/EDIT 解鎖（顯示/啟用仍由 bindNewOptionToggles 控制）
+      var newFields = ['vehicle_type_new', 'brand_new', 'boom_type_new'];
+      for (var k = 0; k < newFields.length; k++) {
+        var nf = qs('[name="' + newFields[k] + '"]', form);
+        if (nf) nf.disabled = !on;
+      }
+
+      // ✅ 切換模式後，重新同步一次「＋新增」顯示狀態（避免剛進 CREATE 沒同步）
+      if (typeof this.bindNewOptionToggles === 'function') {
+        this.bindNewOptionToggles();
+      }
+
     },
 
     collect: function () {
@@ -393,9 +438,16 @@
       }
 
       reqText('plate_no', '車牌號碼');
-      reqSelect('vehicle_type_id', '車輛類型');
-      reqSelect('brand_id', '廠牌');
-      reqSelect('boom_type_id', '吊臂型式');
+      function reqSelectOrNew(idField, newField, label) {
+        var idv = String(payload[idField] || '').trim();
+        var nv = String(payload[newField] || '').trim();
+        if (!idv && !nv) missing.push(label);
+      }
+
+      reqSelectOrNew('vehicle_type_id', 'vehicle_type_new', '車輛類型');
+      reqSelectOrNew('brand_id', 'brand_new', '廠牌');
+      reqSelectOrNew('boom_type_id', 'boom_type_new', '吊臂型式');
+
       reqPositiveNumber('tonnage', '噸數');
       reqYear('vehicle_year', '出廠年份');
       reqText('owner_name', '車主');
@@ -434,6 +486,7 @@
           // CREATE：切回 VIEW + 選到新車
           if (mode === 'CREATE' && j.data && j.data.vehicle && j.data.vehicle.id) {
             var newId = Number(j.data.vehicle.id);
+            app.loadDicts();
 
             app.loadList().then(function () {
               app.selectVehicle(newId);
