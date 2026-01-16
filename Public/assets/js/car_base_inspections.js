@@ -88,15 +88,20 @@
           + '<tr data-tid="' + esc(row.type_id) + '">'
           + '  <td>' + esc(row.type_name || '') + '</td>'
           + '  <td>'
-          + '    <label class="carb-switch carb-insp-switch">'
-          + '      <input type="checkbox" class="carb-insp-required"'
-          + '        data-vid="' + esc(row.vehicle_id) + '"'
-          + '        data-tid="' + esc(row.type_id) + '"'
+          + '    <div class="carb-insp-toggle">'
+          + '      <label class="carb-switch2">'
+          + '        <input type="checkbox" class="carb-insp-required"'
+          + '          data-vid="' + esc(row.vehicle_id) + '"'
+          + '          data-tid="' + esc(row.type_id) + '"'
           + (required ? ' checked' : '')
           + (canEditRule ? '' : ' disabled')
-          + '      />'
-          + '      <span>' + (required ? '需要' : '不需') + '</span>'
-          + '    </label>'
+          + '        />'
+          + '        <span class="carb-switch2__track" aria-hidden="true">'
+          + '          <span class="carb-switch2__thumb"></span>'
+          + '        </span>'
+          + '        <span class="carb-switch2__text">' + (required ? '需要' : '不需') + '</span>'
+          + '      </label>'
+          + '    </div>'
           + '  </td>'
           + '  <td>'
           + '    <input class="input carb-insp-date"'
@@ -152,7 +157,7 @@
           }
 
           // 文字同步（span 文案在 label 裡）
-          var txt = el.parentNode ? el.parentNode.querySelector('span') : null;
+          var txt = el.closest('label') ? el.closest('label').querySelector('.carb-switch2__text') : null;
           if (txt) txt.textContent = '需要';
 
           Toast && Toast.show({ type: 'info', title: '請選到期日', message: '此項已設定為需要檢查，請先選擇到期日' });
@@ -166,7 +171,7 @@
           dateEl.value = '';
           dateEl.disabled = true;
         }
-        var txt2 = el.parentNode ? el.parentNode.querySelector('span') : null;
+        var txt2 = el.closest('label') ? el.closest('label').querySelector('.carb-switch2__text') : null;
         if (txt2) txt2.textContent = '不需';
 
         return this.saveRuleAndDate(activeId, tid1, 0, null);
