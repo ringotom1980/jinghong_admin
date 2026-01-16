@@ -434,7 +434,6 @@ final class VehicleService
     $st = $pdo->prepare("
       UPDATE vehicle_vehicles
       SET photo_path = :p
-          updated_at = CURRENT_TIMESTAMP()
       WHERE id = :id
       LIMIT 1
     ");
