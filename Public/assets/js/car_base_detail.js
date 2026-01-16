@@ -338,11 +338,31 @@
           return;
         }
 
-        // 讓表單的 setCustomValidity 生效（查重/格式）
-        if (this.form && !this.form.checkValidity()) {
-          Toast && Toast.show({ type: 'warning', title: '請修正車輛編號', message: (qs('[name="vehicle_code"]', this.form).validationMessage || '車輛編號不正確') });
-          return;
+        // ✅ 讓 setCustomValidity 生效：#carbDetailForm 可能不是 <form>，所以改用欄位本身判斷
+        var vcEl = this.form ? qs('[name="vehicle_code"]', this.form) : null;
+        if (vcEl) {
+          // 若有真正 <form> 才用 checkValidity
+          var realForm = (vcEl.form && typeof vcEl.form.checkValidity === 'function') ? vcEl.form : null;
+          var ok = true;
+
+          if (realForm) {
+            ok = realForm.checkValidity();
+          } else {
+            // 沒有 <form>：看欄位自己的 validity
+            ok = !vcEl.validationMessage;
+          }
+
+          if (!ok) {
+            Toast && Toast.show({
+              type: 'warning',
+              title: '請修正車輛編號',
+              message: vcEl.validationMessage || '車輛編號不正確'
+            });
+            vcEl.focus();
+            return;
+          }
         }
+
       }
 
       // EDIT 必須有 id
