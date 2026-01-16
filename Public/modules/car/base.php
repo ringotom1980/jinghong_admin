@@ -58,7 +58,7 @@ $pageJs = [
 
         <div class="carb-left__body">
           <div class="carb-list" id="carbList" aria-live="polite"></div>
-          <div class="carb-empty" id="carbEmpty" hidden>目前沒有車輛資料</div>
+          <div class="carb-empty" id="carbEmpty" hidden>目前沒有停用中車輛資料</div>
           <div class="carb-loading" id="carbLoading" hidden>載入中…</div>
         </div>
       </aside>
