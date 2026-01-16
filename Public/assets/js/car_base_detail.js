@@ -312,6 +312,7 @@
       return data;
     },
 
+
     save: function () {
       var self = this;
       var app = this.app;
@@ -363,6 +364,49 @@
           }
         }
 
+      }
+
+      // ✅ 必填欄位檢查（CREATE / EDIT 都要）
+      var missing = [];
+
+      function reqText(field, label) {
+        var v = String(payload[field] || '').trim();
+        if (!v) missing.push(label);
+      }
+      function reqSelect(field, label) {
+        var v = String(payload[field] || '').trim();
+        if (!v) missing.push(label);
+      }
+      function reqPositiveNumber(field, label) {
+        var v = payload[field];
+        if (v === null || v === '' || v === undefined) { missing.push(label); return; }
+        var n = Number(v);
+        if (!isFinite(n) || n <= 0) missing.push(label);
+      }
+      function reqYear(field, label) {
+        var v = String(payload[field] || '').trim();
+        if (!v) { missing.push(label); return; }
+        // 只允許 4 碼年份，可自行調整範圍
+        if (!/^\d{4}$/.test(v)) { missing.push(label); return; }
+        var y = Number(v);
+        if (y < 1980 || y > 2100) missing.push(label);
+      }
+
+      reqText('plate_no', '車牌號碼');
+      reqSelect('vehicle_type_id', '車輛類型');
+      reqSelect('brand_id', '廠牌');
+      reqSelect('boom_type_id', '吊臂型式');
+      reqPositiveNumber('tonnage', '噸數');
+      reqYear('vehicle_year', '出廠年份');
+      reqText('owner_name', '車主');
+
+      if (missing.length) {
+        Toast && Toast.show({
+          type: 'warning',
+          title: '必填欄位未填',
+          message: '請填寫：' + missing.join('、')
+        });
+        return;
       }
 
       // EDIT 必須有 id

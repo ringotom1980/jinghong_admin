@@ -265,6 +265,20 @@ final class VehicleService
     $vehiclePrice = self::toNullableDecimal($body['vehicle_price'] ?? null);
     $boomPrice    = self::toNullableDecimal($body['boom_price'] ?? null);
     $bucketPrice  = self::toNullableDecimal($body['bucket_price'] ?? null);
+    // ✅ 必填欄位保底（CREATE）
+    if (($plate ?? '') === '') throw new RuntimeException('車牌號碼為必填');
+    if (($owner ?? '') === '') throw new RuntimeException('車主為必填');
+
+    if ($vehicleTypeId === null) throw new RuntimeException('車輛類型為必填');
+    if ($brandId === null) throw new RuntimeException('廠牌為必填');
+    if ($boomTypeId === null) throw new RuntimeException('吊臂型式為必填');
+
+    // tonnage 目前是字串（DECIMAL 格式），用 float 判斷 > 0
+    if ($tonnage === null || (float)$tonnage <= 0) throw new RuntimeException('噸數為必填且需大於 0');
+
+    // year 是 int or null
+    if ($year === null) throw new RuntimeException('出廠年份為必填');
+    if ($year < 1980 || $year > 2100) throw new RuntimeException('出廠年份不正確（1980-2100）');
 
     $isActive = isset($body['is_active']) ? (int)$body['is_active'] : 1;
     $note     = isset($body['note']) ? trim((string)$body['note']) : null;
@@ -324,6 +338,18 @@ final class VehicleService
     $vehiclePrice = self::toNullableDecimal($body['vehicle_price'] ?? null);
     $boomPrice = self::toNullableDecimal($body['boom_price'] ?? null);
     $bucketPrice = self::toNullableDecimal($body['bucket_price'] ?? null);
+    // ✅ 必填欄位保底（EDIT：更新也不可清空）
+    if (($plate ?? '') === '') throw new RuntimeException('車牌號碼為必填');
+    if (($owner ?? '') === '') throw new RuntimeException('車主為必填');
+
+    if ($vehicleTypeId === null) throw new RuntimeException('車輛類型為必填');
+    if ($brandId === null) throw new RuntimeException('廠牌為必填');
+    if ($boomTypeId === null) throw new RuntimeException('吊臂型式為必填');
+
+    if ($tonnage === null || (float)$tonnage <= 0) throw new RuntimeException('噸數為必填且需大於 0');
+
+    if ($year === null) throw new RuntimeException('出廠年份為必填');
+    if ($year < 1980 || $year > 2100) throw new RuntimeException('出廠年份不正確（1980-2100）');
 
     $isActive = isset($body['is_active']) ? (int)$body['is_active'] : 1;
     $note = isset($body['note']) ? trim((string)$body['note']) : null;
