@@ -498,33 +498,37 @@
           // CREATE：切回 VIEW + 選到新車
           if (mode === 'CREATE' && j.data && j.data.vehicle && j.data.vehicle.id) {
             var newId = Number(j.data.vehicle.id);
-            app.loadDicts();
 
-            app.loadList().then(function () {
-              app.selectVehicle(newId);
-            });
-
-            return;
+            // ✅ 先等 dicts 更新（確保新 brand/type/boom 的 option 已存在）
+            return app.loadDicts()
+              .then(function () { return app.loadList(); })
+              .then(function () { return app.selectVehicle(newId); });
           }
 
           // EDIT：更新 state.active.vehicle（避免再次 get）+ 同步表單（把 ＋新增… 收起來）
           if (mode === 'EDIT' && app.state.active && j.data && j.data.vehicle) {
             app.state.active.vehicle = j.data.vehicle;
 
-            // ✅ 用回傳的 vehicle 直接重設表單（brand_id / type_id / boom_type_id 會回填成新建立的 id）
-            self.setForm(j.data.vehicle);
-            self.setMode('VIEW'); // 這裡會保底把 *_new 隱藏/清空
-
-            app.setActiveMeta();
-            app.loadList();
-
-            // ✅ 若本次有用「新增」輸入，字典要重抓，不然下拉選單不會出現新項目
             var usedNew =
               (payload && (payload.vehicle_type_new || payload.brand_new || payload.boom_type_new)) ? true : false;
 
+            // ✅ 先更新列表/標題（不影響 select）
+            app.setActiveMeta();
+            app.loadList();
+
             if (usedNew && typeof app.loadDicts === 'function') {
-              app.loadDicts();
+              // ✅ 關鍵：等 dicts 更新完成（options 有新項目）後再回填表單
+              return app.loadDicts().then(function () {
+                self.fillSelects();         // 讓 select options 變成最新
+                self.setForm(j.data.vehicle); // 再設定 select.value 才會成功
+                self.setMode('VIEW');
+                return true;
+              });
             }
+
+            // 未新增字典：直接回填即可
+            self.setForm(j.data.vehicle);
+            self.setMode('VIEW');
           }
 
         })
