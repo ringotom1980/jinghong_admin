@@ -4,10 +4,18 @@
  */
 
 /* 左清單 + 右工作區都在可視區內；需要捲動時改成欄內捲動 */
+/* 車輛頁：整體不讓 body 捲（避免 sidebar 跟著捲） */
+body.page-enter{
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* main 只負責中間區域（扣掉 topbar + footer） */
 .page.car-base{
   --topbar-h: 56px;
+  --footer-h: 56px; /* 你 footer 實際高度若不是 56px，改這裡 */
 
-  height: calc(100vh - var(--topbar-h));
+  height: calc(100vh - var(--topbar-h) - var(--footer-h));
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -593,4 +601,13 @@
   font-weight: 900;
   letter-spacing: .12em;
   color: rgba(15,23,42,.62);
+}
+
+/* 只在 car/base：footer 固定在視窗底部 */
+.page.car-base + .footer{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
 }
