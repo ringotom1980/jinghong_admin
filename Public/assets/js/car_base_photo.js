@@ -50,12 +50,28 @@
             self.img.src = url;
             if (self.empty) self.empty.hidden = true;
           }
-          if (self.uploadBtn) self.uploadBtn.disabled = !(self.app.state.activeId && self._pickedFile);
+          if (self.uploadBtn) {
+            self.uploadBtn.disabled = !(self.app.state.activeId && self._pickedFile);
+
+            // ✅ 文字切換：有檔案＝更新照片；沒檔案＝更換照片
+            var textEl = self.uploadBtn.querySelector('.btn__text');
+            if (textEl) textEl.textContent = self._pickedFile ? '更新照片' : '更換照片';
+          }
+
         });
       }
 
       if (this.uploadBtn) {
         this.uploadBtn.addEventListener('click', function () {
+          if (self.uploadBtn.disabled) return;
+
+          // ✅ 尚未選檔：等同「更換照片」→ 打開檔案挑選器
+          if (!self._pickedFile) {
+            if (self.file) self.file.click();
+            return;
+          }
+
+          // ✅ 已選檔：等同「更新照片」→ 上傳
           self.upload();
         });
       }
@@ -65,8 +81,18 @@
 
     setEnabled: function (enabled) {
       enabled = !!enabled;
-      if (this.pickBtn) this.pickBtn.disabled = !enabled;
-      if (this.uploadBtn) this.uploadBtn.disabled = !enabled || !this._pickedFile;
+
+      // pickBtn 已不給用，但保留防呆
+      if (this.pickBtn) this.pickBtn.disabled = true;
+
+      // ✅ uploadBtn：只要選到車就能按（用來觸發選檔）；上傳時再檢查 pickedFile
+      if (this.uploadBtn) this.uploadBtn.disabled = !enabled;
+
+      // 同步文字
+      if (this.uploadBtn) {
+        var textEl = this.uploadBtn.querySelector('.btn__text');
+        if (textEl) textEl.textContent = this._pickedFile ? '更新照片' : '更換照片';
+      }
     },
 
     bindData: function (payload) {
@@ -79,6 +105,10 @@
       return new Promise(function (resolve) {
         self._pickedFile = null;
         if (self.file) self.file.value = '';
+        if (self.uploadBtn) {
+          var t = self.uploadBtn.querySelector('.btn__text');
+          if (t) t.textContent = '更換照片';
+        }
 
         if (!v) {
           if (self.img) self.img.removeAttribute('src');
@@ -171,6 +201,11 @@
           self._pickedFile = null;
           if (self.file) self.file.value = '';
           self.setEnabled(true);
+          if (self.uploadBtn) {
+            var t = self.uploadBtn.querySelector('.btn__text');
+            if (t) t.textContent = '更換照片';
+          }
+
         })
         .catch(function (e) {
           setBtnLoading(self.uploadBtn, false);

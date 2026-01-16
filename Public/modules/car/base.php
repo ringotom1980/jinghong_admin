@@ -104,9 +104,11 @@ $pageJs = [
 
                     <div class="carb-photo__actions">
                       <input type="file" id="carbPhotoFile" accept="image/*" hidden />
-                      <button type="button" class="btn btn--info" id="carbPhotoPickBtn" disabled>選擇照片</button>
+                      <button type="button" class="btn btn--info" id="carbPhotoPickBtn" hidden disabled>選擇照片</button>
                       <button type="button" class="btn btn--warning" id="carbPhotoUploadBtn" disabled>
-                        <span class="btn__text">覆蓋上傳</span><span class="btn__spinner" aria-hidden="true"></span>
+                        <span class="btn__text">更換照片</span><span class="btn__spinner" aria-hidden="true"></span>
+                      </button>
+
                       </button>
                     </div>
                   </div>
