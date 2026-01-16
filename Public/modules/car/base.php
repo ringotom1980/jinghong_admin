@@ -222,7 +222,7 @@ $pageJs = [
                     <thead>
                       <tr>
                         <th style="width:40%;">項目</th>
-                        <th style="width:18%;">需求</th>
+                        <th style="width:18%;">檢查需要</th>
                         <th style="width:22%;">到期日</th>
                         <th style="width:20%;">狀態</th>
                       </tr>
