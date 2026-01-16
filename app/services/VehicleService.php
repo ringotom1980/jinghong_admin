@@ -231,6 +231,18 @@ final class VehicleService
     if ($vehicleCode === '') {
       throw new RuntimeException('vehicle_code 不可為空');
     }
+    // ✅ 正規化：去空白、轉大寫、允許 A01 / A-01 → 一律 A-01
+    $vehicleCode = strtoupper(preg_replace('/\s+/', '', $vehicleCode));
+
+    // A01 → A-01
+    if (preg_match('/^[A-Z]\d{2}$/', $vehicleCode)) {
+      $vehicleCode = substr($vehicleCode, 0, 1) . '-' . substr($vehicleCode, 1, 2);
+    }
+
+    // 最終格式必須 A-01
+    if (!preg_match('/^[A-Z]-\d{2}$/', $vehicleCode)) {
+      throw new RuntimeException('車輛編號格式不正確（例：A-01）');
+    }
 
     // 先擋重複（也會被 UNIQUE 擋，但這樣訊息更友善）
     $stDup = $pdo->prepare("SELECT 1 FROM vehicle_vehicles WHERE vehicle_code = ? LIMIT 1");

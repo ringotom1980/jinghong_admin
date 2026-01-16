@@ -28,6 +28,7 @@
     init: function (app) {
       this.app = app;
       this.form = qs('#carbDetailForm');
+      this.bindVehicleCode();
     },
 
     applyDicts: function (dicts) {
@@ -130,6 +131,123 @@
       });
     },
 
+    bindVehicleCode: function () {
+      var self = this;
+      var form = this.form;
+      if (!form) return;
+
+      var el = qs('[name="vehicle_code"]', form);
+      if (!el) return;
+
+      // 建議：用 title 當最簡單的即時提示（不改版面、不加 HTML）
+      var setHint = function (msg) {
+        el.setCustomValidity(msg || '');
+        el.title = msg || '';
+      };
+
+      // debounce 查重
+      if (!this._vcTimer) this._vcTimer = null;
+
+      el.addEventListener('input', function () {
+        // 只有 CREATE 才處理
+        var mode = (self.app && self.app.state) ? String(self.app.state.mode || 'VIEW') : 'VIEW';
+        if (mode !== 'CREATE') { setHint(''); return; }
+
+        var v = String(el.value || '');
+
+        // 去空白
+        v = v.replace(/\s+/g, '');
+
+        // 第一碼處理：轉大寫 + 自動補 '-'
+        if (v.length >= 1) {
+          var c0 = v.charAt(0);
+          if (!/[A-Za-z]/.test(c0)) {
+            setHint('第一碼請輸入英文字母，例如 A-01');
+          } else {
+            setHint('');
+            var up = c0.toUpperCase();
+            v = up + v.slice(1);
+
+            // 若目前只有一碼字母，直接補 '-'
+            if (v.length === 1) v = up + '-';
+
+            // 若是 A01 這種（第二碼是數字），自動補成 A-01
+            if (v.length >= 2 && v.charAt(1) !== '-') {
+              v = up + '-' + v.slice(1);
+            }
+          }
+        }
+
+        // 第二段只允許兩碼數字（但不要太激進刪除；先做提示）
+        if (v.length >= 3) {
+          var tail = v.slice(2);
+          // 若出現字母，提示
+          if (/[A-Za-z]/.test(tail)) {
+            setHint('後兩碼請輸入數字，例如 A-01');
+          } else {
+            // 限制最多兩碼（多的先截斷，避免髒輸入）
+            if (tail.length > 2) tail = tail.slice(0, 2);
+            v = v.slice(0, 2) + tail;
+            // 若剛好兩碼且都數字，清除格式提示
+            if (/^[A-Z]-\d{2}$/.test(v)) setHint('');
+          }
+        }
+
+        // 回寫（避免游標亂跳：只在值確實變了才回寫）
+        if (el.value !== v) {
+          el.value = v;
+        }
+
+        // 查重提示：只在完整格式才查 + debounce
+        if (self._vcTimer) clearTimeout(self._vcTimer);
+        self._vcTimer = setTimeout(function () {
+          self.checkVehicleCodeDup();
+        }, 350);
+      });
+
+      // blur 時再做一次完整正規化與查重
+      el.addEventListener('blur', function () {
+        var mode = (self.app && self.app.state) ? String(self.app.state.mode || 'VIEW') : 'VIEW';
+        if (mode !== 'CREATE') return;
+        self.checkVehicleCodeDup(true);
+      });
+    },
+
+    checkVehicleCodeDup: function (force) {
+      var form = this.form;
+      if (!form) return;
+
+      var el = qs('[name="vehicle_code"]', form);
+      if (!el) return;
+
+      var mode = (this.app && this.app.state) ? String(this.app.state.mode || 'VIEW') : 'VIEW';
+      if (mode !== 'CREATE') { el.setCustomValidity(''); return; }
+
+      var v = String(el.value || '').replace(/\s+/g, '');
+
+      // 只有完整格式才查重（避免吵）
+      if (!/^[A-Z]-\d{2}$/.test(v)) {
+        // force 時（離開欄位）給一次總提示
+        if (force && v !== '') el.setCustomValidity('格式需為 A-01（英文字母 + 兩碼）');
+        else el.setCustomValidity('');
+        return;
+      }
+
+      // 用 car_list 的結果查重：app.state.list
+      var list = (this.app && this.app.state && Array.isArray(this.app.state.list)) ? this.app.state.list : [];
+      var dup = false;
+      for (var i = 0; i < list.length; i++) {
+        var code = String(list[i].vehicle_code || '').trim().toUpperCase();
+        if (code === v) { dup = true; break; }
+      }
+
+      if (dup) {
+        el.setCustomValidity('此車輛編號已存在，請確認左邊列表編號');
+      } else {
+        el.setCustomValidity('');
+      }
+    },
+
     setMode: function (mode) {
       mode = String(mode || 'VIEW'); // VIEW | CREATE | EDIT
       var form = this.form;
@@ -207,9 +325,22 @@
 
       // CREATE 必填 vehicle_code
       if (mode === 'CREATE') {
-        var vc = (payload.vehicle_code || '').trim();
+        var vc = String(payload.vehicle_code || '').trim();
+
         if (!vc) {
-          Toast && Toast.show({ type: 'warning', title: '缺少車輛編號', message: '請輸入車輛編號（例：C-01）' });
+          Toast && Toast.show({ type: 'warning', title: '缺少車輛編號', message: '請輸入車輛編號（例：A-01）' });
+          return;
+        }
+
+        // 依前端定版：必須是 A-01
+        if (!/^[A-Za-z]-?\d{2}$/.test(vc.replace(/\s+/g, ''))) {
+          Toast && Toast.show({ type: 'warning', title: '車輛編號格式不正確', message: '格式需為 A-01（英文字母 + 兩碼）' });
+          return;
+        }
+
+        // 讓表單的 setCustomValidity 生效（查重/格式）
+        if (this.form && !this.form.checkValidity()) {
+          Toast && Toast.show({ type: 'warning', title: '請修正車輛編號', message: (qs('[name="vehicle_code"]', this.form).validationMessage || '車輛編號不正確') });
           return;
         }
       }
