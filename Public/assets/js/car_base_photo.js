@@ -100,16 +100,28 @@
 
         // ✅ 等圖片 load / error 再 resolve
         if (self.img) {
-          self.img.onload = function () { resolve(true); };
-          self.img.onerror = function () { resolve(true); };
+          self.img.onload = function () {
+            if (self.empty) self.empty.hidden = true;   // ✅ 圖片真的成功後再保險關一次
+            resolve(true);
+          };
+          self.img.onerror = function () {
+            if (self.empty) self.empty.hidden = false;  // ✅ 載入失敗就顯示提示
+            resolve(true);
+          };
+
+          // 先假設有圖：先把 empty 關掉，避免閃爍
+          if (self.empty) self.empty.hidden = true;
 
           self.img.src = p;
 
-          // 若瀏覽器已從 cache 直接完成，避免 onload 沒觸發的邊界狀況
+          // 若瀏覽器快取直接完成，主動走一次 onload 的效果
           if (self.img.complete) {
+            if (self.empty) self.empty.hidden = true;
             resolve(true);
           }
         } else {
+          // 沒 img 元素就只能顯示提示
+          if (self.empty) self.empty.hidden = false;
           resolve(true);
         }
 

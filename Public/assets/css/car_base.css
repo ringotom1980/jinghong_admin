@@ -512,6 +512,7 @@
   place-items: center;
   font-weight: 900;
   color: rgba(15,23,42,.60);
+  display: none !important;
 }
 
 .carb-photo__actions{
