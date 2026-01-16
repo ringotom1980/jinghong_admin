@@ -344,6 +344,20 @@ final class VehicleService
     $vehicleTypeId = self::toNullableInt($body['vehicle_type_id'] ?? null);
     $brandId = self::toNullableInt($body['brand_id'] ?? null);
     $boomTypeId = self::toNullableInt($body['boom_type_id'] ?? null);
+    // ✅ 支援「＋新增…」：EDIT 也允許用 *_new 自動建立字典並回填 ID
+    $vehicleTypeNew = isset($body['vehicle_type_new']) ? trim((string)$body['vehicle_type_new']) : '';
+    $brandNew       = isset($body['brand_new']) ? trim((string)$body['brand_new']) : '';
+    $boomTypeNew    = isset($body['boom_type_new']) ? trim((string)$body['boom_type_new']) : '';
+
+    if ($vehicleTypeId === null && $vehicleTypeNew !== '') {
+      $vehicleTypeId = self::getOrCreateDictId($pdo, 'vehicle_vehicle_types', $vehicleTypeNew);
+    }
+    if ($brandId === null && $brandNew !== '') {
+      $brandId = self::getOrCreateDictId($pdo, 'vehicle_brands', $brandNew);
+    }
+    if ($boomTypeId === null && $boomTypeNew !== '') {
+      $boomTypeId = self::getOrCreateDictId($pdo, 'vehicle_boom_types', $boomTypeNew);
+    }
 
     $tonnage = self::toNullableDecimal($body['tonnage'] ?? null);
     $year = self::toNullableInt($body['vehicle_year'] ?? null);
@@ -625,21 +639,26 @@ final class VehicleService
     return number_format($n, 2, '.', '');
   }
   private static function getOrCreateDictId(PDO $pdo, string $table, string $name): int
-{
-  $name = trim($name);
-  if ($name === '') throw new RuntimeException('字典名稱不可為空');
+  {
+    $name = trim($name);
+    if ($name === '') throw new RuntimeException('字典名稱不可為空');
 
-  // 先找
-  $st = $pdo->prepare("SELECT id FROM {$table} WHERE name = ? LIMIT 1");
-  $st->execute([$name]);
-  $id = (int)($st->fetchColumn() ?: 0);
-  if ($id > 0) return $id;
+    // 先找
+    $st = $pdo->prepare("SELECT id FROM {$table} WHERE name = ? LIMIT 1");
+    $st->execute([$name]);
+    $id = (int)($st->fetchColumn() ?: 0);
+    if ($id > 0) return $id;
 
-  // 新增（is_enabled=1, sort_no=0）
-  $st2 = $pdo->prepare("INSERT INTO {$table} (name, sort_no, is_enabled) VALUES (?, 0, 1)");
-  $st2->execute([$name]);
+    // 新增（is_enabled=1, sort_no=0）
+    $maxSt = $pdo->query("SELECT COALESCE(MAX(sort_no),0) FROM {$table}");
+    $maxSort = (int)$maxSt->fetchColumn();
+    $sortNo = $maxSort + 10;
 
-  return (int)$pdo->lastInsertId();
-}
+    $st2 = $pdo->prepare("INSERT INTO {$table} (name, sort_no, is_enabled) VALUES (?, ?, 1)");
+    $st2->execute([$name, $sortNo]);
 
+    $st2->execute([$name]);
+
+    return (int)$pdo->lastInsertId();
+  }
 }

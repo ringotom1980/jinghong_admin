@@ -332,17 +332,26 @@
 
       var mode = (this.app && this.app.state) ? String(this.app.state.mode || 'VIEW') : 'VIEW';
 
-      var data = {
-        // CREATE 不帶 id；EDIT 帶 id
-        id: (mode === 'EDIT') ? Number(this.app.state.activeId) : null,
+      var typeId = val('vehicle_type_id') || null;
+      var brandId = val('brand_id') || null;
+      var boomId = val('boom_type_id') || null;
 
-        // CREATE 必填：vehicle_code
+      var data = {
+        id: (mode === 'EDIT') ? Number(this.app.state.activeId) : null,
         vehicle_code: (mode === 'CREATE') ? val('vehicle_code') : null,
 
         plate_no: val('plate_no'),
-        vehicle_type_id: val('vehicle_type_id') || null,
-        brand_id: val('brand_id') || null,
-        boom_type_id: val('boom_type_id') || null,
+
+        // ✅ 若選「＋新增…」，id 不送（改走 *_new）
+        vehicle_type_id: (typeId === '__NEW__') ? null : typeId,
+        brand_id: (brandId === '__NEW__') ? null : brandId,
+        boom_type_id: (boomId === '__NEW__') ? null : boomId,
+
+        // ✅ 新增文字欄位一併送出（後端會負責寫入字典表並回填 id）
+        vehicle_type_new: (typeId === '__NEW__') ? (val('vehicle_type_new') || '') : '',
+        brand_new: (brandId === '__NEW__') ? (val('brand_new') || '') : '',
+        boom_type_new: (boomId === '__NEW__') ? (val('boom_type_new') || '') : '',
+
         owner_name: val('owner_name'),
         user_name: val('user_name'),
         tonnage: toNumberOrNull(val('tonnage')),
