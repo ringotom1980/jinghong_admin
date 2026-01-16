@@ -616,3 +616,10 @@ body.page-enter{
   bottom: 0;
   z-index: 50;
 }
+
+/* 檢查項目表格：標題與內容置中 */
+.carb-insp__table th,
+.carb-insp__table td {
+  text-align: center;
+  vertical-align: middle;
+}
