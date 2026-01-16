@@ -452,6 +452,69 @@ final class VehicleService
     return self::listInspectionsForVehicle($vehicleId);
   }
 
+  public static function saveInspectionRuleAndDate(int $vehicleId, int $typeId, int $isRequired, ?string $dueDate): array
+  {
+    $pdo = db();
+    $isRequired = ($isRequired === 1) ? 1 : 0;
+
+    // upsert rules
+    $st = $pdo->prepare("
+    INSERT INTO vehicle_vehicle_inspection_rules (vehicle_id, type_id, is_required)
+    VALUES (:vehicle_id, :type_id, :is_required)
+    ON DUPLICATE KEY UPDATE
+      is_required = VALUES(is_required)
+  ");
+    $st->execute([
+      ':vehicle_id' => $vehicleId,
+      ':type_id' => $typeId,
+      ':is_required' => $isRequired,
+    ]);
+
+    // 若不需檢查：同步把 due_date 清空（避免殘留）
+    if ($isRequired === 0) {
+      $st2 = $pdo->prepare("
+      INSERT INTO vehicle_vehicle_inspections (vehicle_id, type_id, due_date)
+      VALUES (:vehicle_id, :type_id, NULL)
+      ON DUPLICATE KEY UPDATE
+        due_date = NULL,
+        updated_at = CURRENT_TIMESTAMP()
+    ");
+      $st2->execute([
+        ':vehicle_id' => $vehicleId,
+        ':type_id' => $typeId,
+      ]);
+    } else {
+      // required=1：dueDate 一定有值（API 已擋）
+      $st3 = $pdo->prepare("
+      INSERT INTO vehicle_vehicle_inspections (vehicle_id, type_id, due_date)
+      VALUES (:vehicle_id, :type_id, :due_date)
+      ON DUPLICATE KEY UPDATE
+        due_date = VALUES(due_date),
+        updated_at = CURRENT_TIMESTAMP()
+    ");
+      $st3->execute([
+        ':vehicle_id' => $vehicleId,
+        ':type_id' => $typeId,
+        ':due_date' => $dueDate,
+      ]);
+    }
+
+    // 回傳：inspections + rules（讓前端 state 同步）
+    $inspections = self::listInspectionsForVehicle($vehicleId);
+
+    $rst = $pdo->prepare("
+    SELECT type_id, is_required
+    FROM vehicle_vehicle_inspection_rules
+    WHERE vehicle_id = ?
+  ");
+    $rst->execute([$vehicleId]);
+    $rulesRows = $rst->fetchAll();
+    $rules = [];
+    foreach ($rulesRows as $rr) $rules[(string)$rr['type_id']] = (int)$rr['is_required'];
+
+    return ['inspections' => $inspections, 'rules' => $rules];
+  }
+
   /**
    * 取得該車 inspections（帶 status 與 is_required）
    */
