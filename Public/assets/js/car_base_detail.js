@@ -111,7 +111,7 @@
       set('bucket_price', v.bucket_price);
       set('is_active', v.is_active);
       set('note', v.note);
-            // ✅ setForm 是程式回填 select.value，不會觸發 change
+      // ✅ setForm 是程式回填 select.value，不會觸發 change
       //    手動派發 change，讓 bindNewOptionToggles 的 sync() 重新判斷要不要顯示 *_new
       var s1 = qs('select[name="vehicle_type_id"]', form);
       var s2 = qs('select[name="brand_id"]', form);
@@ -507,13 +507,26 @@
             return;
           }
 
-          // EDIT：更新 state.active.vehicle（避免再次 get）
+          // EDIT：更新 state.active.vehicle（避免再次 get）+ 同步表單（把 ＋新增… 收起來）
           if (mode === 'EDIT' && app.state.active && j.data && j.data.vehicle) {
             app.state.active.vehicle = j.data.vehicle;
+
+            // ✅ 用回傳的 vehicle 直接重設表單（brand_id / type_id / boom_type_id 會回填成新建立的 id）
+            self.setForm(j.data.vehicle);
+            self.setMode('VIEW'); // 這裡會保底把 *_new 隱藏/清空
+
             app.setActiveMeta();
             app.loadList();
-            app.setMode('VIEW');
+
+            // ✅ 若本次有用「新增」輸入，字典要重抓，不然下拉選單不會出現新項目
+            var usedNew =
+              (payload && (payload.vehicle_type_new || payload.brand_new || payload.boom_type_new)) ? true : false;
+
+            if (usedNew && typeof app.loadDicts === 'function') {
+              app.loadDicts();
+            }
           }
+
         })
         .catch(function (e) {
           setBtnLoading(btn, false);
