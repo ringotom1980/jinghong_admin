@@ -111,7 +111,15 @@
       set('bucket_price', v.bucket_price);
       set('is_active', v.is_active);
       set('note', v.note);
-      this.syncNewOptionToggles();
+            // ✅ setForm 是程式回填 select.value，不會觸發 change
+      //    手動派發 change，讓 bindNewOptionToggles 的 sync() 重新判斷要不要顯示 *_new
+      var s1 = qs('select[name="vehicle_type_id"]', form);
+      var s2 = qs('select[name="brand_id"]', form);
+      var s3 = qs('select[name="boom_type_id"]', form);
+      if (s1) s1.dispatchEvent(new Event('change'));
+      if (s2) s2.dispatchEvent(new Event('change'));
+      if (s3) s3.dispatchEvent(new Event('change'));
+
     },
 
     clearForm: function () {
@@ -132,7 +140,6 @@
         is_active: 1,
         note: ''
       });
-      this.syncNewOptionToggles();
     },
 
     bindNewOptionToggles: function () {
@@ -164,28 +171,6 @@
       wire('vehicle_type_id', 'vehicle_type_new');
       wire('brand_id', 'brand_new');
       wire('boom_type_id', 'boom_type_new');
-    },
-
-    // ✅ 讓 setForm / fillSelects 後也能同步顯示狀態（因為程式設定 value 不會觸發 change）
-    syncNewOptionToggles: function () {
-      var form = this.form;
-      if (!form) return;
-
-      function syncOne(selectName, inputName) {
-        var sel = qs('select[name="' + selectName + '"]', form);
-        var inp = qs('input[name="' + inputName + '"]', form);
-        if (!sel || !inp) return;
-
-        var isNew = (String(sel.value || '') === '__NEW__');
-        inp.hidden = !isNew;
-        inp.disabled = !isNew;
-
-        if (!isNew) inp.value = '';
-      }
-
-      syncOne('vehicle_type_id', 'vehicle_type_new');
-      syncOne('brand_id', 'brand_new');
-      syncOne('boom_type_id', 'boom_type_new');
     },
 
     bindVehicleCode: function () {
@@ -334,19 +319,6 @@
         var nf = qs('[name="' + newFields[k] + '"]', form);
         if (nf) nf.disabled = !on;
       }
-      // ✅ 切換模式後只要同步顯示狀態，不要重綁事件（避免重複綁定造成異常）
-      this.syncNewOptionToggles();
-
-      // VIEW 模式保底：強制隱藏新輸入框（避免殘留）
-      if (!on) {
-        var nf1 = qs('[name="vehicle_type_new"]', form);
-        var nf2 = qs('[name="brand_new"]', form);
-        var nf3 = qs('[name="boom_type_new"]', form);
-        if (nf1) { nf1.hidden = true; nf1.disabled = true; nf1.value = ''; }
-        if (nf2) { nf2.hidden = true; nf2.disabled = true; nf2.value = ''; }
-        if (nf3) { nf3.hidden = true; nf3.disabled = true; nf3.value = ''; }
-      }
-
     },
 
     collect: function () {
