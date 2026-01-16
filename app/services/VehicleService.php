@@ -657,8 +657,6 @@ final class VehicleService
     $st2 = $pdo->prepare("INSERT INTO {$table} (name, sort_no, is_enabled) VALUES (?, ?, 1)");
     $st2->execute([$name, $sortNo]);
 
-    $st2->execute([$name]);
-
     return (int)$pdo->lastInsertId();
   }
 }
