@@ -521,14 +521,14 @@
               return app.loadDicts().then(function () {
                 self.fillSelects();         // 讓 select options 變成最新
                 self.setForm(j.data.vehicle); // 再設定 select.value 才會成功
-                self.setMode('VIEW');
+                app.setMode('VIEW');
                 return true;
               });
             }
 
             // 未新增字典：直接回填即可
             self.setForm(j.data.vehicle);
-            self.setMode('VIEW');
+            app.setMode('VIEW');
           }
 
         })
