@@ -198,7 +198,7 @@
           var sw = tr2 ? tr2.querySelector('input.carb-insp-required[data-tid="' + tid2 + '"]') : null;
           if (sw) {
             sw.checked = true;
-            var sp = sw.parentNode ? sw.parentNode.querySelector('span') : null;
+            var sp = sw.closest('label') ? sw.closest('label').querySelector('.carb-switch2__text') : null;
             if (sp) sp.textContent = '需要';
           }
 
@@ -247,7 +247,7 @@
 
       if (sw) {
         sw.checked = false;
-        var sp = sw.parentNode ? sw.parentNode.querySelector('span') : null;
+        var sp = sw.closest('label') ? sw.closest('label').querySelector('.carb-switch2__text') : null;
         if (sp) sp.textContent = '不需';
       }
       if (dateEl) {
