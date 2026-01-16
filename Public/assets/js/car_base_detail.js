@@ -68,7 +68,7 @@
       this._original = JSON.parse(JSON.stringify(v));
       this.fillSelects();
       this.setForm(v);
-      this.setEditMode(false);
+      this.setMode('VIEW');
     },
 
     reloadFromState: function () {
