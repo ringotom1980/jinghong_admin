@@ -106,13 +106,20 @@
       var el = e.target;
       if (!el || el.tagName !== 'INPUT' || el.type !== 'date') return;
 
-      var vid = Number(el.getAttribute('data-vid') || 0);
+      // ✅ 以 App 狀態為準，CREATE 不允許送
+      var app = this.app || global.CarBaseApp;
+      var mode = app && app.state ? String(app.state.mode || 'VIEW') : 'VIEW';
+      var activeId = app && app.state ? Number(app.state.activeId || 0) : 0;
+
+      if (mode === 'CREATE') return;     // CREATE 無 id，不可存檢查
+      if (!activeId) return;             // 沒選車不送
+
+      // type_id 從 DOM 取即可（是 inspection type）
       var tid = Number(el.getAttribute('data-tid') || 0);
+      if (!tid) return;
+
       var due = String(el.value || '');
-
-      if (!vid || !tid) return;
-
-      var body = { vehicle_id: vid, type_id: tid, due_date: due || null };
+      var body = { vehicle_id: activeId, type_id: tid, due_date: due || null };
 
       return apiPost('/api/car/car_inspection_save', body)
         .then(function (j) {
