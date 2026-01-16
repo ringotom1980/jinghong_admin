@@ -113,130 +113,128 @@ $pageJs = [
                         <span class="btn__text">更換照片</span><span class="btn__spinner" aria-hidden="true"></span>
                       </button>
                     </div>
-
                   </div>
+                </aside>
+
+                <!-- RIGHT 2/3: fields -->
+                <section class="carb-detailFields" aria-label="基本資料欄位">
+                  <div class="carb-grid">
+                    <div class="carb-field">
+                      <label class="form-label">車輛編號</label>
+                      <input class="input" name="vehicle_code" type="text" placeholder="例：C-01" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">車牌號碼</label>
+                      <input class="input" name="plate_no" type="text" placeholder="例：ABC-1234" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">車輛類型</label>
+                      <select name="vehicle_type_id" disabled></select>
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">廠牌</label>
+                      <select name="brand_id" disabled></select>
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">吊臂型式</label>
+                      <select name="boom_type_id" disabled></select>
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">噸數</label>
+                      <input class="input" name="tonnage" type="number" step="0.01" placeholder="例：3.50" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">出廠年份</label>
+                      <input class="input" name="vehicle_year" type="number" min="1950" max="2100" placeholder="YYYY" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">車主</label>
+                      <input class="input" name="owner_name" type="text" placeholder="車主姓名" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">使用人</label>
+                      <input class="input" name="user_name" type="text" placeholder="使用人姓名" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">車輛價格</label>
+                      <input class="input" name="vehicle_price" type="number" step="0.01" placeholder="0.00" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">吊臂價格</label>
+                      <input class="input" name="boom_price" type="number" step="0.01" placeholder="0.00" disabled />
+                    </div>
+
+                    <div class="carb-field">
+                      <label class="form-label">車斗價格</label>
+                      <input class="input" name="bucket_price" type="number" step="0.01" placeholder="0.00" disabled />
+                    </div>
+
+                    <div class="carb-field carb-field--row">
+                      <label class="carb-switch">
+                        <input type="checkbox" name="is_active" disabled />
+                        <span>使用中（停用請取消）</span>
+                      </label>
+                    </div>
+
+                    <div class="carb-field carb-field--full">
+                      <label class="form-label">備註</label>
+                      <textarea class="input" name="note" rows="3" placeholder="備註" disabled></textarea>
+                    </div>
+                  </div>
+                </section>
               </div>
-              </aside>
 
-              <!-- RIGHT 2/3: fields -->
-              <section class="carb-detailFields" aria-label="基本資料欄位">
-                <div class="carb-grid">
-                  <div class="carb-field">
-                    <label class="form-label">車輛編號</label>
-                    <input class="input" name="vehicle_code" type="text" placeholder="例：C-01" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">車牌號碼</label>
-                    <input class="input" name="plate_no" type="text" placeholder="例：ABC-1234" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">車輛類型</label>
-                    <select name="vehicle_type_id" disabled></select>
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">廠牌</label>
-                    <select name="brand_id" disabled></select>
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">吊臂型式</label>
-                    <select name="boom_type_id" disabled></select>
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">噸數</label>
-                    <input class="input" name="tonnage" type="number" step="0.01" placeholder="例：3.50" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">出廠年份</label>
-                    <input class="input" name="vehicle_year" type="number" min="1950" max="2100" placeholder="YYYY" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">車主</label>
-                    <input class="input" name="owner_name" type="text" placeholder="車主姓名" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">使用人</label>
-                    <input class="input" name="user_name" type="text" placeholder="使用人姓名" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">車輛價格</label>
-                    <input class="input" name="vehicle_price" type="number" step="0.01" placeholder="0.00" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">吊臂價格</label>
-                    <input class="input" name="boom_price" type="number" step="0.01" placeholder="0.00" disabled />
-                  </div>
-
-                  <div class="carb-field">
-                    <label class="form-label">車斗價格</label>
-                    <input class="input" name="bucket_price" type="number" step="0.01" placeholder="0.00" disabled />
-                  </div>
-
-                  <div class="carb-field carb-field--row">
-                    <label class="carb-switch">
-                      <input type="checkbox" name="is_active" disabled />
-                      <span>使用中（停用請取消）</span>
-                    </label>
-                  </div>
-
-                  <div class="carb-field carb-field--full">
-                    <label class="form-label">備註</label>
-                    <textarea class="input" name="note" rows="3" placeholder="備註" disabled></textarea>
-                  </div>
-                </div>
-              </section>
             </div>
+          </section>
 
+          <!-- Inspections panel -->
+          <section class="carb-panel" data-panel="insp" aria-label="六項檢查">
+            <div class="carb-insp">
+              <div class="carb-insp__left">
+                <div class="carb-insp__summary card card--flat">
+                  <div class="carb-insp__summaryHead">
+                    <h3>檢查狀態</h3>
+                    <div class="carb-insp__legend">
+                      <span class="tag tag--ok">正常</span>
+                      <span class="tag tag--soon">快到期</span>
+                      <span class="tag tag--over">已逾期</span>
+                      <span class="tag tag--na">不需檢查</span>
+                    </div>
+                  </div>
+                  <div class="carb-insp__summaryBody" id="carbInspSummary"></div>
+                </div>
+              </div>
+
+              <div class="carb-insp__right">
+                <div class="carb-insp__tableWrap">
+                  <table class="table carb-insp__table" aria-label="檢查項目">
+                    <thead>
+                      <tr>
+                        <th style="width:40%;">項目</th>
+                        <th style="width:18%;">需求</th>
+                        <th style="width:22%;">到期日</th>
+                        <th style="width:20%;">狀態</th>
+                      </tr>
+                    </thead>
+                    <tbody id="carbInspTbody"></tbody>
+                  </table>
+                  <div class="carb-hint">到期日變更後會立即儲存。</div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
-
-      <!-- Inspections panel -->
-      <section class="carb-panel" data-panel="insp" aria-label="六項檢查">
-        <div class="carb-insp">
-          <div class="carb-insp__left">
-            <div class="carb-insp__summary card card--flat">
-              <div class="carb-insp__summaryHead">
-                <h3>檢查狀態</h3>
-                <div class="carb-insp__legend">
-                  <span class="tag tag--ok">正常</span>
-                  <span class="tag tag--soon">快到期</span>
-                  <span class="tag tag--over">已逾期</span>
-                  <span class="tag tag--na">不需檢查</span>
-                </div>
-              </div>
-              <div class="carb-insp__summaryBody" id="carbInspSummary"></div>
-            </div>
-          </div>
-
-          <div class="carb-insp__right">
-            <div class="carb-insp__tableWrap">
-              <table class="table carb-insp__table" aria-label="檢查項目">
-                <thead>
-                  <tr>
-                    <th style="width:40%;">項目</th>
-                    <th style="width:18%;">需求</th>
-                    <th style="width:22%;">到期日</th>
-                    <th style="width:20%;">狀態</th>
-                  </tr>
-                </thead>
-                <tbody id="carbInspTbody"></tbody>
-              </table>
-              <div class="carb-hint">到期日變更後會立即儲存。</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-    </section>
     </div>
   </main>
 
