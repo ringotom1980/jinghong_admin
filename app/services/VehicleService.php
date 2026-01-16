@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/VehicleService.php
  * 說明: 車輛管理服務（基本資料 / 檢查 / 照片）
@@ -372,6 +373,8 @@ final class VehicleService
   /**
    * 照片覆蓋上傳：storage/uploads/vehicles/vehicle_{id}.jpg
    * 回傳 photo_url（含 cache-busting）
+   *
+   * ✅ 新增：若 DB 原本 photo_path 指向舊檔名（例如 KEQ-2562.jpg），在更新成功後刪除舊檔
    */
   public static function uploadVehiclePhoto(int $vehicleId, array $file): string
   {
@@ -379,10 +382,21 @@ final class VehicleService
       throw new RuntimeException('上傳檔案無效');
     }
 
-    // 檔案大小（你要更嚴格可再調）
+    // 檔案大小
     $size = (int)($file['size'] ?? 0);
     if ($size <= 0) throw new RuntimeException('檔案大小為 0');
     if ($size > 6 * 1024 * 1024) throw new RuntimeException('檔案過大（上限 6MB）');
+
+    $pdo = db();
+
+    // ✅ 先讀舊路徑（用於事後刪舊檔）
+    $oldPhotoPath = '';
+    $stOld = $pdo->prepare("SELECT photo_path FROM vehicle_vehicles WHERE id = ? LIMIT 1");
+    $stOld->execute([$vehicleId]);
+    $oldRow = $stOld->fetch();
+    if ($oldRow && isset($oldRow['photo_path'])) {
+      $oldPhotoPath = trim((string)$oldRow['photo_path']);
+    }
 
     // 目標目錄：{projectRoot}/storage/uploads/vehicles
     $projectRoot = dirname(__DIR__, 2); // app/services -> app -> project root
@@ -393,7 +407,8 @@ final class VehicleService
       }
     }
 
-    $targetFs = $dir . '/vehicle_' . $vehicleId . '.jpg';
+    $newPhotoPath = 'storage/uploads/vehicles/vehicle_' . $vehicleId . '.jpg';
+    $targetFs = $projectRoot . '/' . $newPhotoPath;
 
     // 轉 jpg（確保一致覆蓋）
     $tmp = $file['tmp_name'];
@@ -415,20 +430,34 @@ final class VehicleService
     }
     imagedestroy($src);
 
-    // DB 更新 photo_path（存相對專案根路徑，方便搬站）
-    $pdo = db();
-    $photoPath = 'storage/uploads/vehicles/vehicle_' . $vehicleId . '.jpg';
-
+    // DB 更新 photo_path
     $st = $pdo->prepare("
       UPDATE vehicle_vehicles
       SET photo_path = :p
       WHERE id = :id
       LIMIT 1
     ");
-    $st->execute([':p' => $photoPath, ':id' => $vehicleId]);
+    $st->execute([':p' => $newPhotoPath, ':id' => $vehicleId]);
+
+    // ✅ 刪除舊檔（安全白名單：只允許刪 storage/uploads/vehicles/ 內的檔）
+    if ($oldPhotoPath !== '' && $oldPhotoPath !== $newPhotoPath) {
+      $prefix = 'storage/uploads/vehicles/';
+      $oldNorm = ltrim($oldPhotoPath, '/');
+      if (str_starts_with($oldNorm, $prefix)) {
+        $oldFs = $projectRoot . '/' . $oldNorm;
+
+        // 防呆：避免路徑跳脫
+        $realBase = realpath($projectRoot . '/' . $prefix);
+        $realOld  = $oldFs && file_exists($oldFs) ? realpath($oldFs) : false;
+
+        if ($realBase && $realOld && str_starts_with($realOld, $realBase) && is_file($realOld)) {
+          @unlink($realOld);
+        }
+      }
+    }
 
     // 回傳可直接顯示的 URL（走 BASE_URL）
-    return self::publicUrl($photoPath) . '?v=' . time();
+    return self::publicUrl($newPhotoPath) . '?v=' . time();
   }
 
   /* ----------------- helpers ----------------- */
