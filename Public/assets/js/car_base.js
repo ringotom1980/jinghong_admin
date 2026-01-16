@@ -14,7 +14,8 @@
       list: [],
       activeId: null,
       active: null, // { vehicle, inspections, rules }
-      editMode: false,
+      mode: 'VIEW',        // VIEW | CREATE | EDIT
+      prevActiveId: null,  // 進入 CREATE 前記住原本選擇
       loading: false,
       rightLoading: false,
       reqSeq: 0
@@ -57,6 +58,7 @@
       this.els.editBtn = qs('#carbEditBtn');
       this.els.saveBtn = qs('#carbSaveBtn');
       this.els.cancelBtn = qs('#carbCancelBtn');
+      this.els.newBtn = qs('#carbNewBtn');
 
       this.els.tabs = qsa('.carb-tab');
       this.els.panels = qsa('.carb-panel');
@@ -89,26 +91,36 @@
     bindHeaderActions: function () {
       var self = this;
 
+      if (this.els.newBtn) {
+        this.els.newBtn.addEventListener('click', function () {
+          self.enterCreateMode();
+        });
+      }
+
       if (this.els.editBtn) {
         this.els.editBtn.addEventListener('click', function () {
           if (!self.state.activeId) return;
-          self.setEditMode(true);
+          self.setMode('EDIT');
         });
       }
 
       if (this.els.cancelBtn) {
         this.els.cancelBtn.addEventListener('click', function () {
-          if (!self.state.activeId) return;
-          self.setEditMode(false);
-          if (global.CarBaseDetail) global.CarBaseDetail.reloadFromState();
+          if (self.state.mode === 'CREATE') {
+            self.exitCreateMode();
+            return;
+          }
+          if (self.state.mode === 'EDIT') {
+            self.setMode('VIEW');
+            if (global.CarBaseDetail) global.CarBaseDetail.reloadFromState();
+          }
         });
       }
 
       if (this.els.saveBtn) {
         this.els.saveBtn.addEventListener('click', function () {
-          if (!self.state.activeId) return;
           if (!global.CarBaseDetail) return;
-          global.CarBaseDetail.save();
+          global.CarBaseDetail.save(); // detail 依 mode 分流新增/更新
         });
       }
     },
@@ -122,6 +134,78 @@
       if (this.els.editBtn) this.els.editBtn.disabled = !this.state.activeId || on;
       if (this.els.saveBtn) this.els.saveBtn.disabled = !this.state.activeId || !on;
       if (this.els.cancelBtn) this.els.cancelBtn.disabled = !this.state.activeId || !on;
+    },
+
+    setMode: function (mode) {
+      mode = String(mode || 'VIEW');
+      if (['VIEW', 'CREATE', 'EDIT'].indexOf(mode) === -1) mode = 'VIEW';
+      this.state.mode = mode;
+
+      if (global.CarBaseDetail && global.CarBaseDetail.setMode) {
+        global.CarBaseDetail.setMode(mode);
+      }
+
+      // CREATE/EDIT 不給切到檢查（避免混亂）
+      var tabsEnabled = (mode === 'VIEW');
+      qsa('.carb-tab').forEach(function (b) { b.disabled = !tabsEnabled; });
+      if (!tabsEnabled) this.setTab('detail');
+
+      var hasActive = !!this.state.activeId;
+
+      // VIEW：顯示 新增/編輯
+      if (this.els.newBtn) {
+        this.els.newBtn.hidden = (mode !== 'VIEW');
+        this.els.newBtn.disabled = (mode !== 'VIEW');
+      }
+      if (this.els.editBtn) {
+        this.els.editBtn.hidden = (mode !== 'VIEW');
+        this.els.editBtn.disabled = !hasActive || (mode !== 'VIEW');
+      }
+
+      // CREATE/EDIT：顯示 儲存/取消 + 文案
+      if (this.els.saveBtn) {
+        this.els.saveBtn.hidden = (mode === 'VIEW');
+        this.els.saveBtn.disabled = (mode === 'VIEW');
+        var t = this.els.saveBtn.querySelector('.btn__text');
+        if (t) t.textContent = (mode === 'CREATE') ? '儲存新增' : '儲存更新';
+      }
+      if (this.els.cancelBtn) {
+        this.els.cancelBtn.hidden = (mode === 'VIEW');
+        this.els.cancelBtn.disabled = (mode === 'VIEW');
+        this.els.cancelBtn.textContent = (mode === 'CREATE') ? '取消新增' : '取消更新';
+      }
+
+      // 照片：只有 EDIT 才能換（CREATE 尚未有 id）
+      if (global.CarBasePhoto) global.CarBasePhoto.setEnabled(mode === 'EDIT');
+    },
+
+    enterCreateMode: function () {
+      this.state.prevActiveId = this.state.activeId || null;
+
+      this.state.activeId = null;
+      this.state.active = null;
+
+      this.setActiveMeta();
+
+      if (global.CarBaseDetail && global.CarBaseDetail.clearForm) global.CarBaseDetail.clearForm();
+      if (global.CarBasePhoto && global.CarBasePhoto.bindData) global.CarBasePhoto.bindData({ vehicle: null });
+
+      this.setMode('CREATE');
+    },
+
+    exitCreateMode: function () {
+      var backId = this.state.prevActiveId || null;
+
+      this.setMode('VIEW');
+
+      if (backId) {
+        this.selectVehicle(backId);
+      } else {
+        this.state.activeId = null;
+        this.state.active = null;
+        this.setActiveMeta();
+        this.enableWorkspace(false);
+      }
     },
 
     setActiveMeta: function () {
@@ -146,9 +230,8 @@
     enableWorkspace: function (enabled) {
       enabled = !!enabled;
       qsa('.carb-tab').forEach(function (b) { b.disabled = !enabled; });
-      if (this.els.editBtn) this.els.editBtn.disabled = !enabled || this.state.editMode;
-      if (this.els.saveBtn) this.els.saveBtn.disabled = !enabled || !this.state.editMode;
-      if (this.els.cancelBtn) this.els.cancelBtn.disabled = !enabled || !this.state.editMode;
+      // 只有 VIEW 才讓「編輯本車」可用；CREATE/EDIT 由 setMode 控
+      if (this.els.editBtn) this.els.editBtn.disabled = !enabled || (this.state.mode !== 'VIEW');
 
       if (global.CarBasePhoto) global.CarBasePhoto.setEnabled(enabled);
     },
@@ -258,7 +341,7 @@
       var seq = self.state.reqSeq;
 
       self.state.activeId = vehicleId;
-      self.setEditMode(false);
+      self.setMode('VIEW');
       self.enableWorkspace(false);     // 等 get 完再開
       self.setRightLoading(true);      // ✅ 右側遮罩轉圈
 

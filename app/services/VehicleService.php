@@ -223,6 +223,76 @@ final class VehicleService
     ];
   }
 
+  public static function createVehicle(array $body): array
+  {
+    $pdo = db();
+
+    $vehicleCode = isset($body['vehicle_code']) ? trim((string)$body['vehicle_code']) : '';
+    if ($vehicleCode === '') {
+      throw new RuntimeException('vehicle_code 不可為空');
+    }
+
+    // 先擋重複（也會被 UNIQUE 擋，但這樣訊息更友善）
+    $stDup = $pdo->prepare("SELECT 1 FROM vehicle_vehicles WHERE vehicle_code = ? LIMIT 1");
+    $stDup->execute([$vehicleCode]);
+    if ($stDup->fetchColumn()) {
+      throw new RuntimeException('車輛編號已存在，請更換');
+    }
+
+    $plate = isset($body['plate_no']) ? trim((string)$body['plate_no']) : null;
+    $owner = isset($body['owner_name']) ? trim((string)$body['owner_name']) : null;
+    $user  = isset($body['user_name']) ? trim((string)$body['user_name']) : null;
+
+    $vehicleTypeId = self::toNullableInt($body['vehicle_type_id'] ?? null);
+    $brandId       = self::toNullableInt($body['brand_id'] ?? null);
+    $boomTypeId    = self::toNullableInt($body['boom_type_id'] ?? null);
+
+    $tonnage = self::toNullableDecimal($body['tonnage'] ?? null);
+    $year    = self::toNullableInt($body['vehicle_year'] ?? null);
+
+    $vehiclePrice = self::toNullableDecimal($body['vehicle_price'] ?? null);
+    $boomPrice    = self::toNullableDecimal($body['boom_price'] ?? null);
+    $bucketPrice  = self::toNullableDecimal($body['bucket_price'] ?? null);
+
+    $isActive = isset($body['is_active']) ? (int)$body['is_active'] : 1;
+    $note     = isset($body['note']) ? trim((string)$body['note']) : null;
+
+    $st = $pdo->prepare("
+    INSERT INTO vehicle_vehicles
+      (vehicle_code, plate_no, vehicle_type_id, brand_id, boom_type_id,
+       owner_name, user_name, tonnage, vehicle_year,
+       vehicle_price, boom_price, bucket_price, is_active, note)
+    VALUES
+      (:vehicle_code, :plate_no, :vehicle_type_id, :brand_id, :boom_type_id,
+       :owner_name, :user_name, :tonnage, :vehicle_year,
+       :vehicle_price, :boom_price, :bucket_price, :is_active, :note)
+  ");
+
+    $st->execute([
+      ':vehicle_code' => $vehicleCode,
+      ':plate_no' => ($plate === '') ? null : $plate,
+      ':vehicle_type_id' => $vehicleTypeId,
+      ':brand_id' => $brandId,
+      ':boom_type_id' => $boomTypeId,
+      ':owner_name' => ($owner === '') ? null : $owner,
+      ':user_name' => ($user === '') ? null : $user,
+      ':tonnage' => $tonnage,
+      ':vehicle_year' => $year,
+      ':vehicle_price' => $vehiclePrice,
+      ':boom_price' => $boomPrice,
+      ':bucket_price' => $bucketPrice,
+      ':is_active' => ($isActive === 1) ? 1 : 0,
+      ':note' => ($note === '') ? null : $note,
+    ]);
+
+    $newId = (int)$pdo->lastInsertId();
+    $bundle = self::getVehicleBundle($newId);
+    if (!$bundle) {
+      throw new RuntimeException('新增成功但讀取失敗');
+    }
+    return $bundle;
+  }
+
   public static function saveVehicle(int $id, array $body): array
   {
     $pdo = db();
@@ -463,23 +533,23 @@ final class VehicleService
   /* ----------------- helpers ----------------- */
 
   private static function photoUrlFromRow(array $v): string
-{
-  $p = isset($v['photo_path']) ? trim((string)$v['photo_path']) : '';
-  if ($p === '') return '';
+  {
+    $p = isset($v['photo_path']) ? trim((string)$v['photo_path']) : '';
+    if ($p === '') return '';
 
-  // ✅ 用檔案最後修改時間做 cache busting（最準，與 DB 無關）
-  $projectRoot = dirname(__DIR__, 2); // app/services -> app -> project root
-  $fs = $projectRoot . '/' . ltrim($p, '/');
-  $ts = (is_file($fs)) ? (int)@filemtime($fs) : 0;
+    // ✅ 用檔案最後修改時間做 cache busting（最準，與 DB 無關）
+    $projectRoot = dirname(__DIR__, 2); // app/services -> app -> project root
+    $fs = $projectRoot . '/' . ltrim($p, '/');
+    $ts = (is_file($fs)) ? (int)@filemtime($fs) : 0;
 
-  // fallback：沒有檔案時才用 updated_at
-  if ($ts <= 0 && !empty($v['updated_at'])) {
-    $ts = (int)strtotime((string)$v['updated_at']);
+    // fallback：沒有檔案時才用 updated_at
+    if ($ts <= 0 && !empty($v['updated_at'])) {
+      $ts = (int)strtotime((string)$v['updated_at']);
+    }
+    if ($ts <= 0) $ts = time();
+
+    return self::publicUrl($p) . '?v=' . $ts;
   }
-  if ($ts <= 0) $ts = time();
-
-  return self::publicUrl($p) . '?v=' . $ts;
-}
 
   private static function publicUrl(string $path): string
   {

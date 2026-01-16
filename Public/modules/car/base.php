@@ -72,12 +72,17 @@ $pageJs = [
           </div>
 
           <div class="carb-actions">
-            <button type="button" class="btn btn--secondary" id="carbEditBtn" disabled>編輯</button>
-            <button type="button" class="btn btn--primary" id="carbSaveBtn" disabled>
+            <!-- VIEW 狀態：新增 / 編輯 -->
+            <button type="button" class="btn btn--secondary" id="carbNewBtn">新增車輛</button>
+            <button type="button" class="btn btn--primary" id="carbEditBtn" disabled>編輯本車</button>
+
+            <!-- CREATE / EDIT 狀態：儲存 / 取消（平常隱藏） -->
+            <button type="button" class="btn btn--primary" id="carbSaveBtn" hidden disabled>
               <span class="btn__text">儲存</span><span class="btn__spinner" aria-hidden="true"></span>
             </button>
-            <button type="button" class="btn btn--ghost" id="carbCancelBtn" disabled>取消</button>
+            <button type="button" class="btn btn--ghost" id="carbCancelBtn" hidden disabled>取消</button>
           </div>
+
         </header>
 
         <nav class="carb-tabs" aria-label="功能分頁">

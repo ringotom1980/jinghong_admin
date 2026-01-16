@@ -110,12 +110,39 @@
       set('note', v.note);
     },
 
-    setEditMode: function (on) {
-      on = !!on;
+    clearForm: function () {
+      this.fillSelects();
+      this.setForm({
+        vehicle_code: '',
+        plate_no: '',
+        vehicle_type_id: '',
+        brand_id: '',
+        boom_type_id: '',
+        owner_name: '',
+        user_name: '',
+        tonnage: '',
+        vehicle_year: '',
+        vehicle_price: '',
+        boom_price: '',
+        bucket_price: '',
+        is_active: 1,
+        note: ''
+      });
+    },
+
+    setMode: function (mode) {
+      mode = String(mode || 'VIEW'); // VIEW | CREATE | EDIT
       var form = this.form;
       if (!form) return;
 
-      // vehicle_code 不開放改（你要改再說）
+      var isCreate = (mode === 'CREATE');
+      var isEdit = (mode === 'EDIT');
+      var on = (isCreate || isEdit);
+
+      // CREATE：vehicle_code 可輸入；EDIT：vehicle_code 永遠鎖
+      var code = qs('[name="vehicle_code"]', form);
+      if (code) code.disabled = !isCreate;
+
       var editable = [
         'plate_no', 'vehicle_type_id', 'brand_id', 'boom_type_id',
         'owner_name', 'user_name', 'tonnage', 'vehicle_year',
@@ -126,8 +153,6 @@
         var el = qs('[name="' + editable[i] + '"]', form);
         if (el) el.disabled = !on;
       }
-      var code = qs('[name="vehicle_code"]', form);
-      if (code) code.disabled = true; // 永遠 disabled
     },
 
     collect: function () {
@@ -142,8 +167,15 @@
         return el.value;
       }
 
+      var mode = (this.app && this.app.state) ? String(this.app.state.mode || 'VIEW') : 'VIEW';
+
       var data = {
-        id: Number(this.app.state.activeId),
+        // CREATE 不帶 id；EDIT 帶 id
+        id: (mode === 'EDIT') ? Number(this.app.state.activeId) : null,
+
+        // CREATE 必填：vehicle_code
+        vehicle_code: (mode === 'CREATE') ? val('vehicle_code') : null,
+
         plate_no: val('plate_no'),
         vehicle_type_id: val('vehicle_type_id') || null,
         brand_id: val('brand_id') || null,
@@ -167,12 +199,29 @@
       var app = this.app;
       var btn = app.els.saveBtn;
 
+      var mode = (app && app.state) ? String(app.state.mode || 'VIEW') : 'VIEW';
+      if (mode !== 'CREATE' && mode !== 'EDIT') return;
+
       var payload = this.collect();
-      if (!payload || !payload.id) return;
+      if (!payload) return;
+
+      // CREATE 必填 vehicle_code
+      if (mode === 'CREATE') {
+        var vc = (payload.vehicle_code || '').trim();
+        if (!vc) {
+          Toast && Toast.show({ type: 'warning', title: '缺少車輛編號', message: '請輸入車輛編號（例：C-01）' });
+          return;
+        }
+      }
+
+      // EDIT 必須有 id
+      if (mode === 'EDIT' && !payload.id) return;
 
       setBtnLoading(btn, true);
 
-      return apiPost('/api/car/car_save', payload)
+      var url = (mode === 'CREATE') ? '/api/car/car_create' : '/api/car/car_save';
+
+      return apiPost(url, payload)
         .then(function (j) {
           setBtnLoading(btn, false);
 
@@ -181,18 +230,30 @@
             return;
           }
 
-          Toast && Toast.show({ type: 'success', title: '已儲存', message: '基本資料已更新' });
+          Toast && Toast.show({
+            type: 'success',
+            title: '已儲存',
+            message: (mode === 'CREATE') ? '車輛已新增' : '基本資料已更新'
+          });
 
-          // 更新 state.active.vehicle（避免再次 get）
-          if (app.state.active && j.data && j.data.vehicle) {
-            app.state.active.vehicle = j.data.vehicle;
-            app.setActiveMeta();
+          // CREATE：切回 VIEW + 選到新車
+          if (mode === 'CREATE' && j.data && j.data.vehicle && j.data.vehicle.id) {
+            var newId = Number(j.data.vehicle.id);
+
+            app.loadList().then(function () {
+              app.selectVehicle(newId);
+            });
+
+            return;
           }
 
-          // 清單重整（狀態聚合也可能受 is_active 影響）
-          app.loadList();
-
-          app.setEditMode(false);
+          // EDIT：更新 state.active.vehicle（避免再次 get）
+          if (mode === 'EDIT' && app.state.active && j.data && j.data.vehicle) {
+            app.state.active.vehicle = j.data.vehicle;
+            app.setActiveMeta();
+            app.loadList();
+            app.setMode('VIEW');
+          }
         })
         .catch(function (e) {
           setBtnLoading(btn, false);
