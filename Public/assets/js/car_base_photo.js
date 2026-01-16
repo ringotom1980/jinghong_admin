@@ -28,17 +28,10 @@
       this.img = qs('#carbPhotoImg');
       this.empty = qs('#carbPhotoEmpty');
       this.file = qs('#carbPhotoFile');
-      this.pickBtn = qs('#carbPhotoPickBtn');
+      this.pickBtn = null;
       this.uploadBtn = qs('#carbPhotoUploadBtn');
 
       var self = this;
-
-      if (this.pickBtn && this.file) {
-        this.pickBtn.addEventListener('click', function () {
-          if (self.pickBtn.disabled) return;
-          self.file.click();
-        });
-      }
 
       if (this.file) {
         this.file.addEventListener('change', function () {
@@ -56,6 +49,10 @@
             // ✅ 文字切換：有檔案＝更新照片；沒檔案＝更換照片
             var textEl = self.uploadBtn.querySelector('.btn__text');
             if (textEl) textEl.textContent = self._pickedFile ? '更新照片' : '更換照片';
+            // ✅ 顏色切換：更換=warning、更新=primary（不同顏色）
+            self.uploadBtn.classList.toggle('btn--primary', !!self._pickedFile);
+            self.uploadBtn.classList.toggle('btn--warning', !self._pickedFile);
+
           }
 
         });
@@ -109,6 +106,9 @@
           var t = self.uploadBtn.querySelector('.btn__text');
           if (t) t.textContent = '更換照片';
         }
+        self.uploadBtn.classList.remove('btn--primary');
+        self.uploadBtn.classList.add('btn--warning');
+
 
         if (!v) {
           if (self.img) self.img.removeAttribute('src');
@@ -205,6 +205,8 @@
             var t = self.uploadBtn.querySelector('.btn__text');
             if (t) t.textContent = '更換照片';
           }
+          self.uploadBtn.classList.remove('btn--primary');
+          self.uploadBtn.classList.add('btn--warning');
 
         })
         .catch(function (e) {

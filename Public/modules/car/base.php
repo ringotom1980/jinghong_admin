@@ -104,15 +104,11 @@ $pageJs = [
 
                     <div class="carb-photo__actions">
                       <input type="file" id="carbPhotoFile" accept="image/*" hidden />
-
-                      <!-- 保留元素給 JS querySelector 不報錯，但用 hidden + aria-hidden + tabindex 保底完全不可見/不可聚焦 -->
-                      <button type="button" class="btn btn--info" id="carbPhotoPickBtn" hidden aria-hidden="true" tabindex="-1" disabled>選擇照片</button>
-
-                      <!-- 唯一顯示按鈕 -->
                       <button type="button" class="btn btn--warning" id="carbPhotoUploadBtn" disabled>
                         <span class="btn__text">更換照片</span><span class="btn__spinner" aria-hidden="true"></span>
                       </button>
                     </div>
+
                   </div>
                 </aside>
 
