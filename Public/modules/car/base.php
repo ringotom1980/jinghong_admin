@@ -131,11 +131,10 @@ $pageJs = [
                     </div>
 
                     <div class="carb-field">
-                      <label class="form-label">車輛類型</label>
-                      <select name="vehicle_type_id" disabled></select>
-                      <input class="input carb-new-input" name="vehicle_type_new" type="text" placeholder="輸入新車輛類型" disabled hidden />
+                      <label class="form-label">噸數</label>
+                      <input class="input" name="tonnage" type="number" step="0.01" placeholder="例：3.50" disabled />
                     </div>
-
+                    
                     <div class="carb-field">
                       <label class="form-label">廠牌</label>
                       <select name="brand_id" disabled></select>
@@ -149,8 +148,9 @@ $pageJs = [
                     </div>
 
                     <div class="carb-field">
-                      <label class="form-label">噸數</label>
-                      <input class="input" name="tonnage" type="number" step="0.01" placeholder="例：3.50" disabled />
+                      <label class="form-label">車輛類型</label>
+                      <select name="vehicle_type_id" disabled></select>
+                      <input class="input carb-new-input" name="vehicle_type_new" type="text" placeholder="輸入新車輛類型" disabled hidden />
                     </div>
 
                     <div class="carb-field">
