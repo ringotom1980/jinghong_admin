@@ -125,17 +125,6 @@
       }
     },
 
-    setEditMode: function (on) {
-      on = !!on;
-      this.state.editMode = on;
-
-      if (global.CarBaseDetail) global.CarBaseDetail.setEditMode(on);
-
-      if (this.els.editBtn) this.els.editBtn.disabled = !this.state.activeId || on;
-      if (this.els.saveBtn) this.els.saveBtn.disabled = !this.state.activeId || !on;
-      if (this.els.cancelBtn) this.els.cancelBtn.disabled = !this.state.activeId || !on;
-    },
-
     setMode: function (mode) {
       mode = String(mode || 'VIEW');
       if (['VIEW', 'CREATE', 'EDIT'].indexOf(mode) === -1) mode = 'VIEW';

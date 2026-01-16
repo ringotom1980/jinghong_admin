@@ -291,6 +291,11 @@ body.page-enter{
   align-items: center;
 }
 
+/* ✅ car/base 保險：不管全站 btn 怎麼寫，hidden 一律隱藏 */
+.carb-actions [hidden]{
+  display: none !important;
+}
+
 /* tabs */
 .carb-tabs{
   display: flex;
