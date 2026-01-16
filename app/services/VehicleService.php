@@ -457,25 +457,29 @@ final class VehicleService
     }
 
     // 回傳可直接顯示的 URL（走 BASE_URL）
-    return self::publicUrl($newPhotoPath) . '?v=' . time();
+    return self::publicUrl($newPhotoPath) . '?v=' . (is_file($targetFs) ? (int)@filemtime($targetFs) : time());
   }
 
   /* ----------------- helpers ----------------- */
 
   private static function photoUrlFromRow(array $v): string
-  {
-    $p = isset($v['photo_path']) ? trim((string)$v['photo_path']) : '';
-    if ($p === '') return '';
+{
+  $p = isset($v['photo_path']) ? trim((string)$v['photo_path']) : '';
+  if ($p === '') return '';
 
-    // 用 updated_at 做 cache busting（若缺就用 time）
-    $ts = 0;
-    if (!empty($v['updated_at'])) {
-      $ts = (int)strtotime((string)$v['updated_at']);
-    }
-    if ($ts <= 0) $ts = time();
+  // ✅ 用檔案最後修改時間做 cache busting（最準，與 DB 無關）
+  $projectRoot = dirname(__DIR__, 2); // app/services -> app -> project root
+  $fs = $projectRoot . '/' . ltrim($p, '/');
+  $ts = (is_file($fs)) ? (int)@filemtime($fs) : 0;
 
-    return self::publicUrl($p) . '?v=' . $ts;
+  // fallback：沒有檔案時才用 updated_at
+  if ($ts <= 0 && !empty($v['updated_at'])) {
+    $ts = (int)strtotime((string)$v['updated_at']);
   }
+  if ($ts <= 0) $ts = time();
+
+  return self::publicUrl($p) . '?v=' . $ts;
+}
 
   private static function publicUrl(string $path): string
   {
