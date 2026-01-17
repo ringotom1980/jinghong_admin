@@ -90,7 +90,7 @@
         html += ''
           + '<button type="button" class="cr-cap' + active + '" data-key="' + esc(key) + '">'
           + '  <span class="cr-cap__label">' + label + '</span>'
-          + '  <span class="cr-cap__count">' + esc(String(count)) + '</span>'
+          + '  <span class="cr-cap__count">' + esc(String(count)) + ' 筆</span>'
           + '</button>';
       }
 
