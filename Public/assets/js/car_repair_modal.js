@@ -357,8 +357,13 @@
         }
 
         Toast && Toast.show({ type: 'success', title: '已存檔', message: '維修紀錄已更新' });
-        if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+
+        // ✅ 存檔後必須重載膠囊：才會把「新年度/新半年」膠囊即時補上，並用 defaultKey 觸發正確列表
+        if (self.app && self.app.loadCapsules) self.app.loadCapsules();
+        else if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+
         return true;
+
       });
     }
   };

@@ -130,7 +130,11 @@
               return;
             }
             Toast && Toast.show({ type: 'success', title: '已刪除', message: '維修紀錄已刪除' });
-            if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+
+            // ✅ 刪除後重載膠囊：若該半年/年度剩 0 筆，膠囊會自動消失；並依新的 defaultKey 重載列表
+            if (self.app && self.app.loadCapsules) self.app.loadCapsules();
+            else if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+
           });
         },
         null,
