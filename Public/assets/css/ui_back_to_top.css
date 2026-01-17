@@ -1,0 +1,43 @@
+/* Path: Public/assets/css/ui_back_to_top.css
+ * 說明: 共用「回頂端」浮動按鈕
+ */
+
+.ui-top {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.14);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.ui-top.is-show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ui-top:hover {
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+}
+
+.ui-top i {
+  font-size: 16px;
+}

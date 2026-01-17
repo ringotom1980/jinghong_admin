@@ -15,6 +15,7 @@ $pageTitle = '車輛管理｜維修紀錄';
 $pageCss = [
     'assets/css/car_repairs.css',
     'assets/css/car_repair_modal.css',
+    'assets/css/ui_back_to_top.css',
 ];
 
 $pageJs = [
@@ -23,13 +24,14 @@ $pageJs = [
     'assets/js/car_repair_modal.js',
     'assets/js/car_repair_items.js',
     'assets/js/car_repair_vendors.js',
+    'assets/js/ui_back_to_top.js',
 ];
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <?php require __DIR__ . '/../../partials/head.php'; ?>
 
-<body class="page-enter">
+<body data-backtop-target="#crCapsules" class="page-enter">
 
     <?php require __DIR__ . '/../../partials/header.php'; ?>
     <?php require __DIR__ . '/../../partials/sidebar.php'; ?>
