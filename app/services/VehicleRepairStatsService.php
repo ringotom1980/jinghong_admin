@@ -298,7 +298,7 @@ final class VehicleRepairStatsService
 
     return [
       'type' => 'summary',
-      'title' => '維修統計表（' . $key . '）',
+      'title' => '境宏工程有限公司-維修統計表(' . $this->keyToLabel($key) . ')',
       'key' => $key,
       'months' => $months,
       'rows' => $outRows
@@ -378,4 +378,14 @@ final class VehicleRepairStatsService
     }
     return $months;
   }
+
+    private function keyToLabel(string $key): string
+  {
+    if (preg_match('/^\d{4}$/', $key)) return $key . '-全年';
+    if (preg_match('/^(\d{4})-(H1|H2)$/', $key, $m)) {
+      return $m[1] . '-' . ($m[2] === 'H1' ? '上半年' : '下半年');
+    }
+    return $key;
+  }
+
 }

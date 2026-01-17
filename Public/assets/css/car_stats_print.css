@@ -1,0 +1,81 @@
+/* Path: Public/assets/css/car_stats_print.css
+ * 說明: 車輛維修統計｜列印專用樣式（外掛，不內嵌）
+ */
+
+@page {
+  margin: 12mm;
+}
+
+html, body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
+  color: #111;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.print-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.print-head__logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.print-head__title {
+  margin: 0;
+  font-size: 18px; /* 字體再大一點點 */
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.sec {
+  margin: 12px 0 16px;
+}
+
+h3 {
+  margin: 10px 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid #d9d9d9;
+  padding: 7px 8px; /* 稍微加大 */
+  font-size: 13px;  /* 字體加大 */
+  line-height: 1.35;
+}
+
+th {
+  background: #f5f6f8;
+  text-align: center;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+td {
+  background: #fff;
+}
+
+.ta-r { text-align: right; font-variant-numeric: tabular-nums; }
+.ta-l { text-align: left; }
+
+@media print {
+  /* 讓列印更乾淨 */
+  a { text-decoration: none; color: inherit; }
+}
