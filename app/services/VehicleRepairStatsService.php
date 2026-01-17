@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/VehicleRepairStatsService.php
  * 說明: 維修統計/聚合/列印資料組裝（嚴格：不做 CRUD、不拼 UI）
@@ -163,9 +164,16 @@ final class VehicleRepairStatsService
         v.vehicle_code,
         DATE_FORMAT(h.repair_date, '%Y-%m-%d') AS repair_date,
         COALESCE(
-          GROUP_CONCAT(i.content ORDER BY i.content SEPARATOR '、'),
-          ''
-        ) AS content,
+        GROUP_CONCAT(
+          CONCAT(
+            i.content,
+            '(公司', COALESCE(i.company_amount,0), '、工班', COALESCE(i.team_amount,0), ')'
+          )
+          ORDER BY i.id
+          SEPARATOR '、'
+        ),
+        ''
+      ) AS content,
         h.company_amount_total,
         h.team_amount_total,
         h.grand_total
