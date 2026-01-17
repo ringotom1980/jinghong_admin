@@ -2,8 +2,13 @@
  * 說明: 車輛管理｜維修統計頁樣式（兩欄布局、capsules、table、modal）
  */
 
-.car-stats .page-head { margin-bottom: 12px; }
-.car-stats .page-desc { color: var(--muted); margin: 6px 0 0; }
+.car-stats .page-head {
+  margin-bottom: 12px;
+}
+.car-stats .page-desc {
+  color: var(--muted);
+  margin: 6px 0 0;
+}
 
 .cs-toolbar {
   display: flex;
@@ -13,25 +18,26 @@
   margin: 12px 0 14px;
 }
 
-.cs-capsules{
-  display:flex;
-  flex-wrap:nowrap;         /* ✅ 不換行 */
-  align-items:center;
-  gap:10px;                 /* 單一 gap 就好 */
-  overflow-x:auto;          /* ✅ 超出就橫向捲動 */
-  overflow-y:hidden;
-  padding:2px 2px;          /* 避免陰影被裁切 */
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
+/* ===== Capsules（你已定版：橫向一列 + 年度垂直分隔線）===== */
+.cs-capsules {
+  display: flex;
+  flex-wrap: nowrap; /* ✅ 不換行 */
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto; /* ✅ 超出就橫向捲動 */
+  overflow-y: hidden;
+  padding: 2px 2px; /* 避免陰影被裁切 */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
-.cs-yearSep{
-  width:1px;                /* ✅ 垂直線 */
-  height:28px;              /* 視覺高度（約等於膠囊高度） */
-  background:var(--line);
-  opacity:.9;
-  margin:0 6px;             /* 左右留空 */
-  flex:0 0 auto;
+.cs-yearSep {
+  width: 1px; /* ✅ 垂直線 */
+  height: 28px; /* 視覺高度（約等於膠囊高度） */
+  background: var(--line);
+  opacity: 0.9;
+  margin: 0 6px;
+  flex: 0 0 auto;
 }
 
 .cs-cap {
@@ -43,13 +49,18 @@
   font-size: 13px;
   cursor: pointer;
   user-select: none;
+  flex: 0 0 auto;
 }
 
-.cs-cap:hover { background: rgba(15,23,42,0.03); }
-.cs-cap.is-active {
-  border-color: rgba(15,23,42,0.22);
-  box-shadow: 0 2px 10px rgba(2,6,23,0.06);
+.cs-cap:hover {
+  background: rgba(15, 23, 42, 0.03);
 }
+
+.cs-cap.is-active {
+  border-color: rgba(15, 23, 42, 0.22);
+  box-shadow: 0 2px 10px rgba(2, 6, 23, 0.06);
+}
+/* ===== Capsules 結束===== */
 
 .cs-printBtn {
   display: inline-flex;
@@ -64,7 +75,9 @@
 }
 
 @media (max-width: 1100px) {
-  .cs-grid { grid-template-columns: 1fr; }
+  .cs-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .cs-panel {
@@ -72,7 +85,7 @@
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 10px 22px rgba(2,6,23,0.04);
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.04);
 }
 
 .cs-panel__head {
@@ -95,35 +108,106 @@
   white-space: nowrap;
 }
 
-.cs-tableWrap { overflow: auto; }
+.cs-tableWrap {
+  overflow: auto;
+}
 
+/* ===== Stats Table（比照 repairs：colgroup + 百分比欄寬）===== */
 .cs-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 13px;
+
+  /* ✅ 你要字體大一點 */
+  font-size: 14.5px;
+
+  /* ✅ 你要百分比欄寬穩定：必須 fixed */
+  table-layout: fixed;
 }
 
+/* 表頭/表身：全置中 */
+.cs-table thead th,
+.cs-table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* sticky header */
 .cs-table thead th {
   position: sticky;
   top: 0;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   padding: 10px 10px;
-  text-align: left;
   z-index: 1;
+  white-space: nowrap;
 }
 
 .cs-table tbody td {
-  border-bottom: 1px solid rgba(15,23,42,0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
   padding: 9px 10px;
-  vertical-align: top;
 }
 
-.cs-table tbody tr:hover { background: rgba(15,23,42,0.03); }
-.cs-table tbody tr.is-active { background: rgba(37,99,235,0.08); }
+/* hover / active */
+.cs-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+.cs-table tbody tr.is-active {
+  background: rgba(37, 99, 235, 0.08);
+}
 
-.ta-r { text-align: right; }
+/* 數字欄：你說要全置中，所以 num 也置中，但保持等寬數字更好看 */
+.cs-table th.num,
+.cs-table td.num {
+  text-align: center; /* ✅ 依你的要求：th/td 都置中 */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== colgroup 欄寬（要你 stats.php 有加 colgroup 才會生效）===== */
+/* 共用 */
+.cs-table col.cs-col--code {
+  width: 12%;
+} /* 車輛編號 */
+.cs-table col.cs-col--plate {
+  width: 12%;
+} /* 車牌 */
+.cs-table col.cs-col--count {
+  width: 8%;
+} /* 次數 */
+.cs-table col.cs-col--company {
+  width: 12%;
+} /* 公司負擔 */
+.cs-table col.cs-col--team {
+  width: 12%;
+} /* 工班負擔 */
+.cs-table col.cs-col--grand {
+  width: 12%;
+} /* 總金額 */
+
+/* Summary 特有 */
+.cs-table--summary col.cs-col--top3 {
+  width: 32%;
+} /* Top3 */
+
+/* Details 特有 */
+.cs-table--details col.cs-col--date {
+  width: 14%;
+} /* 維修日期 */
+.cs-table--details col.cs-col--content {
+  width: 38%;
+} /* 維修內容 */
+
+/* 明細內容欄：允許換行（避免固定欄寬下被擠爆） */
+.cs-table--details td:nth-child(3) {
+  white-space: normal;
+  line-height: 1.35;
+}
+
+/* Top3 tag 區：讓置中視覺更一致 */
+.cs-top3 {
+  display: inline-block;
+}
+/* ===== Stats Table 結束===== */
 
 .cs-empty {
   text-align: center;
@@ -132,32 +216,37 @@
 }
 
 .cs-top3 {
-  color: rgba(15,23,42,0.78);
+  color: rgba(15, 23, 42, 0.78);
   font-size: 12px;
   line-height: 1.25;
 }
 
 .cs-top3 .tag {
   display: inline-block;
-  border: 1px solid rgba(15,23,42,0.12);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 999px;
   padding: 2px 8px;
   margin: 0 6px 6px 0;
-  background: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.6);
 }
 
-/* Modal */
-.cs-modal[aria-hidden="true"] { display: none; }
+/* ===== Modal ===== */
+.cs-modal[aria-hidden="true"] {
+  display: none;
+}
+
 .cs-modal {
   position: fixed;
   inset: 0;
   z-index: 9999;
 }
+
 .cs-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(2,6,23,0.55);
+  background: rgba(2, 6, 23, 0.55);
 }
+
 .cs-modal__panel {
   position: relative;
   width: min(520px, calc(100% - 24px));
@@ -165,19 +254,30 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 14px;
-  box-shadow: 0 18px 44px rgba(2,6,23,0.25);
+  box-shadow: 0 18px 44px rgba(2, 6, 23, 0.25);
   overflow: hidden;
 }
-.cs-modal__head, .cs-modal__foot {
+
+.cs-modal__head,
+.cs-modal__foot {
   padding: 12px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
-.cs-modal__head { border-bottom: 1px solid var(--line); }
-.cs-modal__foot { border-top: 1px solid var(--line); }
-.cs-modal__title { font-weight: 700; }
+
+.cs-modal__head {
+  border-bottom: 1px solid var(--line);
+}
+.cs-modal__foot {
+  border-top: 1px solid var(--line);
+}
+
+.cs-modal__title {
+  font-weight: 700;
+}
+
 .cs-modal__close {
   border: 1px solid var(--line);
   background: var(--panel);
@@ -186,16 +286,22 @@
   height: 36px;
   cursor: pointer;
 }
-.cs-modal__close:hover { background: rgba(15,23,42,0.03); }
+.cs-modal__close:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
 
-.cs-modal__body { padding: 12px 12px 14px; }
+.cs-modal__body {
+  padding: 12px 12px 14px;
+}
 
 .cs-radio {
   display: grid;
   gap: 10px;
   margin: 4px 0 8px;
 }
-.cs-radio input { margin-right: 8px; }
+.cs-radio input {
+  margin-right: 8px;
+}
 
 .cs-hint {
   margin: 10px 0 0;
