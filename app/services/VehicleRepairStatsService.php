@@ -160,31 +160,36 @@ final class VehicleRepairStatsService
     [$start, $end] = $this->keyToRange($key);
 
     $sql = "
-      SELECT
-        v.vehicle_code,
-        DATE_FORMAT(h.repair_date, '%Y-%m-%d') AS repair_date,
-        COALESCE(
-        GROUP_CONCAT(
-          CONCAT(
-            i.content,
-            '(公司', COALESCE(i.company_amount,0), '、工班', COALESCE(i.team_amount,0), ')'
-          )
-          ORDER BY i.id
-          SEPARATOR '、'
-        ),
-        ''
-      ) AS content,
-        h.company_amount_total,
-        h.team_amount_total,
-        h.grand_total
-      FROM vehicle_repair_headers h
-      JOIN vehicle_vehicles v ON v.id = h.vehicle_id
-      LEFT JOIN vehicle_repair_items i ON i.repair_id = h.id
-      WHERE h.vehicle_id = :vid
-        AND h.repair_date BETWEEN :s AND :e
-      GROUP BY h.id, v.vehicle_code, h.repair_date, h.company_amount_total, h.team_amount_total, h.grand_total
-      ORDER BY h.repair_date DESC, h.id DESC
-    ";
+  SELECT
+    v.vehicle_code,
+    DATE_FORMAT(h.repair_date, '%Y-%m-%d') AS repair_date,
+    COALESCE(
+      GROUP_CONCAT(
+        CONCAT(
+          i.content,
+          '(公司',
+          CAST(ROUND(COALESCE(i.company_amount,0), 0) AS UNSIGNED),
+          '、工班',
+          CAST(ROUND(COALESCE(i.team_amount,0), 0) AS UNSIGNED),
+          ')'
+        )
+        ORDER BY i.id
+        SEPARATOR '、'
+      ),
+      ''
+    ) AS content,
+    h.company_amount_total,
+    h.team_amount_total,
+    h.grand_total
+  FROM vehicle_repair_headers h
+  JOIN vehicle_vehicles v ON v.id = h.vehicle_id
+  LEFT JOIN vehicle_repair_items i ON i.repair_id = h.id
+  WHERE h.vehicle_id = :vid
+    AND h.repair_date BETWEEN :s AND :e
+  GROUP BY h.id, v.vehicle_code, h.repair_date, h.company_amount_total, h.team_amount_total, h.grand_total
+  ORDER BY h.repair_date DESC, h.id DESC
+";
+
     $stmt = $this->db->prepare($sql);
     $stmt->execute([':vid' => $vehicleId, ':s' => $start, ':e' => $end]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
