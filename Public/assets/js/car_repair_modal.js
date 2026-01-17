@@ -112,7 +112,7 @@
 
       var title = (this.state.mode === 'EDIT') ? '編輯維修紀錄' : '新增維修紀錄';
 
-      Modal.open({
+      var bd = Modal.open({
         title: title,
         html: this.buildHtml(),
         confirmText: '存檔',
@@ -120,13 +120,12 @@
         allowCloseBtn: true,
         closeOnBackdrop: true,
         closeOnEsc: true,
-        onConfirm: function () {
-          return self.onSave();
-        },
-        onCancel: function () {
-          // no-op
-        }
+        onConfirm: function () { return self.onSave(); },
+        onCancel: function () { }
       });
+
+      // ✅ 只標記「維修紀錄 modal」用（不影響其他頁的 modal）
+      if (bd && bd.classList) bd.classList.add('modal--car-repair');
 
       // ✅ 等 Modal 的 DOM 真正掛上去後再綁事件/填資料（避免只剩遮罩）
       setTimeout(function () {
