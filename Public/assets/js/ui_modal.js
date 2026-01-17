@@ -58,9 +58,14 @@
       bd.appendChild(panel);
       document.body.appendChild(bd);
 
-      // motion.css uses .modal-backdrop.is-open
+      // ✅ 保底：先立即打開（避免只剩遮罩）
+      bd.classList.add('is-open');
+      panel.classList.add('is-open');
+
+      // ✅ 再用 rAF 觸發動畫（兼容你的 motion.css）
       requestAnimationFrame(function () {
         bd.classList.add('is-open');
+        panel.classList.add('is-open');
       });
 
       var confirmBtn = panel.querySelector('.modal__confirm');
@@ -72,7 +77,7 @@
               // ✅ 若 onConfirm 明確回傳 false → 不關閉
               var r = onConfirm();
               if (r === false) shouldClose = false;
-            } catch (e) {}
+            } catch (e) { }
           }
           if (shouldClose) Modal.close();
         });
@@ -82,7 +87,7 @@
       if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {
           if (onCancel) {
-            try { onCancel(); } catch (e) {}
+            try { onCancel(); } catch (e) { }
           }
           Modal.close();
         });
@@ -95,7 +100,7 @@
           if (!allowCloseBtn) return;
 
           if (onCancel) {
-            try { onCancel(); } catch (e) {}
+            try { onCancel(); } catch (e) { }
           }
           Modal.close();
         });
@@ -105,7 +110,7 @@
         bd.addEventListener('click', function (e) {
           if (e.target === bd) {
             if (onCancel) {
-              try { onCancel(); } catch (err) {}
+              try { onCancel(); } catch (err) { }
             }
             Modal.close();
           }
@@ -116,7 +121,7 @@
         bd._escHandler = function (e) {
           if (e.key === 'Escape') {
             if (onCancel) {
-              try { onCancel(); } catch (err2) {}
+              try { onCancel(); } catch (err2) { }
             }
             Modal.close();
           }
