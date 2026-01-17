@@ -19,7 +19,7 @@
 
   var Modal = {
     _current: null,
-
+    _stack: [],
     open: function (opts) {
       opts = opts || {};
       var title = opts.title || '';
@@ -34,7 +34,8 @@
       var closeOnEsc = !!opts.closeOnEsc; // default false
       var allowCloseBtn = !!opts.allowCloseBtn; // default false（confirm-only）
 
-      this.close(); // one at a time
+      var stack = !!opts.stack; // ✅ stack=true 表示疊在既有 modal 上
+      if (!stack) this.close(); // one at a time（預設維持原行為）
 
       var bd = document.createElement('div');
       bd.className = 'modal-backdrop';
@@ -57,6 +58,11 @@
 
       bd.appendChild(panel);
       document.body.appendChild(bd);
+      // ✅ stack：讓新 modal 疊在上面
+      if (stack) {
+        var z = 2000 + (this._stack.length * 10); // 每層 +10，避免互相蓋到
+        bd.style.zIndex = String(z);
+      }
 
       // ✅ 保底：先立即打開（避免只剩遮罩）
       bd.classList.add('is-open');
@@ -129,8 +135,14 @@
         document.addEventListener('keydown', bd._escHandler);
       }
 
+      if (stack) {
+        this._stack.push(bd);
+      } else {
+        this._stack = [bd];
+      }
       this._current = bd;
       return bd;
+
     },
 
     // ✅ 原定版：只能按「確認」才可關閉（不點背景、不 ESC、不 X）
@@ -161,6 +173,7 @@
 
         onConfirm: onConfirm || null,
         onCancel: onCancel || null,
+        stack: true, // ✅ confirm 疊在既有 modal 上，不關閉外層
 
         // 預設放行（符合一般刪除/確認）
         allowCloseBtn: (opts.allowCloseBtn !== undefined) ? !!opts.allowCloseBtn : true,
@@ -170,7 +183,7 @@
     },
 
     close: function () {
-      var bd = this._current;
+      var bd = (this._stack && this._stack.length) ? this._stack[this._stack.length - 1] : this._current;
       if (!bd) return;
 
       bd.classList.remove('is-open');
@@ -184,7 +197,9 @@
         if (bd && bd.parentNode) bd.parentNode.removeChild(bd);
       }, 220);
 
-      this._current = null;
+      if (this._stack && this._stack.length) this._stack.pop();
+      this._current = (this._stack && this._stack.length) ? this._stack[this._stack.length - 1] : null;
+
     }
   };
 
