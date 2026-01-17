@@ -197,8 +197,9 @@
   width: 38%;
 } /* 維修內容 */
 
-/* 明細內容欄：允許換行（避免固定欄寬下被擠爆） */
+/* 明細內容欄：允許換行 + 內容靠左 */
 .cs-table--details td:nth-child(3) {
+  text-align: left;     /* ✅ 維修內容靠左 */
   white-space: normal;
   line-height: 1.35;
 }
