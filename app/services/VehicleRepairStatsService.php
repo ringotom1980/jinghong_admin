@@ -76,7 +76,7 @@ final class VehicleRepairStatsService
       if ($yearTotal > 0) {
         $capsules[] = [
           'key' => (string)$y,
-          'label' => (string)$y,
+          'label' => $y . '-全年',
           'start' => $y . '-01-01',
           'end' => $y . '-12-31',
           'end_ts' => strtotime($y . '-12-31') ?: 0
@@ -85,7 +85,7 @@ final class VehicleRepairStatsService
       if ($h1 > 0) {
         $capsules[] = [
           'key' => $y . '-H1',
-          'label' => $y . '-H1',
+          'label' => $y . '-上半年',
           'start' => $y . '-01-01',
           'end' => $y . '-06-30',
           'end_ts' => strtotime($y . '-06-30') ?: 0
@@ -94,7 +94,7 @@ final class VehicleRepairStatsService
       if ($h2 > 0) {
         $capsules[] = [
           'key' => $y . '-H2',
-          'label' => $y . '-H2',
+          'label' => $y . '-下半年',
           'start' => $y . '-07-01',
           'end' => $y . '-12-31',
           'end_ts' => strtotime($y . '-12-31') ?: 0
