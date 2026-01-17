@@ -146,6 +146,33 @@
   white-space: nowrap;
 }
 
+/* ===== 表格內容/表頭置中（摘要欄例外靠左）===== */
+.cr-table th,
+.cr-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 例外：摘要欄內容靠左（td 本身） */
+.cr-table td.summary {
+  text-align: left;
+}
+
+/* num / actions 維持原本規則（你原本已經有） */
+/* .cr-table td.num, .cr-table th.num { text-align:right; ... } */
+/* .cr-table td.actions { text-align:right; ... } */
+
+/* 讓摘要 div 明確靠左（避免被其他規則影響） */
+.cr-summary {
+  text-align: left;
+}
+
+/* 讓備註 div 明確置中（避免 div 預設靠左看起來像沒置中） */
+.cr-note {
+  text-align: center;
+}
+/* ===== 表格內容/表頭置中（摘要欄例外靠左）結束===== */
+
 .cr-actions {
   display: inline-flex;
   gap: 8px;

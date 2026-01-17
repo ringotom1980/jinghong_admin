@@ -63,7 +63,7 @@
           + '<td>' + badge(r.repair_type || '維修') + '</td>'
           + '<td>' + esc((r.mileage === null || r.mileage === undefined) ? '' : r.mileage) + '</td>'
           + '<td>' + esc(r.user_name || '') + '</td>'
-          + '<td><div class="cr-summary" title="' + esc(sumText(r.items_summary || '')) + '">' + esc(sumText(r.items_summary || '')) + '</div></td>'
+          + '<td class="summary"><div class="cr-summary" title="' + esc(sumText(r.items_summary || '')) + '">' + esc(sumText(r.items_summary || '')) + '</div></td>'
           + '<td class="num">' + n2(r.grand_total) + '</td>'
           + '<td class="num">' + n2(r.team_amount_total) + '</td>'
           + '<td class="num">' + n2(r.company_amount_total) + '</td>'
