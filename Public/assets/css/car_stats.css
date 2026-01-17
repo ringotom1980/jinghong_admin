@@ -1,0 +1,198 @@
+/* Path: Public/assets/css/car_stats.css
+ * 說明: 車輛管理｜維修統計頁樣式（兩欄布局、capsules、table、modal）
+ */
+
+.car-stats .page-head { margin-bottom: 12px; }
+.car-stats .page-desc { color: var(--muted); margin: 6px 0 0; }
+
+.cs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 14px;
+}
+
+.cs-capsules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.cs-yearSep {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  margin: 6px 0;
+  opacity: .9;
+}
+
+.cs-cap {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cs-cap:hover { background: rgba(15,23,42,0.03); }
+.cs-cap.is-active {
+  border-color: rgba(15,23,42,0.22);
+  box-shadow: 0 2px 10px rgba(2,6,23,0.06);
+}
+
+.cs-printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .cs-grid { grid-template-columns: 1fr; }
+}
+
+.cs-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(2,6,23,0.04);
+}
+
+.cs-panel__head {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cs-panel__head h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.cs-panel__meta {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.cs-tableWrap { overflow: auto; }
+
+.cs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.cs-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 10px;
+  text-align: left;
+  z-index: 1;
+}
+
+.cs-table tbody td {
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+  padding: 9px 10px;
+  vertical-align: top;
+}
+
+.cs-table tbody tr:hover { background: rgba(15,23,42,0.03); }
+.cs-table tbody tr.is-active { background: rgba(37,99,235,0.08); }
+
+.ta-r { text-align: right; }
+
+.cs-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 10px;
+}
+
+.cs-top3 {
+  color: rgba(15,23,42,0.78);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.cs-top3 .tag {
+  display: inline-block;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin: 0 6px 6px 0;
+  background: rgba(255,255,255,0.6);
+}
+
+/* Modal */
+.cs-modal[aria-hidden="true"] { display: none; }
+.cs-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+.cs-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2,6,23,0.55);
+}
+.cs-modal__panel {
+  position: relative;
+  width: min(520px, calc(100% - 24px));
+  margin: 10vh auto 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(2,6,23,0.25);
+  overflow: hidden;
+}
+.cs-modal__head, .cs-modal__foot {
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cs-modal__head { border-bottom: 1px solid var(--line); }
+.cs-modal__foot { border-top: 1px solid var(--line); }
+.cs-modal__title { font-weight: 700; }
+.cs-modal__close {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.cs-modal__close:hover { background: rgba(15,23,42,0.03); }
+
+.cs-modal__body { padding: 12px 12px 14px; }
+
+.cs-radio {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 8px;
+}
+.cs-radio input { margin-right: 8px; }
+
+.cs-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
