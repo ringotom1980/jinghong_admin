@@ -34,7 +34,7 @@
         var text = shown.join('、') + (more ? '…' : '');
 
         // tooltip：每筆一行（你要的格式）
-        var title = items.join('、');
+        var title = items.join('\n');
 
         return { text: text, title: title };
     }
