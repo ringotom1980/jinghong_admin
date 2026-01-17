@@ -152,9 +152,13 @@
   color: rgba(15,23,42,.55);
 }
 
-/* ===== FIX: 維修紀錄 modal 只剩遮罩（不動全站 modal） ===== */
-.modal-backdrop.modal--car-repair.is-open .modal-panel{
+/* ===== FIX: 維修紀錄 modal 只剩遮罩（只針對 .modal--car-repair） ===== */
+.modal-backdrop.modal--car-repair{
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.modal-backdrop.modal--car-repair .modal-panel{
   opacity: 1 !important;
   transform: translateY(0) scale(1) !important;
-  visibility: visible !important;
 }
