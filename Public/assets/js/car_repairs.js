@@ -155,7 +155,10 @@
     loadList: function (key) {
       var self = this;
       if (!global.apiGet) return;
-
+      // ✅ 修正：未傳 key 時，沿用目前膠囊 activeKey（避免載到全量而混在一起）
+      if (key === undefined || key === null) {
+        key = self.state.activeKey || '';
+      }
       self.setLoading(true);
       self.setEmpty(false);
 

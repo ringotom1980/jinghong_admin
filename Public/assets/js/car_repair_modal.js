@@ -357,7 +357,7 @@
         }
 
         Toast && Toast.show({ type: 'success', title: '已存檔', message: '維修紀錄已更新' });
-        if (self.app && self.app.loadList) self.app.loadList();
+        if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
         return true;
       });
     }
