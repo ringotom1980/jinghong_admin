@@ -174,7 +174,7 @@ final class VehicleRepairStatsService
           ')'
         )
         ORDER BY i.id
-        SEPARATOR '、'
+        SEPARATOR '\n'
       ),
       ''
     ) AS content,
