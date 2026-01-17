@@ -58,6 +58,11 @@ $pageJs = [
                 </div>
             </header>
 
+            <div class="cr-caps" aria-label="時間篩選">
+                <div class="cr-caps__list" id="crCapsules"></div>
+                <div class="cr-caps__hint" id="crCapsulesHint" hidden>載入中…</div>
+            </div>
+
             <div class="cr-body">
                 <div class="cr-tableWrap">
                     <table class="table cr-table" aria-label="維修紀錄列表">

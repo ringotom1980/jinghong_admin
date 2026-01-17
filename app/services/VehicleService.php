@@ -661,48 +661,81 @@ final class VehicleService
   /* ================================
    * Repairs / Vendors（維修紀錄）
    * ================================ */
-
   public static function vehicleRepairList(array $filters = []): array
   {
     $pdo = db();
 
-    // 列表：header + vehicle + vendor + items_summary（取前 3 筆組字串）
-    $rows = $pdo->query("
-      SELECT
-        h.id,
-        h.vehicle_id,
-        v.vehicle_code,
-        v.plate_no,
-        v.user_name,
-        h.repair_date,
-        h.repair_type,
-        h.mileage,
-        h.note,
-        h.team_amount_total,
-        h.company_amount_total,
-        h.grand_total,
-        vd.name AS vendor_name
-      FROM vehicle_repair_headers h
-      JOIN vehicle_vehicles v ON v.id = h.vehicle_id
-      LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
-      ORDER BY h.repair_date DESC, h.id DESC
-    ")->fetchAll();
+    $key = isset($filters['key']) ? trim((string)$filters['key']) : '';
+
+    $where = '';
+    $params = [];
+
+    // key: YYYY-H1 / YYYY-H2 / YYYY
+    if ($key !== '') {
+      if (preg_match('/^(\d{4})-(H1|H2)$/', $key, $m)) {
+        $y = (int)$m[1];
+        $h = (string)$m[2];
+        $start = ($h === 'H1') ? sprintf('%04d-01-01', $y) : sprintf('%04d-07-01', $y);
+        $end   = ($h === 'H1') ? sprintf('%04d-06-30', $y) : sprintf('%04d-12-31', $y);
+
+        $where = 'WHERE h.repair_date BETWEEN ? AND ?';
+        $params = [$start, $end];
+      } else if (preg_match('/^\d{4}$/', $key)) {
+        $y = (int)$key;
+        $start = sprintf('%04d-01-01', $y);
+        $end   = sprintf('%04d-12-31', $y);
+
+        $where = 'WHERE h.repair_date BETWEEN ? AND ?';
+        $params = [$start, $end];
+      }
+    }
+
+    // 列表：header + vehicle + vendor
+    $sql = "
+    SELECT
+      h.id,
+      h.vehicle_id,
+      v.vehicle_code,
+      v.plate_no,
+      v.user_name,
+      h.repair_date,
+      h.repair_type,
+      h.mileage,
+      h.note,
+      h.team_amount_total,
+      h.company_amount_total,
+      h.grand_total,
+      vd.name AS vendor_name
+    FROM vehicle_repair_headers h
+    JOIN vehicle_vehicles v ON v.id = h.vehicle_id
+    LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
+    {$where}
+    ORDER BY h.repair_date DESC, h.id DESC
+  ";
+
+    if ($params) {
+      $st = $pdo->prepare($sql);
+      $st->execute($params);
+      $rows = $st->fetchAll();
+    } else {
+      $rows = $pdo->query($sql)->fetchAll();
+    }
 
     if (!$rows) return ['rows' => []];
 
-    // items summary：一次撈所有 item（避免 N+1），再在 PHP 內組前 N 筆
+    // items summary：一次撈所有 item（避免 N+1）
     $ids = array_map(static fn($r) => (int)$r['id'], $rows);
     $in = implode(',', array_fill(0, count($ids), '?'));
 
-    $st = $pdo->prepare("
-      SELECT repair_id, seq, content
-      FROM vehicle_repair_items
-      WHERE repair_id IN ($in)
-      ORDER BY repair_id ASC, seq ASC, id ASC
-    ");
-    foreach ($ids as $i => $id) $st->bindValue($i + 1, $id, PDO::PARAM_INT);
-    $st->execute();
-    $items = $st->fetchAll();
+    $st2 = $pdo->prepare("
+    SELECT repair_id, seq, content
+    FROM vehicle_repair_items
+    WHERE repair_id IN ($in)
+    ORDER BY repair_id ASC, seq ASC, id ASC
+  ");
+    foreach ($ids as $i => $id) $st2->bindValue($i + 1, $id, PDO::PARAM_INT);
+    $st2->execute();
+    $items = $st2->fetchAll();
 
     $map = [];
     foreach ($items as $it) {
@@ -726,6 +759,99 @@ final class VehicleService
     unset($r);
 
     return ['rows' => $rows];
+  }
+
+  public static function vehicleRepairCapsules(): array
+  {
+    $pdo = db();
+
+    $yNow = (int)date('Y');
+
+    // 依 年 + 半年 分組
+    $rows = $pdo->query("
+    SELECT
+      YEAR(repair_date) AS y,
+      CASE WHEN MONTH(repair_date) <= 6 THEN 1 ELSE 2 END AS h,
+      COUNT(*) AS cnt,
+      MIN(repair_date) AS min_d,
+      MAX(repair_date) AS max_d
+    FROM vehicle_repair_headers
+    GROUP BY YEAR(repair_date), CASE WHEN MONTH(repair_date) <= 6 THEN 1 ELSE 2 END
+    ORDER BY y DESC, h DESC
+  ")->fetchAll();
+
+    if (!$rows) return ['capsules' => []];
+
+    $cur = ['H1' => null, 'H2' => null];
+    $years = []; // y => ['cnt'=>, 'min'=>, 'max'=>]
+
+    foreach ($rows as $r) {
+      $y = (int)$r['y'];
+      $h = ((int)$r['h'] === 1) ? 'H1' : 'H2';
+      $cnt = (int)$r['cnt'];
+      $min = (string)$r['min_d'];
+      $max = (string)$r['max_d'];
+
+      if ($y === $yNow) {
+        $cur[$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
+      } else {
+        if (!isset($years[$y])) {
+          $years[$y] = ['cnt' => 0, 'min' => $min, 'max' => $max];
+        }
+        $years[$y]['cnt'] += $cnt;
+        if ($min !== '' && $years[$y]['min'] !== '' && $min < $years[$y]['min']) $years[$y]['min'] = $min;
+        if ($max !== '' && $years[$y]['max'] !== '' && $max > $years[$y]['max']) $years[$y]['max'] = $max;
+      }
+    }
+
+    $caps = [];
+
+    // 今年：先下半年再上半年（符合使用者常看最近）
+    if ($cur['H2'] && $cur['H2']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yNow . '-H2',
+        'label' => $yNow . '下半年',
+        'count' => (int)$cur['H2']['cnt'],
+        'start' => $yNow . '-07-01',
+        'end' => $yNow . '-12-31',
+        'is_default' => 1
+      ];
+    }
+    if ($cur['H1'] && $cur['H1']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yNow . '-H1',
+        'label' => $yNow . '上半年',
+        'count' => (int)$cur['H1']['cnt'],
+        'start' => $yNow . '-01-01',
+        'end' => $yNow . '-06-30',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 歷年：y DESC
+    krsort($years);
+    foreach ($years as $y => $info) {
+      $caps[] = [
+        'key' => (string)$y,
+        'label' => $y . '年',
+        'count' => (int)$info['cnt'],
+        'start' => $y . '-01-01',
+        'end' => $y . '-12-31',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 保底：萬一今年完全沒資料，default 會落在最新一年
+    if ($caps) {
+      $hasDefault = false;
+      foreach ($caps as $c) if (!empty($c['is_default'])) {
+        $hasDefault = true;
+        break;
+      }
+      if (!$hasDefault) $caps[0]['is_default'] = 1;
+    }
+
+    return ['capsules' => $caps];
   }
 
   public static function vehicleRepairGet(int $repairId): array
