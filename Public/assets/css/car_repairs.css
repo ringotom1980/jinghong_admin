@@ -22,7 +22,7 @@
   padding: 8px 10px;
   border: 1px solid var(--line-2);
   border-radius: 14px;
-  background: rgba(255,255,255,.72);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .cr-kpi__label {
@@ -34,7 +34,7 @@
 .cr-kpi__value {
   font-size: 18px;
   font-weight: 900;
-  color: rgba(15,23,42,.92);
+  color: rgba(15, 23, 42, 0.92);
 }
 
 .cr-body {
@@ -50,8 +50,89 @@
   min-width: 1280px;
 }
 
+/* ===== Repairs Table: 百分比欄寬（colgroup）===== */
+/* 說明：
+ * - 只作用在 .cr-table（不影響其他 table）
+ * - table-layout: fixed 才能讓百分比穩定
+ * - 內容若過長，交給既有 .cr-summary/.cr-note ellipsis 控制
+ */
+.cr-table {
+  table-layout: fixed;
+}
+
+/* 項次 */
+.cr-table col.cr-col--no {
+  width: 4%;
+}
+
+/* 車輛編號 */
+.cr-table col.cr-col--code {
+  width: 7%;
+}
+
+/* 車牌 */
+.cr-table col.cr-col--plate {
+  width: 7%;
+}
+
+/* 維修日期 */
+.cr-table col.cr-col--date {
+  width: 8%;
+}
+
+/* 維修廠商 */
+.cr-table col.cr-col--vendor {
+  width: 12%;
+}
+
+/* 類別 */
+.cr-table col.cr-col--type {
+  width: 6%;
+}
+
+/* 里程 */
+.cr-table col.cr-col--mileage {
+  width: 6%;
+}
+
+/* 使用人 */
+.cr-table col.cr-col--user {
+  width: 8%;
+}
+
+/* 維修項目摘要 */
+.cr-table col.cr-col--summary {
+  width: 20%;
+}
+
+/* 維修金額 */
+.cr-table col.cr-col--total {
+  width: 7%;
+}
+
+/* 工班負擔 */
+.cr-table col.cr-col--team {
+  width: 7%;
+}
+
+/* 公司負擔 */
+.cr-table col.cr-col--company {
+  width: 7%;
+}
+
+/* 備註 */
+.cr-table col.cr-col--note {
+  width: 10%;
+}
+
+/* 操作 */
+.cr-table col.cr-col--actions {
+  width: 8%;
+}
+/* ===== Repairs Table: 百分比欄寬（colgroup）結束===== */
+
 .cr-table td {
-  color: rgba(15,23,42,.78);
+  color: rgba(15, 23, 42, 0.78);
 }
 
 .cr-table td.num,
@@ -85,24 +166,24 @@
   border-radius: 999px;
   font-size: 13px;
   font-weight: 800;
-  border: 1px solid rgba(15,23,42,.12);
-  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .cr-badge--maint {
-  border-color: rgba(37,99,235,.24);
-  background: rgba(37,99,235,.10);
-  color: rgba(30,58,138,.95);
+  border-color: rgba(37, 99, 235, 0.24);
+  background: rgba(37, 99, 235, 0.1);
+  color: rgba(30, 58, 138, 0.95);
 }
 
 .cr-badge--repair {
-  border-color: rgba(180,83,9,.26);
-  background: rgba(180,83,9,.10);
-  color: rgba(120,53,15,.95);
+  border-color: rgba(180, 83, 9, 0.26);
+  background: rgba(180, 83, 9, 0.1);
+  color: rgba(120, 53, 15, 0.95);
 }
 
 .cr-summary {
-  color: rgba(15,23,42,.76);
+  color: rgba(15, 23, 42, 0.76);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -110,7 +191,7 @@
 }
 
 .cr-note {
-  color: rgba(15,23,42,.66);
+  color: rgba(15, 23, 42, 0.66);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
