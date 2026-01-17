@@ -46,7 +46,7 @@
 
         // 依你專案慣例：部署在 /jinghong_admin 時要加 base
         var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
-        var cssHref = base + '/assets/css/car_stats_print.css?v=1';
+        var cssHref = base + '/assets/css/car_stats_print.css?v=2';
         var logoSrc = base + '/assets/img/brand/JH_logo.png?v=1';
 
         var html = '';
