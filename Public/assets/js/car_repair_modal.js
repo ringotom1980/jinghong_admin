@@ -75,7 +75,7 @@
       if (!global.apiGet) return;
 
       // 先拿單筆（header + items），再確保 vehicles
-      global.apiGet('/api/car/car_repair_get.php?id=' + encodeURIComponent(String(this.state.id))).then(function (j) {
+      global.apiGet('/api/car/car_repair_get?id=' + encodeURIComponent(String(this.state.id))).then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '讀取失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return;
@@ -95,7 +95,7 @@
 
       if (!global.apiGet) return;
 
-      global.apiGet('/api/car/car_list.php').then(function (j) {
+      global.apiGet('/api/car/car_list').then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '載入車輛清單失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return;
@@ -360,7 +360,7 @@
         items: this.state.data.items
       };
 
-      return global.apiPost('/api/car/car_repair_save.php', payload).then(function (j) {
+      return global.apiPost('/api/car/car_repair_save', payload).then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return false; // 不關閉

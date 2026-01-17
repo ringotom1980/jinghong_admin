@@ -117,7 +117,7 @@
         '刪除確認',
         '確定要刪除此筆維修紀錄嗎？\n刪除後將同時刪除該筆的所有明細（不可復原）。\n\n車輛：' + (vc || '-') + '\n日期：' + (rd || '-'),
         function () {
-          return global.apiPost('/api/car/car_repair_delete.php', { id: id }).then(function (j) {
+          return global.apiPost('/api/car/car_repair_delete', { id: id }).then(function (j) {
             if (!j || !j.success) {
               Toast && Toast.show({ type: 'danger', title: '刪除失敗', message: (j && j.error) ? j.error : '未知錯誤' });
               return;

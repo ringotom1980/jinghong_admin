@@ -63,7 +63,7 @@
       var self = this;
       if (!global.apiGet || !this.modal || !this.modal.els || !this.modal.els.suggest) return;
 
-      global.apiGet('/api/car/car_vendor_suggest.php?q=' + encodeURIComponent(q)).then(function (j) {
+      global.apiGet('/api/car/car_vendor_suggest?q=' + encodeURIComponent(q)).then(function (j) {
         if (!j || !j.success) return;
 
         var rows = (j.data && j.data.rows) ? j.data.rows : [];

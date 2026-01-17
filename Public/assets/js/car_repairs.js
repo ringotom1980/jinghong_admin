@@ -51,7 +51,7 @@
       self.setLoading(true);
       self.setEmpty(false);
 
-      global.apiGet('/api/car/car_repair_list.php').then(function (j) {
+      global.apiGet('/api/car/car_repair_list').then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           self.state.list = [];
