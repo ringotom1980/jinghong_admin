@@ -1,41 +1,88 @@
 /* Path: Public/assets/css/car_repair_modal.css
  * 說明: 維修紀錄 modal 內容樣式（使用全站 Modal 外殼 ui_modal.css）
+ * 目標：左右寬一點、不要上下長（只影響 .modal--car-repair）
  */
 
-.crm {
+/* ===== Modal 專屬外殼調整（只針對維修 modal） ===== */
+.modal-backdrop.modal--car-repair .modal-panel{
+  /* 原本 ui_modal.css 固定 520px：會導致內容被擠成上下長 */
+  width: min(920px, calc(100vw - 48px));
+  max-width: 920px;
+
+  /* 不要整個 modal 高到爆：讓內容區可以捲動 */
+  max-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 讓 body 區塊可捲動、footer 固定在下方 */
+.modal-backdrop.modal--car-repair .modal__body{
+  overflow: auto;
+  max-height: calc(100vh - 72px - 56px - 64px); /* 粗略扣 head+foot，避免過長 */
+}
+
+/* 允許右上角 X（你在 JS allowCloseBtn=true） */
+.modal-backdrop.modal--car-repair .modal__close{
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.75);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop.modal--car-repair .modal__close:hover{
+  background: rgba(15,23,42,.04);
+  border-color: rgba(15,23,42,.14);
+}
+
+/* ===== 內容本體 ===== */
+.crm{
   display: grid;
   gap: 14px;
 }
 
-.crm-grid {
+/* 上半部表單：改成 3 欄（寬螢幕更扁、更不會往下長） */
+.crm-grid{
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.25fr 1fr 1fr;
   gap: 12px;
 }
 
-.crm-grid .crm-field {
+/* 欄位通用 */
+.crm-grid .crm-field{
   display: grid;
   gap: 6px;
 }
 
-.crm-grid .crm-field--full {
+/* 全寬欄位（備註） */
+.crm-grid .crm-field--full{
   grid-column: 1 / -1;
 }
 
-.crm-help {
+/* 讓 vendor 欄位在寬版更好用：佔 2 欄 */
+.crm-grid .crm-vendorSuggest{
+  grid-column: span 2;
+}
+
+/* 小提示 */
+.crm-help{
   font-size: 13px;
   color: rgba(15,23,42,.58);
   margin-top: 2px;
 }
 
-.crm-items {
+/* ===== Items 區塊 ===== */
+.crm-items{
   border: 1px solid rgba(15,23,42,.10);
   border-radius: 16px;
   overflow: hidden;
   background: rgba(255,255,255,.78);
 }
 
-.crm-items__head {
+.crm-items__head{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,31 +92,32 @@
   background: rgba(15,23,42,.03);
 }
 
-.crm-items__title {
+.crm-items__title{
   font-weight: 900;
   font-size: 14px;
   color: rgba(15,23,42,.86);
 }
 
-.crm-items__body {
+.crm-items__body{
   padding: 10px 12px 12px 12px;
   display: grid;
   gap: 10px;
 }
 
-.crm-itemRow {
+/* 明細列：改成更寬版配置，讓欄位不要擠 */
+.crm-itemRow{
   display: grid;
-  grid-template-columns: 70px 1fr 140px 140px 44px;
+  grid-template-columns: 70px 1fr 160px 160px 44px;
   gap: 10px;
   align-items: start;
 }
 
-.crm-itemRow .crm-field {
+.crm-itemRow .crm-field{
   display: grid;
   gap: 6px;
 }
 
-.crm-itemRow .crm-del {
+.crm-itemRow .crm-del{
   height: 38px;
   border-radius: 12px;
   border: 1px solid rgba(190,18,60,.26);
@@ -77,19 +125,19 @@
   color: rgba(136,19,55,.95);
   cursor: pointer;
 }
-
-.crm-itemRow .crm-del:hover {
+.crm-itemRow .crm-del:hover{
   background: rgba(190,18,60,.14);
 }
 
-.crm-totals {
+/* ===== Totals ===== */
+.crm-totals{
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   padding-top: 6px;
 }
 
-.crm-totalCard {
+.crm-totalCard{
   border: 1px solid rgba(15,23,42,.10);
   border-radius: 16px;
   background: rgba(255,255,255,.78);
@@ -98,13 +146,13 @@
   gap: 4px;
 }
 
-.crm-totalCard__label {
+.crm-totalCard__label{
   font-size: 13px;
   color: rgba(15,23,42,.60);
   font-weight: 800;
 }
 
-.crm-totalCard__value {
+.crm-totalCard__value{
   font-size: 18px;
   font-weight: 950;
   letter-spacing: .01em;
@@ -112,11 +160,12 @@
   text-align: right;
 }
 
-.crm-vendorSuggest {
+/* ===== vendor suggest ===== */
+.crm-vendorSuggest{
   position: relative;
 }
 
-.crm-suggestList {
+.crm-suggestList{
   position: absolute;
   left: 0;
   right: 0;
@@ -129,7 +178,7 @@
   overflow: hidden;
 }
 
-.crm-suggestItem {
+.crm-suggestItem{
   padding: 10px 12px;
   cursor: pointer;
   display: flex;
@@ -137,28 +186,44 @@
   justify-content: space-between;
   gap: 8px;
 }
-
-.crm-suggestItem:hover {
+.crm-suggestItem:hover{
   background: rgba(37,99,235,.08);
 }
 
-.crm-suggestName {
+.crm-suggestName{
   font-weight: 900;
   color: rgba(15,23,42,.86);
 }
-
-.crm-suggestMeta {
+.crm-suggestMeta{
   font-size: 12px;
   color: rgba(15,23,42,.55);
 }
 
-/* ===== FIX: 維修紀錄 modal 只剩遮罩（只針對 .modal--car-repair） ===== */
-.modal-backdrop.modal--car-repair{
-  opacity: 1 !important;
-  visibility: visible !important;
+/* ===== RWD：小螢幕自動改成 1~2 欄，避免擠爆 ===== */
+@media (max-width: 980px){
+  .modal-backdrop.modal--car-repair .modal-panel{
+    width: min(760px, calc(100vw - 36px));
+    max-width: 760px;
+  }
+  .crm-grid{
+    grid-template-columns: 1fr 1fr;
+  }
+  .crm-grid .crm-vendorSuggest{
+    grid-column: 1 / -1;
+  }
+  .crm-itemRow{
+    grid-template-columns: 60px 1fr 130px 130px 44px;
+  }
 }
 
-.modal-backdrop.modal--car-repair .modal-panel{
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
+@media (max-width: 680px){
+  .crm-grid{
+    grid-template-columns: 1fr;
+  }
+  .crm-itemRow{
+    grid-template-columns: 1fr;
+  }
+  .crm-totals{
+    grid-template-columns: 1fr;
+  }
 }
