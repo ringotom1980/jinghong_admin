@@ -134,7 +134,7 @@ $pageJs = [
                       <label class="form-label">噸數</label>
                       <input class="input" name="tonnage" type="number" step="0.01" placeholder="例：3.50" disabled />
                     </div>
-                    
+
                     <div class="carb-field">
                       <label class="form-label">廠牌</label>
                       <select name="brand_id" disabled></select>
@@ -192,7 +192,7 @@ $pageJs = [
 
                     <div class="carb-field carb-field--full">
                       <label class="form-label">備註</label>
-                      <textarea class="input" name="note" rows="3" placeholder="備註" disabled></textarea>
+                      <textarea class="input" name="note" rows="2" placeholder="備註" disabled></textarea>
                     </div>
                   </div>
                 </section>
