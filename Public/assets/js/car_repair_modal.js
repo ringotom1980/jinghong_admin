@@ -128,10 +128,12 @@
         }
       });
 
-      // 綁定事件
-      this.bindModalEvents();
-      this.fillFormFromState();
-      this.recalcTotals();
+      // ✅ 等 Modal 的 DOM 真正掛上去後再綁事件/填資料（避免只剩遮罩）
+      setTimeout(function () {
+        self.bindModalEvents();
+        self.fillFormFromState();
+        self.recalcTotals();
+      }, 0);
     },
 
     buildHtml: function () {
