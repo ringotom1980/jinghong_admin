@@ -18,9 +18,10 @@
       .replace(/'/g, '&#039;');
   }
 
-  function n2(v) {
+  function n0(v) {
     var x = Number(v || 0);
-    return x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    x = Math.round(x); // 與列表頁一致：四捨五入
+    return x.toLocaleString('en-US', { maximumFractionDigits: 0 });
   }
 
   function todayStr() {
@@ -304,9 +305,10 @@
 
       var grand = team + comp;
 
-      if (this.els.teamTotal) this.els.teamTotal.textContent = n2(team);
-      if (this.els.companyTotal) this.els.companyTotal.textContent = n2(comp);
-      if (this.els.grandTotal) this.els.grandTotal.textContent = n2(grand);
+      if (this.els.teamTotal) this.els.teamTotal.textContent = n0(team);
+      if (this.els.companyTotal) this.els.companyTotal.textContent = n0(comp);
+      if (this.els.grandTotal) this.els.grandTotal.textContent = n0(grand);
+
     },
 
     validate: function () {
