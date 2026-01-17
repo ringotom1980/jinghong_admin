@@ -57,9 +57,12 @@
 }
 
 .cs-cap.is-active {
-  border-color: rgba(15, 23, 42, 0.22);
-  box-shadow: 0 2px 10px rgba(2, 6, 23, 0.06);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(30, 58, 138, 0.98);
+  box-shadow: 0 2px 10px rgba(2, 6, 23, 0.08);
 }
+
 /* ===== Capsules 結束===== */
 
 .cs-printBtn {
