@@ -1108,17 +1108,38 @@ final class VehicleService
     $v = trim($nameOrId);
     if ($v === '') throw new RuntimeException('vendor 不可空白');
 
-    // 純數字 => vendor_id（必須存在）
+    // ✅ 規則：
+    // 1) 純數字：優先當作 vendor_id 嘗試找；若不存在 => 改當「名稱」自動建立（避免 500）
+    // 2) 非純數字：當作名稱 upsert
+
     if (preg_match('/^\d+$/', $v)) {
       $id = (int)$v;
+
+      // 先嘗試當作 vendor_id
       $st = $pdo->prepare("SELECT id, name FROM vehicle_repair_vendors WHERE id = ? LIMIT 1");
       $st->execute([$id]);
       $row = $st->fetch();
-      if (!$row) throw new RuntimeException('vendor_id 不存在');
-      return ['vendor_id' => (int)$row['id'], 'vendor_name' => (string)$row['name']];
+      if ($row) {
+        // ✅ 既有 id：順便累積使用次數（符合你的 use_count 設計）
+        $upd = $pdo->prepare("
+        UPDATE vehicle_repair_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
+        $upd->execute([(int)$row['id']]);
+
+        return ['vendor_id' => (int)$row['id'], 'vendor_name' => (string)$row['name']];
+      }
+
+      // ✅ 若 id 不存在：把「數字字串」當作名稱建立（避免 user 一直被 vendor_id 不存在 卡死）
+      // 例如你們有「廠商代碼=12」這種輸入習慣，也能正常用
+      $v = (string)$v; // 直接當 name
     }
 
-    // 文字 => name upsert
+    // ===== 文字（或落到這裡的數字名稱）=> name upsert =====
     $pdo->beginTransaction();
     try {
       $st = $pdo->prepare("SELECT id, name, use_count FROM vehicle_repair_vendors WHERE name = ? LIMIT 1");
@@ -1128,22 +1149,22 @@ final class VehicleService
       if ($row) {
         $id = (int)$row['id'];
         $upd = $pdo->prepare("
-          UPDATE vehicle_repair_vendors
-          SET use_count = use_count + 1,
-              last_used_at = CURRENT_TIMESTAMP(),
-              is_active = 1
-          WHERE id = ?
-          LIMIT 1
-        ");
+        UPDATE vehicle_repair_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
         $upd->execute([$id]);
         $pdo->commit();
         return ['vendor_id' => $id, 'vendor_name' => (string)$row['name']];
       }
 
       $ins = $pdo->prepare("
-        INSERT INTO vehicle_repair_vendors (name, is_active, use_count, last_used_at)
-        VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
-      ");
+      INSERT INTO vehicle_repair_vendors (name, is_active, use_count, last_used_at)
+      VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
+    ");
       $ins->execute([':name' => $v]);
 
       $id = (int)$pdo->lastInsertId();
