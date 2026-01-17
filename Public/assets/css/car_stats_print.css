@@ -1,9 +1,22 @@
 /* Path: Public/assets/css/car_stats_print.css
  * 說明: 車輛維修統計｜列印專用樣式（外掛，不內嵌）
+ * 需求：
+ * 1) 邊界縮小（內容佔版面更大）
+ * 2) 表格標題列置中（第一列 th 一律置中）
+ * 3) 文件標題底下不顯示分隔線
+ * 4) 每頁重複文件標題（含 LOGO）
+ * 5) 每頁頁碼
  */
 
+/* 1) 邊界更小 */
 @page {
-  margin: 12mm;
+  margin: 6mm;
+
+  /* 5) 頁碼（Chrome/Edge 多數可用） */
+  @bottom-right {
+    content: "第 " counter(page) " 頁";
+    font-size: 11px;
+  }
 }
 
 html, body {
@@ -16,13 +29,29 @@ body {
   margin: 0;
 }
 
+/* 4) 固定頁首：每頁都重複 */
 .print-head {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 10px;
-  padding: 0 0 8px;
-  border-bottom: 1px solid #ddd;
+
+  padding: 4mm 0 2mm;
+  margin: 0;
+
+  /* 3) 不要分隔線 */
+  border-bottom: none;
+
+  background: #fff;
+}
+
+/* 內容要往下推，不要被固定頁首蓋住 */
+.print-body {
+  padding-top: 14mm; /* 視 title 高度，可微調 12~16mm */
 }
 
 .print-head__logo {
@@ -33,13 +62,13 @@ body {
 
 .print-head__title {
   margin: 0;
-  font-size: 18px; /* 字體再大一點點 */
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.2px;
 }
 
 .sec {
-  margin: 12px 0 16px;
+  margin: 10px 0 14px;
 }
 
 h3 {
@@ -56,17 +85,20 @@ table {
 
 th, td {
   border: 1px solid #d9d9d9;
-  padding: 7px 8px; /* 稍微加大 */
-  font-size: 13px;  /* 字體加大 */
+  padding: 7px 8px;
+  font-size: 13px;
   line-height: 1.35;
 }
 
 th {
   background: #f5f6f8;
-  text-align: center;
+  text-align: center; /* 2) 第一列 th 置中 */
   font-weight: 800;
   white-space: nowrap;
 }
+
+/* 2) 只讓 .ta-l 影響 td，不影響 th（避免你 JS header th.ta-l 被拉左） */
+th.ta-l { text-align: center !important; }
 
 td {
   background: #fff;
@@ -76,6 +108,5 @@ td {
 .ta-l { text-align: left; }
 
 @media print {
-  /* 讓列印更乾淨 */
   a { text-decoration: none; color: inherit; }
 }
