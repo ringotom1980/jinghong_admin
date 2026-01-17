@@ -21,6 +21,13 @@
     return x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function n0(v) {
+    var x = Number(v || 0);
+    // 四捨五入成整數，再做千分位
+    x = Math.round(x);
+    return x.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+
   function badge(type) {
     if (type === '保養') return '<span class="cr-badge cr-badge--maint">保養</span>';
     return '<span class="cr-badge cr-badge--repair">維修</span>';
@@ -64,9 +71,9 @@
           + '<td>' + esc((r.mileage === null || r.mileage === undefined) ? '' : r.mileage) + '</td>'
           + '<td>' + esc(r.user_name || '') + '</td>'
           + '<td class="summary"><div class="cr-summary" title="' + esc(sumText(r.items_summary || '')) + '">' + esc(sumText(r.items_summary || '')) + '</div></td>'
-          + '<td class="num">' + n2(r.grand_total) + '</td>'
-          + '<td class="num">' + n2(r.team_amount_total) + '</td>'
-          + '<td class="num">' + n2(r.company_amount_total) + '</td>'
+          + '<td class="num">' + n0(r.grand_total) + '</td>'
+          + '<td class="num">' + n0(r.team_amount_total) + '</td>'
+          + '<td class="num">' + n0(r.company_amount_total) + '</td>'
           + '<td><div class="cr-note" title="' + esc(r.note || '') + '">' + esc(r.note || '') + '</div></td>'
           + '<td class="actions">'
           + '  <div class="cr-actions">'
@@ -111,7 +118,7 @@
       try {
         vc = tr && tr.children && tr.children[1] ? tr.children[1].textContent : '';
         rd = tr && tr.children && tr.children[3] ? tr.children[3].textContent : '';
-      } catch (e) {}
+      } catch (e) { }
 
       Modal.confirmChoice(
         '刪除確認',
