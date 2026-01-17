@@ -139,7 +139,7 @@
 
       if (closeOnBackdrop) {
         bd.addEventListener('click', function (e) {
-          if (e.target === bd) {
+          if (e.target === bd && Modal._current === bd) {
             if (onCancel) {
               try { onCancel(); } catch (err) { /* ignore */ }
             }
@@ -150,7 +150,7 @@
 
       if (closeOnEsc) {
         bd._escHandler = function (e) {
-          if (e.key === 'Escape') {
+          if (e.key === 'Escape' && Modal._current === bd) {
             if (onCancel) {
               try { onCancel(); } catch (err2) { /* ignore */ }
             }
