@@ -8,6 +8,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../../app/bootstrap.php';
+require_once __DIR__ . '/../../../app/services/VehicleService.php';
+
 require_login();
 
 header('Content-Type: application/json; charset=utf-8');
