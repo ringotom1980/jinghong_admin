@@ -55,7 +55,21 @@
   }
 
   global.apiRequest = request;
-  global.apiGet = function (url) { return request({ url: url, method: 'GET' }); };
+  global.apiGet = function (url, params) {
+    // params -> querystring
+    if (params && typeof params === 'object') {
+      var sp = new URLSearchParams();
+      Object.keys(params).forEach(function (k) {
+        var v = params[k];
+        if (v === undefined || v === null || v === '') return;
+        sp.append(k, String(v));
+      });
+      var qs = sp.toString();
+      if (qs) url += (String(url).indexOf('?') >= 0 ? '&' : '?') + qs;
+    }
+    return request({ url: url, method: 'GET' });
+  };
+
   global.apiPost = function (url, body) { return request({ url: url, method: 'POST', body: body }); };
   global.apiPostForm = function (url, formData) { return request({ url: url, method: 'POST', body: formData }); };
 
