@@ -658,6 +658,377 @@ final class VehicleService
     return self::publicUrl($newPhotoPath) . '?v=' . (is_file($targetFs) ? (int)@filemtime($targetFs) : time());
   }
 
+  /* ================================
+   * Repairs / Vendors（維修紀錄）
+   * ================================ */
+
+  public static function vehicleRepairList(array $filters = []): array
+  {
+    $pdo = db();
+
+    // 列表：header + vehicle + vendor + items_summary（取前 3 筆組字串）
+    $rows = $pdo->query("
+      SELECT
+        h.id,
+        h.vehicle_id,
+        v.vehicle_code,
+        v.plate_no,
+        v.user_name,
+        h.repair_date,
+        h.repair_type,
+        h.mileage,
+        h.note,
+        h.team_amount_total,
+        h.company_amount_total,
+        h.grand_total,
+        vd.name AS vendor_name
+      FROM vehicle_repair_headers h
+      JOIN vehicle_vehicles v ON v.id = h.vehicle_id
+      LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
+      ORDER BY h.repair_date DESC, h.id DESC
+    ")->fetchAll();
+
+    if (!$rows) return ['rows' => []];
+
+    // items summary：一次撈所有 item（避免 N+1），再在 PHP 內組前 N 筆
+    $ids = array_map(static fn($r) => (int)$r['id'], $rows);
+    $in = implode(',', array_fill(0, count($ids), '?'));
+
+    $st = $pdo->prepare("
+      SELECT repair_id, seq, content
+      FROM vehicle_repair_items
+      WHERE repair_id IN ($in)
+      ORDER BY repair_id ASC, seq ASC, id ASC
+    ");
+    foreach ($ids as $i => $id) $st->bindValue($i + 1, $id, PDO::PARAM_INT);
+    $st->execute();
+    $items = $st->fetchAll();
+
+    $map = [];
+    foreach ($items as $it) {
+      $rid = (int)$it['repair_id'];
+      if (!isset($map[$rid])) $map[$rid] = [];
+      $map[$rid][] = (string)$it['content'];
+    }
+
+    foreach ($rows as &$r) {
+      $rid = (int)$r['id'];
+      $arr = $map[$rid] ?? [];
+      $N = 3;
+      $summary = '';
+      if ($arr) {
+        $pick = array_slice($arr, 0, $N);
+        $summary = implode('、', $pick);
+        if (count($arr) > $N) $summary .= '…';
+      }
+      $r['items_summary'] = $summary;
+    }
+    unset($r);
+
+    return ['rows' => $rows];
+  }
+
+  public static function vehicleRepairGet(int $repairId): array
+  {
+    $pdo = db();
+
+    $st = $pdo->prepare("
+      SELECT
+        h.id,
+        h.vehicle_id,
+        h.vendor_id,
+        h.repair_date,
+        h.repair_type,
+        h.mileage,
+        h.note,
+        h.team_amount_total,
+        h.company_amount_total,
+        h.grand_total,
+        vd.name AS vendor_name
+      FROM vehicle_repair_headers h
+      LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
+      WHERE h.id = ?
+      LIMIT 1
+    ");
+    $st->execute([$repairId]);
+    $h = $st->fetch();
+    if (!$h) throw new RuntimeException('找不到該筆維修紀錄');
+
+    // vendor 單欄位定版：EDIT 回填「名稱」（較符合使用者直覺）
+    $vendor = '';
+    if (!empty($h['vendor_name'])) $vendor = (string)$h['vendor_name'];
+    else if (!empty($h['vendor_id'])) $vendor = (string)$h['vendor_id'];
+
+    $itemsSt = $pdo->prepare("
+      SELECT
+        seq, content, team_amount, company_amount
+      FROM vehicle_repair_items
+      WHERE repair_id = ?
+      ORDER BY seq ASC, id ASC
+    ");
+    $itemsSt->execute([$repairId]);
+    $items = $itemsSt->fetchAll();
+
+    return [
+      'header' => [
+        'id' => (int)$h['id'],
+        'vehicle_id' => (int)$h['vehicle_id'],
+        'repair_date' => (string)$h['repair_date'],
+        'vendor' => $vendor,
+        'repair_type' => (string)$h['repair_type'],
+        'mileage' => ($h['mileage'] === null) ? '' : (int)$h['mileage'],
+        'note' => (string)($h['note'] ?? ''),
+      ],
+      'items' => array_map(static function ($it) {
+        return [
+          'seq' => (int)$it['seq'],
+          'content' => (string)$it['content'],
+          'team_amount' => (float)$it['team_amount'],
+          'company_amount' => (float)$it['company_amount'],
+        ];
+      }, $items)
+    ];
+  }
+
+  public static function vehicleRepairSave(array $payload): array
+  {
+    $pdo = db();
+
+    $id = isset($payload['id']) ? (int)$payload['id'] : 0;
+    $header = (isset($payload['header']) && is_array($payload['header'])) ? $payload['header'] : [];
+    $items = (isset($payload['items']) && is_array($payload['items'])) ? $payload['items'] : [];
+
+    $vehicleId = isset($header['vehicle_id']) ? (int)$header['vehicle_id'] : 0;
+    $repairDate = isset($header['repair_date']) ? trim((string)$header['repair_date']) : '';
+    $repairType = isset($header['repair_type']) ? trim((string)$header['repair_type']) : '維修';
+    $vendor = isset($header['vendor']) ? trim((string)$header['vendor']) : '';
+    $mileage = isset($header['mileage']) ? trim((string)$header['mileage']) : '';
+    $note = isset($header['note']) ? trim((string)$header['note']) : '';
+
+    if ($vehicleId <= 0) throw new RuntimeException('請選擇車輛');
+    if ($repairDate === '') throw new RuntimeException('請選擇維修日期');
+    if ($vendor === '') throw new RuntimeException('請輸入維修廠商（id 或名稱）');
+    if ($repairType !== '維修' && $repairType !== '保養') throw new RuntimeException('維修類別不正確');
+
+    if (!$items) throw new RuntimeException('請至少新增 1 筆明細');
+
+    // vendor 單欄位定版：純數字 => vendor_id；文字 => upsert name
+    $vendorId = self::vehicleVendorUpsert($vendor)['vendor_id'];
+
+    // items 正規化 + 後端重算 totals（防前端竄改）
+    $normItems = [];
+    $teamTotal = 0.0;
+    $companyTotal = 0.0;
+
+    foreach ($items as $idx => $it) {
+      if (!is_array($it)) continue;
+
+      $seq = isset($it['seq']) ? (int)$it['seq'] : ($idx + 1);
+      $content = isset($it['content']) ? trim((string)$it['content']) : '';
+      if ($content === '') throw new RuntimeException('明細第 ' . ($idx + 1) . ' 筆：content 不可空白');
+
+      $team = isset($it['team_amount']) ? (float)$it['team_amount'] : 0.0;
+      $comp = isset($it['company_amount']) ? (float)$it['company_amount'] : 0.0;
+
+      // 允許 0；不做正負限制（你若要限制不可負再加）
+      $teamTotal += $team;
+      $companyTotal += $comp;
+
+      $normItems[] = [
+        'seq' => $seq,
+        'content' => $content,
+        'team_amount' => $team,
+        'company_amount' => $comp,
+      ];
+    }
+
+    if (!$normItems) throw new RuntimeException('明細資料不正確');
+
+    usort($normItems, static fn($a, $b) => ($a['seq'] <=> $b['seq']));
+
+    $grandTotal = $teamTotal + $companyTotal;
+
+    $pdo->beginTransaction();
+    try {
+      if ($id <= 0) {
+        $st = $pdo->prepare("
+          INSERT INTO vehicle_repair_headers
+            (vehicle_id, vendor_id, repair_date, repair_type, mileage, note,
+             team_amount_total, company_amount_total, grand_total)
+          VALUES
+            (:vehicle_id, :vendor_id, :repair_date, :repair_type, :mileage, :note,
+             :team_total, :company_total, :grand_total)
+        ");
+        $st->execute([
+          ':vehicle_id' => $vehicleId,
+          ':vendor_id' => $vendorId,
+          ':repair_date' => $repairDate,
+          ':repair_type' => $repairType,
+          ':mileage' => ($mileage === '') ? null : (int)$mileage,
+          ':note' => ($note === '') ? null : $note,
+          ':team_total' => number_format($teamTotal, 2, '.', ''),
+          ':company_total' => number_format($companyTotal, 2, '.', ''),
+          ':grand_total' => number_format($grandTotal, 2, '.', ''),
+        ]);
+        $id = (int)$pdo->lastInsertId();
+      } else {
+        // 更新 header
+        $st = $pdo->prepare("
+          UPDATE vehicle_repair_headers
+          SET
+            vehicle_id = :vehicle_id,
+            vendor_id = :vendor_id,
+            repair_date = :repair_date,
+            repair_type = :repair_type,
+            mileage = :mileage,
+            note = :note,
+            team_amount_total = :team_total,
+            company_amount_total = :company_total,
+            grand_total = :grand_total
+          WHERE id = :id
+          LIMIT 1
+        ");
+        $st->execute([
+          ':vehicle_id' => $vehicleId,
+          ':vendor_id' => $vendorId,
+          ':repair_date' => $repairDate,
+          ':repair_type' => $repairType,
+          ':mileage' => ($mileage === '') ? null : (int)$mileage,
+          ':note' => ($note === '') ? null : $note,
+          ':team_total' => number_format($teamTotal, 2, '.', ''),
+          ':company_total' => number_format($companyTotal, 2, '.', ''),
+          ':grand_total' => number_format($grandTotal, 2, '.', ''),
+          ':id' => $id,
+        ]);
+
+        // 清空舊 items（保持簡單可靠；repair_id 有 idx）
+        $del = $pdo->prepare("DELETE FROM vehicle_repair_items WHERE repair_id = ?");
+        $del->execute([$id]);
+      }
+
+      // 插入 items
+      $ins = $pdo->prepare("
+        INSERT INTO vehicle_repair_items
+          (repair_id, seq, content, team_amount, company_amount)
+        VALUES
+          (:repair_id, :seq, :content, :team_amount, :company_amount)
+      ");
+
+      foreach ($normItems as $it) {
+        $ins->execute([
+          ':repair_id' => $id,
+          ':seq' => (int)$it['seq'],
+          ':content' => (string)$it['content'],
+          ':team_amount' => number_format((float)$it['team_amount'], 2, '.', ''),
+          ':company_amount' => number_format((float)$it['company_amount'], 2, '.', ''),
+        ]);
+      }
+
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    // 回傳最新資料（給前端 toast / 或未來你要直接更新列表用）
+    return [
+      'id' => $id,
+      'team_amount_total' => number_format($teamTotal, 2, '.', ''),
+      'company_amount_total' => number_format($companyTotal, 2, '.', ''),
+      'grand_total' => number_format($grandTotal, 2, '.', ''),
+    ];
+  }
+
+  public static function vehicleRepairDelete(int $repairId): array
+  {
+    $pdo = db();
+
+    // 先確定存在（回傳更友善）
+    $st0 = $pdo->prepare("SELECT id FROM vehicle_repair_headers WHERE id = ? LIMIT 1");
+    $st0->execute([$repairId]);
+    if (!$st0->fetchColumn()) throw new RuntimeException('找不到該筆維修紀錄');
+
+    // 刪 header 即可（items 由 ON DELETE CASCADE 自動刪）
+    $st = $pdo->prepare("DELETE FROM vehicle_repair_headers WHERE id = ? LIMIT 1");
+    $st->execute([$repairId]);
+
+    return ['id' => $repairId];
+  }
+
+  public static function vehicleVendorSuggest(string $q): array
+  {
+    $pdo = db();
+    $q = trim($q);
+
+    if ($q === '' || preg_match('/^\d+$/', $q)) {
+      return ['rows' => []];
+    }
+
+    $st = $pdo->prepare("
+      SELECT id, name, use_count, last_used_at
+      FROM vehicle_repair_vendors
+      WHERE is_active = 1
+        AND name LIKE ?
+      ORDER BY use_count DESC, last_used_at DESC, id DESC
+      LIMIT 10
+    ");
+    $st->execute(['%' . $q . '%']);
+    return ['rows' => $st->fetchAll()];
+  }
+
+  public static function vehicleVendorUpsert(string $nameOrId): array
+  {
+    $pdo = db();
+    $v = trim($nameOrId);
+    if ($v === '') throw new RuntimeException('vendor 不可空白');
+
+    // 純數字 => vendor_id（必須存在）
+    if (preg_match('/^\d+$/', $v)) {
+      $id = (int)$v;
+      $st = $pdo->prepare("SELECT id, name FROM vehicle_repair_vendors WHERE id = ? LIMIT 1");
+      $st->execute([$id]);
+      $row = $st->fetch();
+      if (!$row) throw new RuntimeException('vendor_id 不存在');
+      return ['vendor_id' => (int)$row['id'], 'vendor_name' => (string)$row['name']];
+    }
+
+    // 文字 => name upsert
+    $pdo->beginTransaction();
+    try {
+      $st = $pdo->prepare("SELECT id, name, use_count FROM vehicle_repair_vendors WHERE name = ? LIMIT 1");
+      $st->execute([$v]);
+      $row = $st->fetch();
+
+      if ($row) {
+        $id = (int)$row['id'];
+        $upd = $pdo->prepare("
+          UPDATE vehicle_repair_vendors
+          SET use_count = use_count + 1,
+              last_used_at = CURRENT_TIMESTAMP(),
+              is_active = 1
+          WHERE id = ?
+          LIMIT 1
+        ");
+        $upd->execute([$id]);
+        $pdo->commit();
+        return ['vendor_id' => $id, 'vendor_name' => (string)$row['name']];
+      }
+
+      $ins = $pdo->prepare("
+        INSERT INTO vehicle_repair_vendors (name, is_active, use_count, last_used_at)
+        VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
+      ");
+      $ins->execute([':name' => $v]);
+
+      $id = (int)$pdo->lastInsertId();
+      $pdo->commit();
+      return ['vendor_id' => $id, 'vendor_name' => $v];
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+  }
+
   /* ----------------- helpers ----------------- */
 
   private static function photoUrlFromRow(array $v): string

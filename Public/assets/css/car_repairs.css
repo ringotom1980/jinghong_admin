@@ -1,0 +1,118 @@
+/* Path: Public/assets/css/car_repairs.css
+ * 說明: 維修紀錄列表頁
+ */
+
+.car-repairs .cr-shell {
+  padding: 0;
+}
+
+.cr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.cr-kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: rgba(255,255,255,.72);
+}
+
+.cr-kpi__label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cr-kpi__value {
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(15,23,42,.92);
+}
+
+.cr-body {
+  padding: 14px 16px 16px 16px;
+}
+
+.cr-tableWrap {
+  position: relative;
+  overflow: auto;
+}
+
+.cr-table {
+  min-width: 1280px;
+}
+
+.cr-table td {
+  color: rgba(15,23,42,.78);
+}
+
+.cr-table td.num,
+.cr-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cr-table td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cr-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.cr-empty,
+.cr-loading {
+  padding: 14px 6px 4px 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(15,23,42,.04);
+}
+
+.cr-badge--maint {
+  border-color: rgba(37,99,235,.24);
+  background: rgba(37,99,235,.10);
+  color: rgba(30,58,138,.95);
+}
+
+.cr-badge--repair {
+  border-color: rgba(180,83,9,.26);
+  background: rgba(180,83,9,.10);
+  color: rgba(120,53,15,.95);
+}
+
+.cr-summary {
+  color: rgba(15,23,42,.76);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+
+.cr-note {
+  color: rgba(15,23,42,.66);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
