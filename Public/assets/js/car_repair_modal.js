@@ -8,7 +8,6 @@
   'use strict';
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
-  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function esc(s) {
     s = (s === null || s === undefined) ? '' : String(s);
@@ -38,8 +37,7 @@
       mode: 'CREATE', // CREATE | EDIT
       id: 0,
       vehicles: [],
-      data: null,
-      suggestOpen: false
+      data: null
     },
 
     init: function (app) {
@@ -74,7 +72,6 @@
 
       if (!global.apiGet) return;
 
-      // 先拿單筆（header + items），再確保 vehicles
       global.apiGet('/api/car/car_repair_get?id=' + encodeURIComponent(String(this.state.id))).then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '讀取失敗', message: (j && j.error) ? j.error : '未知錯誤' });
@@ -100,8 +97,7 @@
           Toast && Toast.show({ type: 'danger', title: '載入車輛清單失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return;
         }
-        var vehicles = (j.data && j.data.vehicles) ? j.data.vehicles : [];
-        self.state.vehicles = vehicles;
+        self.state.vehicles = (j.data && j.data.vehicles) ? j.data.vehicles : [];
         self.openModal();
       });
     },
@@ -127,7 +123,6 @@
       // ✅ 只標記「維修紀錄 modal」用（不影響其他頁的 modal）
       if (bd && bd.classList) bd.classList.add('modal--car-repair');
 
-      // ✅ 等 Modal 的 DOM 真正掛上去後再綁事件/填資料（避免只剩遮罩）
       setTimeout(function () {
         self.bindModalEvents();
         self.fillFormFromState();
@@ -136,6 +131,9 @@
     },
 
     buildHtml: function () {
+      // 版型定版：
+      // 第一列：車輛、維修日期、類別、維修廠商、里程數
+      // 第二列：備註（全寬）
       return ''
         + '<div class="crm">'
         + '  <div class="crm-grid">'
@@ -143,27 +141,31 @@
         + '      <label class="form-label">車輛</label>'
         + '      <select class="input" id="crmVehicle"></select>'
         + '    </div>'
+
         + '    <div class="crm-field">'
         + '      <label class="form-label">維修日期</label>'
         + '      <input class="input" type="date" id="crmRepairDate" />'
         + '    </div>'
-        + '    <div class="crm-field crm-vendorSuggest">'
-        + '      <label class="form-label">維修廠商（可輸入 id 或名稱）</label>'
-        + '      <input class="input" type="text" id="crmVendor" placeholder="例：12 或 XX保養廠" autocomplete="off" />'
-        + '      <div class="crm-suggestList" id="crmSuggest" hidden></div>'
-        + '      <div class="crm-help">輸入文字會即時建議；存檔時若為文字會自動建立/取得 vendor_id。</div>'
-        + '    </div>'
+
         + '    <div class="crm-field">'
-        + '      <label class="form-label">維修類別</label>'
+        + '      <label class="form-label">類別</label>'
         + '      <select class="input" id="crmRepairType">'
         + '        <option value="維修">維修</option>'
         + '        <option value="保養">保養</option>'
         + '      </select>'
         + '    </div>'
+
+        + '    <div class="crm-field crm-vendorSuggest">'
+        + '      <label class="form-label">維修廠商</label>'
+        + '      <input class="input" type="text" id="crmVendor" placeholder="例：12 或 XX保養廠" autocomplete="off" />'
+        + '      <div class="crm-suggestList" id="crmSuggest" hidden></div>'
+        + '    </div>'
+
         + '    <div class="crm-field">'
-        + '      <label class="form-label">里程</label>'
+        + '      <label class="form-label">里程數</label>'
         + '      <input class="input" type="number" id="crmMileage" placeholder="可空白" />'
         + '    </div>'
+
         + '    <div class="crm-field crm-field--full">'
         + '      <label class="form-label">備註</label>'
         + '      <textarea class="input" id="crmNote" rows="2" placeholder="備註"></textarea>'
@@ -172,7 +174,7 @@
 
         + '  <div class="crm-items">'
         + '    <div class="crm-items__head">'
-        + '      <div class="crm-items__title">明細（Items）</div>'
+        + '      <div class="crm-items__title">明細</div>'
         + '      <button type="button" class="btn btn--secondary" id="crmAddItem"><i class="fa-solid fa-plus"></i><span>新增明細</span></button>'
         + '    </div>'
         + '    <div class="crm-items__body" id="crmItems"></div>'
@@ -213,10 +215,8 @@
         grandTotal: qs('#crmGrandTotal')
       };
 
-      // 車輛 options
       this.renderVehicleOptions();
 
-      // 基本欄位同步到 state
       var sync = function () { self.syncHeaderFromForm(); self.recalcTotals(); };
 
       if (this.els.vehicle) this.els.vehicle.addEventListener('change', sync);
@@ -225,10 +225,7 @@
       if (this.els.mileage) this.els.mileage.addEventListener('input', sync);
       if (this.els.note) this.els.note.addEventListener('input', sync);
 
-      // vendor suggest（由 CarRepairVendors 處理）
       if (global.CarRepairVendors) global.CarRepairVendors.bind(this);
-
-      // items（由 CarRepairItems 處理）
       if (global.CarRepairItems) global.CarRepairItems.bind(this);
 
       if (this.els.addItem) {
@@ -246,9 +243,7 @@
         if (!v || !s) return;
 
         var box = e.target && e.target.closest ? e.target.closest('.crm-vendorSuggest') : null;
-        if (!box) {
-          s.hidden = true;
-        }
+        if (!box) s.hidden = true;
       }, { once: true });
     },
 
@@ -278,7 +273,6 @@
       if (this.els.mileage) this.els.mileage.value = (h.mileage === null || h.mileage === undefined) ? '' : String(h.mileage);
       if (this.els.note) this.els.note.value = h.note || '';
 
-      // render items
       if (global.CarRepairItems) global.CarRepairItems.renderRows((d.items || []));
     },
 
@@ -292,10 +286,7 @@
       h.repair_date = this.els.repairDate ? (this.els.repairDate.value || '') : '';
       h.vendor = this.els.vendor ? (this.els.vendor.value || '') : '';
       h.repair_type = this.els.repairType ? (this.els.repairType.value || '維修') : '維修';
-
-      var m = this.els.mileage ? (this.els.mileage.value || '') : '';
-      h.mileage = m;
-
+      h.mileage = this.els.mileage ? (this.els.mileage.value || '') : '';
       h.note = this.els.note ? (this.els.note.value || '') : '';
     },
 
@@ -325,15 +316,14 @@
 
       if (!h.vehicle_id) return '請選擇車輛';
       if (!h.repair_date) return '請選擇維修日期';
+      if (!h.repair_type) return '請選擇類別';
       if (!h.vendor) return '請輸入維修廠商（id 或名稱）';
-      if (!h.repair_type) return '請選擇維修類別';
 
       if (!items.length) return '請至少新增 1 筆明細';
 
       for (var i = 0; i < items.length; i++) {
         var it = items[i] || {};
-        if (!String(it.content || '').trim()) return '明細第 ' + (i + 1) + ' 筆：content 不可空白';
-        // amount 允許 0，但不可為 NaN
+        if (!String(it.content || '').trim()) return '明細第 ' + (i + 1) + ' 筆：維修內容不可空白';
         if (isNaN(Number(it.team_amount || 0))) return '明細第 ' + (i + 1) + ' 筆：工班負擔金額不正確';
         if (isNaN(Number(it.company_amount || 0))) return '明細第 ' + (i + 1) + ' 筆：公司負擔金額不正確';
       }
@@ -348,10 +338,9 @@
       var err = this.validate();
       if (err) {
         Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
-        return false; // 不關閉 modal
+        return false;
       }
 
-      // 同步一次
       this.syncHeaderFromForm();
       if (global.CarRepairItems) global.CarRepairItems.syncRowsToState();
 
@@ -364,12 +353,12 @@
       return global.apiPost('/api/car/car_repair_save', payload).then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (j && j.error) ? j.error : '未知錯誤' });
-          return false; // 不關閉
+          return false;
         }
 
         Toast && Toast.show({ type: 'success', title: '已存檔', message: '維修紀錄已更新' });
         if (self.app && self.app.loadList) self.app.loadList();
-        return true; // 允許關閉
+        return true;
       });
     }
   };

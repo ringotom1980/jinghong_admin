@@ -1,5 +1,9 @@
 /* Path: Public/assets/js/car_repair_items.js
  * 說明: 維修明細 items 區塊（新增/刪除/同步/即時計算）
+ * 定版：
+ * - 表頭只顯示一次（不在每列重複 label）
+ * - 項次由前端自動給值，不可編輯
+ * - seq/content 改中文：項次、維修內容
  */
 
 (function (global) {
@@ -29,7 +33,6 @@
       var wrap = modal.els && modal.els.itemsWrap ? modal.els.itemsWrap : null;
       if (!wrap) return;
 
-      // 列上 input 變更
       wrap.addEventListener('input', this.onInput.bind(this));
       wrap.addEventListener('click', this.onClick.bind(this));
     },
@@ -44,40 +47,55 @@
         return;
       }
 
-      var html = '';
+      // ✅ 先確保 seq 連號（且不可由使用者輸入）
       for (var i = 0; i < items.length; i++) {
-        var it = items[i] || {};
-        html += this.rowHtml(i, it);
+        if (!items[i]) items[i] = {};
+        items[i].seq = i + 1;
       }
+      if (this.modal && this.modal.state && this.modal.state.data) {
+        this.modal.state.data.items = items;
+      }
+
+      var html = '';
+      html += this.headerHtml(); // ✅ 表頭只一次
+
+      for (var k = 0; k < items.length; k++) {
+        html += this.rowHtml(k, items[k] || {});
+      }
+
       wrap.innerHTML = html;
     },
 
+    headerHtml: function () {
+      return ''
+        + '<div class="crm-itemsHeadRow" aria-hidden="true">'
+        + '  <div class="crm-itemsHeadCell">項次</div>'
+        + '  <div class="crm-itemsHeadCell">維修內容</div>'
+        + '  <div class="crm-itemsHeadCell">工班負擔</div>'
+        + '  <div class="crm-itemsHeadCell">公司負擔</div>'
+        + '  <div class="crm-itemsHeadCell">&nbsp;</div>'
+        + '</div>';
+    },
+
     rowHtml: function (idx, it) {
-      var seq = (it.seq !== null && it.seq !== undefined) ? it.seq : (idx + 1);
+      var seq = (idx + 1);
       var content = it.content || '';
       var team = (it.team_amount !== null && it.team_amount !== undefined) ? it.team_amount : 0;
       var comp = (it.company_amount !== null && it.company_amount !== undefined) ? it.company_amount : 0;
 
       return ''
         + '<div class="crm-itemRow" data-idx="' + idx + '">'
+        + '  <div class="crm-seq" data-f="seq">' + esc(seq) + '</div>'
         + '  <div class="crm-field">'
-        + '    <label class="form-label">seq</label>'
-        + '    <input class="input" type="number" data-f="seq" value="' + esc(seq) + '" />'
-        + '  </div>'
-        + '  <div class="crm-field">'
-        + '    <label class="form-label">content</label>'
         + '    <input class="input" type="text" data-f="content" value="' + esc(content) + '" placeholder="例：更換機油" />'
         + '  </div>'
         + '  <div class="crm-field">'
-        + '    <label class="form-label">工班負擔</label>'
         + '    <input class="input" type="number" step="0.01" data-f="team_amount" value="' + esc(team) + '" />'
         + '  </div>'
         + '  <div class="crm-field">'
-        + '    <label class="form-label">公司負擔</label>'
         + '    <input class="input" type="number" step="0.01" data-f="company_amount" value="' + esc(comp) + '" />'
         + '  </div>'
         + '  <div class="crm-field">'
-        + '    <label class="form-label">&nbsp;</label>'
         + '    <button type="button" class="crm-del" data-act="del" title="刪除此明細"><i class="fa-solid fa-xmark"></i></button>'
         + '  </div>'
         + '</div>';
@@ -87,11 +105,12 @@
       if (!this.modal || !this.modal.state || !this.modal.state.data) return;
 
       var items = this.modal.state.data.items || [];
-      var nextSeq = items.length + 1;
+      items.push({ seq: items.length + 1, content: '', team_amount: 0, company_amount: 0 });
 
-      items.push({ seq: nextSeq, content: '', team_amount: 0, company_amount: 0 });
+      // ✅ 重新連號
+      for (var i = 0; i < items.length; i++) items[i].seq = i + 1;
+
       this.modal.state.data.items = items;
-
       this.renderRows(items);
     },
 
@@ -112,9 +131,7 @@
       Modal.confirmChoice(
         '刪除明細',
         '確定要刪除此筆明細嗎？',
-        function () {
-          self.deleteRow(idx);
-        },
+        function () { self.deleteRow(idx); },
         null,
         { confirmText: '刪除', cancelText: '取消', allowCloseBtn: true, closeOnBackdrop: true, closeOnEsc: true }
       );
@@ -126,11 +143,8 @@
       var items = this.modal.state.data.items || [];
       items.splice(idx, 1);
 
-      // 重新編號 seq（維持整齊；也可不重排，但你規格偏向 seq 排序）
-      for (var i = 0; i < items.length; i++) {
-        if (!items[i]) continue;
-        if (items[i].seq === null || items[i].seq === undefined) items[i].seq = i + 1;
-      }
+      // ✅ 重新連號（符合「項次前端賦予」）
+      for (var i = 0; i < items.length; i++) items[i].seq = i + 1;
 
       this.modal.state.data.items = items;
       this.renderRows(items);
@@ -155,15 +169,12 @@
         };
 
         items.push({
-          seq: Number(get('seq') || (i + 1)),
+          seq: i + 1, // ✅ 固定由前端決定
           content: String(get('content') || '').trim(),
           team_amount: Number(get('team_amount') || 0),
           company_amount: Number(get('company_amount') || 0)
         });
       }
-
-      // 依 seq 排序（你規格：seq（排序））
-      items.sort(function (a, b) { return (a.seq || 0) - (b.seq || 0); });
 
       this.modal.state.data.items = items;
     }

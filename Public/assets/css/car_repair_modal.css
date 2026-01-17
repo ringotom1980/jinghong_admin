@@ -1,15 +1,17 @@
 /* Path: Public/assets/css/car_repair_modal.css
  * 說明: 維修紀錄 modal 內容樣式（使用全站 Modal 外殼 ui_modal.css）
- * 目標：左右寬一點、不要上下長（只影響 .modal--car-repair）
+ * 定版目標：
+ * - Modal 更寬（只影響 .modal--car-repair）
+ * - 第一列：車輛、維修日期、類別、維修廠商、里程數
+ * - 第二列：備註（全寬）
+ * - 明細表頭只顯示一次；列內不重複 label；項次不可編輯
  */
 
 /* ===== Modal 專屬外殼調整（只針對維修 modal） ===== */
 .modal-backdrop.modal--car-repair .modal-panel{
-  /* 原本 ui_modal.css 固定 520px：會導致內容被擠成上下長 */
-  width: min(920px, calc(100vw - 48px));
-  max-width: 920px;
+  width: min(1040px, calc(100vw - 48px));
+  max-width: 1040px;
 
-  /* 不要整個 modal 高到爆：讓內容區可以捲動 */
   max-height: calc(100vh - 72px);
   display: flex;
   flex-direction: column;
@@ -18,10 +20,10 @@
 /* 讓 body 區塊可捲動、footer 固定在下方 */
 .modal-backdrop.modal--car-repair .modal__body{
   overflow: auto;
-  max-height: calc(100vh - 72px - 56px - 64px); /* 粗略扣 head+foot，避免過長 */
+  max-height: calc(100vh - 72px - 56px - 64px);
 }
 
-/* 允許右上角 X（你在 JS allowCloseBtn=true） */
+/* 允許右上角 X（你 JS allowCloseBtn=true） */
 .modal-backdrop.modal--car-repair .modal__close{
   display: inline-flex;
   width: 34px;
@@ -44,34 +46,24 @@
   gap: 14px;
 }
 
-/* 上半部表單：改成 3 欄（寬螢幕更扁、更不會往下長） */
+/* ✅ 第一列 5 欄；備註用 full 撐到整列 */
 .crm-grid{
   display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr;
+  grid-template-columns: 1.45fr 1fr 0.9fr 1.35fr 0.8fr; /* 車輛/日期/類別/廠商/里程 */
   gap: 12px;
 }
 
-/* 欄位通用 */
 .crm-grid .crm-field{
   display: grid;
   gap: 6px;
 }
 
-/* 全寬欄位（備註） */
 .crm-grid .crm-field--full{
   grid-column: 1 / -1;
 }
 
-/* 讓 vendor 欄位在寬版更好用：佔 2 欄 */
-.crm-grid .crm-vendorSuggest{
-  grid-column: span 2;
-}
-
-/* 小提示 */
-.crm-help{
-  font-size: 13px;
-  color: rgba(15,23,42,.58);
-  margin-top: 2px;
+.crm-vendorSuggest{
+  position: relative;
 }
 
 /* ===== Items 區塊 ===== */
@@ -104,7 +96,24 @@
   gap: 10px;
 }
 
-/* 明細列：改成更寬版配置，讓欄位不要擠 */
+/* ✅ 表頭：只顯示一次 */
+.crm-itemsHeadRow{
+  display: grid;
+  grid-template-columns: 70px 1fr 160px 160px 44px;
+  gap: 10px;
+  align-items: center;
+
+  padding: 6px 0 8px 0;
+  border-bottom: 1px dashed rgba(15,23,42,.10);
+}
+
+.crm-itemsHeadCell{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(15,23,42,.70);
+}
+
+/* 明細列 */
 .crm-itemRow{
   display: grid;
   grid-template-columns: 70px 1fr 160px 160px 44px;
@@ -112,11 +121,26 @@
   align-items: start;
 }
 
+/* ✅ 項次：純文字 badge（不可編輯） */
+.crm-seq{
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: rgba(15,23,42,.78);
+  font-variant-numeric: tabular-nums;
+}
+
 .crm-itemRow .crm-field{
   display: grid;
   gap: 6px;
 }
 
+/* 刪除按鈕 */
 .crm-itemRow .crm-del{
   height: 38px;
   border-radius: 12px;
@@ -161,10 +185,6 @@
 }
 
 /* ===== vendor suggest ===== */
-.crm-vendorSuggest{
-  position: relative;
-}
-
 .crm-suggestList{
   position: absolute;
   left: 0;
@@ -199,18 +219,22 @@
   color: rgba(15,23,42,.55);
 }
 
-/* ===== RWD：小螢幕自動改成 1~2 欄，避免擠爆 ===== */
+/* ===== RWD ===== */
 @media (max-width: 980px){
   .modal-backdrop.modal--car-repair .modal-panel{
-    width: min(760px, calc(100vw - 36px));
-    max-width: 760px;
+    width: min(860px, calc(100vw - 36px));
+    max-width: 860px;
   }
+
   .crm-grid{
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* 5 欄在中螢幕改 2 欄 */
   }
-  .crm-grid .crm-vendorSuggest{
+
+  .crm-grid .crm-field--full{
     grid-column: 1 / -1;
   }
+
+  .crm-itemsHeadRow,
   .crm-itemRow{
     grid-template-columns: 60px 1fr 130px 130px 44px;
   }
@@ -220,9 +244,20 @@
   .crm-grid{
     grid-template-columns: 1fr;
   }
+
+  .crm-itemsHeadRow{
+    display: none; /* 小螢幕不顯示表頭，避免擠 */
+  }
+
   .crm-itemRow{
     grid-template-columns: 1fr;
   }
+
+  .crm-seq{
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
   .crm-totals{
     grid-template-columns: 1fr;
   }
