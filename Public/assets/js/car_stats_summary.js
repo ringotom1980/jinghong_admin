@@ -13,6 +13,12 @@
 
     function renderTop3(list) {
         list = list || [];
+
+        // ✅ 剔除「工資」（含前後空白）
+        list = list.filter(function (s) {
+            return String(s || '').trim() !== '工資';
+        });
+
         if (!list.length) return '—';
         var html = '<div class="cs-top3">';
         for (var i = 0; i < list.length; i++) {
