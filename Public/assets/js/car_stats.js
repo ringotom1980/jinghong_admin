@@ -218,9 +218,19 @@
 
         updateMeta: function () {
             var key = this.state.activeKey || '';
+            // 用 capsules 的 label 顯示「期間」，不要直接用 key
+            var periodText = key;
+            var caps = this.state.capsules || [];
+            for (var i = 0; i < caps.length; i++) {
+                if (caps[i] && String(caps[i].key) === String(key)) {
+                    periodText = caps[i].label || caps[i].key || key;
+                    break;
+                }
+            }
+
             var sN = (this.state.summaryRows || []).length;
             var dN = (this.state.detailsRows || []).length;
-            if (this.els.summaryMeta) this.els.summaryMeta.textContent = key ? ('期間：' + key + '｜車輛數：' + sN) : ('車輛數：' + sN);
+            if (this.els.summaryMeta) this.els.summaryMeta.textContent = key ? ('期間：' + periodText + '｜車輛數：' + sN) : ('車輛數：' + sN);
             if (this.els.detailsMeta) this.els.detailsMeta.textContent = this.state.activeVehicleId ? ('明細筆數：' + dN) : '';
         },
 
