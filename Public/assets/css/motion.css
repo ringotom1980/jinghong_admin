@@ -3,6 +3,10 @@
  * 說明: 全站動畫規則（Toast / Modal / Dropdown / 進場淡入）
  * - 目標：簡約、乾淨、有質感；避免過度晃動
  * - 支援 prefers-reduced-motion
+ *
+ * ✅ FIX（2026-01-17）：
+ * - 若把 .page-enter 掛在 <body> 上，body 會有 transform → 會讓 position:fixed（Modal/Toast）定位失效（跑到很下面）
+ * - 解法：body.page-enter 只做淡入（不做 transform）；非 body 的 .page-enter 仍保留位移進場
  */
 
 /* ===== Timing tokens ===== */
@@ -101,12 +105,25 @@
 }
 
 /* ===== Page enter ===== */
-.page-enter{
+/* ✅ 若 page-enter 掛在 body：只淡入（避免 body transform 破壞 fixed） */
+body.page-enter{
+  opacity: 0;
+  animation: pageEnterFade var(--m-slow) var(--m-ease-out) forwards;
+}
+
+/* ✅ 若 page-enter 掛在其他容器：保留位移進場 */
+.page-enter:not(body){
   opacity: 0;
   transform: translateY(6px);
-  animation: pageEnter var(--m-slow) var(--m-ease-out) forwards;
+  animation: pageEnterMove var(--m-slow) var(--m-ease-out) forwards;
 }
-@keyframes pageEnter{
+
+@keyframes pageEnterFade{
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pageEnterMove{
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
@@ -119,7 +136,14 @@
     --m-slow: 1ms;
   }
 
-  .page-enter{ animation: none; opacity: 1; transform: none; }
+  /* ✅ 無動態：body / 非 body 都不要動畫與 transform */
+  body.page-enter,
+  .page-enter:not(body){
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
   .motion-fade, .motion-slide-up, .motion-scale,
   .toast, .modal-panel, .dropdown-menu{
     transition: none !important;
