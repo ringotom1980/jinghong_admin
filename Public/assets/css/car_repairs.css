@@ -286,3 +286,19 @@
   text-overflow: ellipsis;
   max-width: 220px;
 }
+
+/* ===== 維修紀錄列表：整列 hover 效果 ===== */
+.cr-table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.cr-table tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.04); /* 淡灰藍，和你整站色系一致 */
+}
+
+.cr-table tbody tr:hover td.num {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* ===== 維修紀錄列表：整列 hover 效果 結束 ===== */
