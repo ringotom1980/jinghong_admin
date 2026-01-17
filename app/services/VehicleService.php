@@ -728,7 +728,7 @@ final class VehicleService
     $in = implode(',', array_fill(0, count($ids), '?'));
 
     $st2 = $pdo->prepare("
-    SELECT repair_id, seq, content
+    SELECT repair_id, seq, content, team_amount, company_amount
     FROM vehicle_repair_items
     WHERE repair_id IN ($in)
     ORDER BY repair_id ASC, seq ASC, id ASC
@@ -737,16 +737,31 @@ final class VehicleService
     $st2->execute();
     $items = $st2->fetchAll();
 
-    $map = [];
+    $map = []; // rid => ['contents'=>[], 'tooltip_lines'=>[]]
     foreach ($items as $it) {
       $rid = (int)$it['repair_id'];
-      if (!isset($map[$rid])) $map[$rid] = [];
-      $map[$rid][] = (string)$it['content'];
+      if (!isset($map[$rid])) $map[$rid] = ['contents' => [], 'tooltip_lines' => []];
+
+      $content = (string)($it['content'] ?? '');
+      $team = (float)($it['team_amount'] ?? 0);
+      $comp = (float)($it['company_amount'] ?? 0);
+
+      // summary 用（前三筆 + …）
+      $map[$rid]['contents'][] = $content;
+
+      // tooltip 用（一筆一列：更換皮帶(公司800、工班600)）
+      // 金額顯示成整數（和你列表一致）
+      $map[$rid]['tooltip_lines'][] =
+        $content . '(公司' . (string)round($comp) . '、工班' . (string)round($team) . ')';
     }
 
     foreach ($rows as &$r) {
       $rid = (int)$r['id'];
-      $arr = $map[$rid] ?? [];
+      $pack = $map[$rid] ?? ['contents' => [], 'tooltip_lines' => []];
+
+      $arr = $pack['contents'] ?? [];
+      $lines = $pack['tooltip_lines'] ?? [];
+
       $N = 3;
       $summary = '';
       if ($arr) {
@@ -755,6 +770,9 @@ final class VehicleService
         if (count($arr) > $N) $summary .= '…';
       }
       $r['items_summary'] = $summary;
+
+      // ✅ 原生 title 支援換行：一筆一列
+      $r['items_tooltip'] = $lines ? implode("\n", $lines) : '';
     }
     unset($r);
 
