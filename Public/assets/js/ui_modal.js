@@ -72,10 +72,20 @@
       bd.appendChild(panel);
       document.body.appendChild(bd);
 
-      // ✅ 疊加時提高 z-index，確保永遠在上層
+      // ✅ 疊加時提高 z-index：以上一層為基準 +10，保證疊在最上面
       if (stack) {
-        var z = 2000 + (this._stack.length * 10);
-        bd.style.zIndex = String(z);
+        var prev = (this._stack && this._stack.length) ? this._stack[this._stack.length - 1] : null;
+
+        var baseZ = 2000;
+        if (prev) {
+          // 先吃 inline style，再吃 computed style
+          var z1 = parseInt(prev.style.zIndex || '0', 10);
+          var z2 = 0;
+          try { z2 = parseInt(window.getComputedStyle(prev).zIndex || '0', 10); } catch (e) { z2 = 0; }
+          baseZ = Math.max(baseZ, (isNaN(z1) ? 0 : z1), (isNaN(z2) ? 0 : z2));
+        }
+
+        bd.style.zIndex = String(baseZ + 10);
       }
 
       // ✅ 保底：先立即打開（避免只剩遮罩）
