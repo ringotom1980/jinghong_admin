@@ -123,10 +123,10 @@
       var api = '';
       var params = { key: ctx.activeKey };
 
-      if (type === 'summary') api = '/api/car/car_stats_print_summary.php';
-      if (type === 'all_details') api = '/api/car/car_stats_print_all_details.php';
+      if (type === 'summary') api = '/api/car/car_stats_print_summary';
+      if (type === 'all_details') api = '/api/car/car_stats_print_all_details';
       if (type === 'vehicle_details') {
-        api = '/api/car/car_stats_print_vehicle_details.php';
+        api = '/api/car/car_stats_print_vehicle_details';
         params.vehicle_id = ctx.activeVehicleId;
       }
 

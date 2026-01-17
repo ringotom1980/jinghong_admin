@@ -130,7 +130,7 @@
 
     loadInit: function () {
       var self = this;
-      apiGet('/api/car/car_stats.php', {}).then(function (j) {
+      apiGet('/api/car/car_stats', {}).then(function (j) {
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入失敗');
         var d = j.data || {};
 
@@ -161,7 +161,7 @@
       this.els.summaryBody.innerHTML = '<tr><td colspan="7" class="cs-empty">載入中…</td></tr>';
       this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="cs-empty">載入中…</td></tr>';
 
-      apiGet('/api/car/car_stats_summary.php', { key: key }).then(function (j) {
+      apiGet('/api/car/car_stats_summary', { key: key }).then(function (j) {
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入彙總失敗');
         var rows = (j.data && j.data.rows) ? j.data.rows : [];
         self.state.summaryRows = rows;
@@ -179,7 +179,7 @@
           return;
         }
 
-        return apiGet('/api/car/car_stats_details.php', { key: key, vehicle_id: self.state.activeVehicleId });
+        return apiGet('/api/car/car_stats_details', { key: key, vehicle_id: self.state.activeVehicleId });
       }).then(function (j2) {
         if (!j2) return;
         if (!j2.success) throw new Error(j2.error || '載入明細失敗');
@@ -199,7 +199,7 @@
       if (global.CarStatsSummary) global.CarStatsSummary.setActive(this.els.summaryBody, vehicleId);
       this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="cs-empty">載入中…</td></tr>';
 
-      apiGet('/api/car/car_stats_details.php', { key: this.state.activeKey, vehicle_id: vehicleId }).then(function (j) {
+      apiGet('/api/car/car_stats_details', { key: this.state.activeKey, vehicle_id: vehicleId }).then(function (j) {
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入明細失敗');
         var rows = (j.data && j.data.rows) ? j.data.rows : [];
         self.state.detailsRows = rows;
