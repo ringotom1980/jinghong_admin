@@ -262,7 +262,7 @@
                     var code = r.vehicle_code || r.code || '';
                     var plate = r.plate_no || r.plate || '';
                     var s = (code ? String(code) : '');
-                    if (plate) s += (s ? '   ' : '') + String(plate);
+                    if (plate) s += (s ? ' │ ' : '') + String(plate);
                     return s;
                 }
             }

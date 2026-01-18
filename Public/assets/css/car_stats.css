@@ -307,6 +307,26 @@
   margin-right: 8px;
 }
 
+/*列印視窗選項*/
+.cs-radio__item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  line-height:1.6;
+  cursor:pointer;
+}
+
+.cs-radio__text{
+  display:inline-block;
+}
+
+.cs-radio__meta{
+  color: rgba(92, 93, 95, 0.55);
+  font-size: 12px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
 .cs-hint {
   margin: 10px 0 0;
   color: var(--muted);
