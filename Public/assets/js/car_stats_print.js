@@ -167,7 +167,7 @@
                 html += '<header class="print-head print-head--vehicle">';
                 html += '<div class="print-head__left">';
                 html += '<img class="print-head__logo" src="' + esc(logoSrc) + '" alt="LOGO">';
-                html += '<h1 class="print-head__title">' + esc(payload.title || '各車維修明細表') + '</h1>';
+                html += '<h1 class="print-head__title">' + esc(title) + '</h1>';
                 html += '</div>';
                 html += '<div class="print-head__right">' + esc(vTitleRight) + '</div>';
                 html += '</header>';

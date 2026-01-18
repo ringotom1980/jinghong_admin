@@ -249,7 +249,7 @@ td.col-grand {
 
 /* 明細欄位換行策略 */
 td.col-detail {
-  white-space: pre-wrap; /* \n 顯示成換行 */
+  white-space: normal;
   word-break: break-word;
 }
 

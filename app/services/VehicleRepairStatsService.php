@@ -339,7 +339,7 @@ final class VehicleRepairStatsService
 
     return [
       'type' => 'all_details',
-      'title' => '各車維修明細表（' . $key . '）',
+      'title' => '境宏工程有限公司-各車維修明細表(' . $this->keyToLabel($key) . ')',
       'key' => $key,
       'vehicles' => $out
     ];
