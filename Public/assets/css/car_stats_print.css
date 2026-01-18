@@ -4,8 +4,8 @@
 
 /* 邊界更小（佔版面更大） */
 @page {
-  /* top 要留給固定頁首（LOGO+標題），才能每頁都不壓表格 */
-  margin: 24mm 6mm 10mm 6mm;
+  /* 列印邊界 */
+  margin: 6mm 6mm 6mm 6mm;
 
   @bottom-right {
     content: "第 " counter(page) " 頁";
@@ -13,12 +13,18 @@
   }
 }
 
-html, body {
-  font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
+html,
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC",
+    sans-serif;
   color: #111;
 }
 
-body { padding: 0; margin: 0; }
+body {
+  padding: 0;
+  margin: 0;
+  margin-top: 14mm;
+}
 
 /* 固定頁首：每頁都顯示 */
 .print-head {
@@ -26,6 +32,7 @@ body { padding: 0; margin: 0; }
   top: 0;
   left: 0;
   right: 0;
+  height: 14mm;
 
   display: flex;
   align-items: center;
@@ -54,7 +61,9 @@ body { padding: 0; margin: 0; }
   letter-spacing: 0.2px;
 }
 
-.sec { margin: 10px 0 14px; }
+.sec {
+  margin: 10px 0 14px;
+}
 
 h3 {
   margin: 10px 0 8px;
@@ -68,7 +77,8 @@ table {
   table-layout: fixed;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #d9d9d9;
   padding: 7px 8px;
   font-size: 13px;
@@ -83,35 +93,60 @@ th {
 }
 
 /* 對齊工具 */
-.ta-r { text-align: right; font-variant-numeric: tabular-nums; }
-.ta-c { text-align: center; }
-.ta-l { text-align: left; }
+.ta-r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ta-c {
+  text-align: center;
+}
+.ta-l {
+  text-align: left;
+}
 
 /* 你指定：編號、公司負擔、工班負擔、維修金額 標題置中
    （其實 th 預設置中已做到，但保險） */
-th.col-code, th.col-company, th.col-team, th.col-grand { text-align: center !important; }
+th.col-code,
+th.col-company,
+th.col-team,
+th.col-grand {
+  text-align: center !important;
+}
 
 /* 你指定：編號、車牌底下 td 置中 */
-td.col-code, td.col-plate { text-align: center; }
+td.col-code,
+td.col-plate {
+  text-align: center;
+}
 
 /* 車牌欄寬，且不要換行 */
-th.col-plate, td.col-plate {
-  width: 66px;        /* 你可以再加到 100~120 */
+th.col-plate,
+td.col-plate {
+  width: 66px; /* 你可以再加到 100~120 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* 編號欄寬，避免被擠壓 */
-th.col-code, td.col-code {
+th.col-code,
+td.col-code {
   width: 36px;
   white-space: nowrap;
 }
 
 /* 列印時避免表格標題列被切開 */
-thead { display: table-header-group; }
-tr { break-inside: avoid; page-break-inside: avoid; }
+thead {
+  display: table-header-group;
+}
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
 @media print {
-  a { text-decoration: none; color: inherit; }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
 }
