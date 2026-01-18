@@ -1,0 +1,334 @@
+/* Path: Public/assets/css/equ_stats.css
+ * 說明: 工具管理｜維修統計頁樣式（兩欄布局、capsules、table、modal）
+ * - 版型比照 car_stats.css，但 class 改為 es-*
+ */
+
+.equ-stats .page-head {
+  margin-bottom: 12px;
+}
+.equ-stats .page-desc {
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.es-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 14px;
+}
+
+/* ===== Capsules（橫向一列 + 年度垂直分隔線）===== */
+.es-capsules {
+  display: flex;
+  flex-wrap: nowrap; /* ✅ 不換行 */
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto; /* ✅ 超出就橫向捲動 */
+  overflow-y: hidden;
+  padding: 2px 2px; /* 避免陰影被裁切 */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.es-yearSep {
+  width: 1px; /* ✅ 垂直線 */
+  height: 28px; /* 視覺高度（約等於膠囊高度） */
+  background: var(--line);
+  opacity: 0.9;
+  margin: 0 6px;
+  flex: 0 0 auto;
+}
+
+.es-cap {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.es-cap:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.es-cap.is-active {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(30, 58, 138, 0.98);
+  box-shadow: 0 2px 10px rgba(2, 6, 23, 0.08);
+}
+/* ===== Capsules 結束 ===== */
+
+.es-printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.es-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .es-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.es-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.04);
+}
+
+.es-panel__head {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.es-panel__head h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.es-panel__meta {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.es-tableWrap {
+  overflow: auto;
+}
+
+/* ===== Stats Table（比照 repairs：colgroup + 百分比欄寬）===== */
+.es-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  /* ✅ 字體略大 */
+  font-size: 14.5px;
+
+  /* ✅ 百分比欄寬穩定：必須 fixed */
+  table-layout: fixed;
+}
+
+/* 表頭/表身：全置中 */
+.es-table thead th,
+.es-table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* sticky header */
+.es-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 10px;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.es-table tbody td {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 9px 10px;
+}
+
+/* hover / active */
+.es-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+.es-table tbody tr.is-active {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* 數字欄：置中 + 等寬數字 */
+.es-table th.num,
+.es-table td.num {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== colgroup 欄寬（要 stats.php 有加 colgroup 才會生效）===== */
+/* Summary 共用 */
+.es-table col.es-col--tool {
+  width: 24%;
+} /* 工具名稱 */
+.es-table col.es-col--count {
+  width: 10%;
+} /* 次數 */
+.es-table col.es-col--company {
+  width: 14%;
+} /* 公司負擔 */
+.es-table col.es-col--team {
+  width: 14%;
+} /* 工班負擔 */
+.es-table col.es-col--grand {
+  width: 14%;
+} /* 總金額 */
+
+/* Summary 特有 */
+.es-table--summary col.es-col--top3 {
+  width: 24%;
+} /* Top3 */
+
+/* Details 特有 */
+.es-table--details col.es-col--date {
+  width: 14%;
+} /* 事件日期 */
+.es-table--details col.es-col--type {
+  width: 10%;
+} /* 類型 */
+.es-table--details col.es-col--vendor {
+  width: 14%;
+} /* 廠商 */
+.es-table--details col.es-col--content {
+  width: 24%;
+} /* 項目內容 */
+
+/* 明細內容欄：允許換行 + 內容靠左
+   注意：details 表格第 5 欄是「項目內容」 */
+.es-table--details td:nth-child(5) {
+  text-align: left;
+  white-space: normal;
+  line-height: 1.35;
+}
+/* ===== Stats Table 結束 ===== */
+
+.es-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 10px;
+}
+
+/* Top3 tag 區 */
+.es-top3 {
+  color: rgba(15, 23, 42, 0.78);
+  font-size: 12px;
+  line-height: 1.25;
+  display: inline-block;
+}
+.es-top3 .tag {
+  display: inline-block;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin: 0 6px 6px 0;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== Modal（目前 stats.php 仍有 modal 結構；就算你未來改成不彈窗，也不影響）===== */
+.es-modal[aria-hidden="true"] {
+  display: none;
+}
+
+.es-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.es-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.es-modal__panel {
+  position: relative;
+  width: min(520px, calc(100% - 24px));
+  margin: 10vh auto 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(2, 6, 23, 0.25);
+  overflow: hidden;
+}
+
+.es-modal__head,
+.es-modal__foot {
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.es-modal__head {
+  border-bottom: 1px solid var(--line);
+}
+.es-modal__foot {
+  border-top: 1px solid var(--line);
+}
+
+.es-modal__title {
+  font-weight: 700;
+}
+
+.es-modal__close {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.es-modal__close:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.es-modal__body {
+  padding: 12px 12px 14px;
+}
+
+.es-radio {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 8px;
+}
+.es-radio input {
+  margin-right: 8px;
+}
+
+/* 列印視窗選項（沿用你 car 的排版手感） */
+.es-radio__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.es-radio__text {
+  display: inline-block;
+}
+
+.es-radio__meta {
+  color: rgba(92, 93, 95, 0.55);
+  font-size: 14px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.es-hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
