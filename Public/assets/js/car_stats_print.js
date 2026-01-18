@@ -106,6 +106,50 @@
                 html += '<td class="ta-r">' + esc(fmtMoney(r.grand_total)) + '</td>';
                 html += '</tr>';
             });
+            (payload.rows || []).forEach(function (r) {
+                html += '<tr>';
+                html += '<td class="ta-c col-code">' + esc(r.vehicle_code || '') + '</td>';
+                html += '<td class="ta-c col-plate">' + esc(r.plate_no || '') + '</td>';
+
+                (payload.months || []).forEach(function (m) {
+                    var cell = (r.by_month && r.by_month[m]) ? r.by_month[m] : { grand_total: 0 };
+                    html += '<td class="ta-r">' + esc(fmtMoney(cell.grand_total)) + '</td>';
+                });
+
+                html += '<td class="ta-r">' + esc(fmtMoney(r.company_total)) + '</td>';
+                html += '<td class="ta-r">' + esc(fmtMoney(r.team_total)) + '</td>';
+                html += '<td class="ta-r">' + esc(fmtMoney(r.grand_total)) + '</td>';
+                html += '</tr>';
+            });
+
+            /* ✅ 合計列（表格最下方） */
+            var sumByMonth = {};
+            (payload.months || []).forEach(function (m) { sumByMonth[m] = 0; });
+            var sumCompany = 0, sumTeam = 0, sumGrand = 0;
+
+            (payload.rows || []).forEach(function (r) {
+                (payload.months || []).forEach(function (m) {
+                    var cell = (r.by_month && r.by_month[m]) ? r.by_month[m] : { grand_total: 0 };
+                    sumByMonth[m] += Number(cell.grand_total || 0);
+                });
+                sumCompany += Number(r.company_total || 0);
+                sumTeam += Number(r.team_total || 0);
+                sumGrand += Number(r.grand_total || 0);
+            });
+
+            html += '<tr class="sum-row">';
+            html += '<td class="ta-c" colspan="2">合計</td>';
+
+            (payload.months || []).forEach(function (m) {
+                html += '<td class="ta-r">' + esc(fmtMoney(sumByMonth[m])) + '</td>';
+            });
+
+            html += '<td class="ta-r">' + esc(fmtMoney(sumCompany)) + '</td>';
+            html += '<td class="ta-r">' + esc(fmtMoney(sumTeam)) + '</td>';
+            html += '<td class="ta-r">' + esc(fmtMoney(sumGrand)) + '</td>';
+            html += '</tr>';
+
+            html += '</tbody></table></div>';
 
             html += '</tbody></table></div>';
         }

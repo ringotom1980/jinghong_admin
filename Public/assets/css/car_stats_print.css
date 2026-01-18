@@ -151,6 +151,13 @@ thead tr.col-guard th {
   background: transparent !important;
 }
 
+/* 合計列視覺 */
+tr.sum-row td {
+  font-weight: 800;
+  background: #fff;
+  border-top: 2px solid #111;   /* 你截圖那種「上方一條較粗的線」 */
+}
+
 @media print {
   a {
     text-decoration: none;
