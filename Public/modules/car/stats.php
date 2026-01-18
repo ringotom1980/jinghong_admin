@@ -14,6 +14,7 @@ $pageTitle = '車輛管理｜維修統計';
 
 $pageCss = [
     'assets/css/car_stats.css',
+    'assets/css/ui_back_to_top.css',
 ];
 
 $pageJs = [
@@ -22,6 +23,7 @@ $pageJs = [
     'assets/js/car_stats_summary.js',
     'assets/js/car_stats_details.js',
     'assets/js/car_stats_print.js',
+    'assets/js/ui_back_to_top.js',
 ];
 ?>
 <!DOCTYPE html>
