@@ -1,7 +1,7 @@
 <?php
 /**
  * Path: Public/api/equ/equ_stats.php
- * 說明: 工具維修統計頁初始化總控 API（capsules + summary + default details）
+ * 說明: 工具維修統計頁初始化總控 API（capsules + vendor summary + default vendor details）
  */
 
 declare(strict_types=1);
@@ -15,7 +15,7 @@ try {
   $svc = new EquRepairStatsService(db());
 
   $key = isset($_GET['key']) ? trim((string)$_GET['key']) : '';
-  $toolId = isset($_GET['tool_id']) ? (int)$_GET['tool_id'] : 0;
+  $vendorId = isset($_GET['vendor_id']) ? (int)$_GET['vendor_id'] : 0;
 
   $capsules = $svc->getCapsules(5);
   $defaultKey = $svc->getDefaultKeyFromCapsules($capsules);
@@ -24,17 +24,17 @@ try {
 
   $summaryRows = $key ? $svc->getSummary($key) : [];
 
-  if ($toolId <= 0 && $summaryRows) {
-    $toolId = (int)($summaryRows[0]['tool_id'] ?? 0);
+  if ($vendorId <= 0 && $summaryRows) {
+    $vendorId = (int)($summaryRows[0]['vendor_id'] ?? 0);
   }
 
-  $detailsRows = ($key && $toolId > 0) ? $svc->getDetails($key, $toolId) : [];
+  $detailsRows = ($key && $vendorId > 0) ? $svc->getDetails($key, $vendorId) : [];
 
   json_ok([
     'capsules' => $capsules,
     'defaultKey' => $defaultKey,
     'summaryRows' => $summaryRows,
-    'activeToolId' => $toolId > 0 ? $toolId : null,
+    'activeVendorId' => $vendorId > 0 ? $vendorId : null,
     'detailsRows' => $detailsRows,
   ]);
 } catch (Throwable $e) {

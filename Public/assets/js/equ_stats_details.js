@@ -1,6 +1,7 @@
 /* Path: Public/assets/js/equ_stats_details.js
- * 說明: 右側明細表渲染（唯讀、不排序、不編輯）
- * - 一列一個 header（repair_date + vendor + repair_type + items 組合）
+ * 說明: 右側明細表渲染（廠商維修明細）
+ * - 一列一個 header（repair_date + repair_type + items 組合）
+ * - 欄位：維修日期 / 類型 / 項目內容 / 公司負擔 / 工班負擔 / 總金額
  */
 
 (function (global) {
@@ -33,7 +34,7 @@
     // 表格顯示：前三筆，用頓號串，超過加 …
     var text = shown.join('、') + (more ? '…' : '');
 
-    // tooltip：每筆一行（保持你既有行為）
+    // tooltip：每筆一行
     var title = items.join('\n');
 
     return { text: text, title: title };
@@ -45,17 +46,15 @@
       rows = rows || [];
 
       if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="es-empty">無明細</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="es-empty">無明細</td></tr>';
         return;
       }
 
       var html = '';
       rows.forEach(function (r) {
         html += '<tr>';
-        html += '<td>' + esc(r.tool_name || '') + '</td>';
         html += '<td>' + esc(r.repair_date || '') + '</td>';
         html += '<td>' + esc(r.repair_type || '') + '</td>';
-        html += '<td>' + esc(r.vendor_name || '') + '</td>';
 
         var cc = buildContentCell(r.detail || '');
         html += '<td title="' + esc(cc.title) + '">' + esc(cc.text) + '</td>';

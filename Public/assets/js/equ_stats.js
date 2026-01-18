@@ -1,8 +1,10 @@
 /* Path: Public/assets/js/equ_stats.js
  * 說明: 工具維修統計頁總控（唯一入口）
- * - state: activeKey, activeToolId, summaryRows, detailsRows
- * - 首載：打 /api/equ/equ_stats.php 一次拿 capsules + summary + default details
- * - 列印：不出 modal，直接列印 summary
+ * - state: activeKey, activeVendorId, summaryRows, detailsRows
+ * - 首載：/api/equ/equ_stats.php 一次拿 capsules + summary + default details
+ * - 期間切換：/api/equ/equ_stats_summary.php
+ * - 明細載入：/api/equ/equ_stats_details.php (key + vendor_id)
+ * - 列印：直接列印（equ_stats_print.js /api/equ/equ_stats_print）
  */
 
 (function (global) {
@@ -50,7 +52,7 @@
       capsules: [],
       defaultKey: '',
       activeKey: '',
-      activeToolId: null,
+      activeVendorId: null,
       summaryRows: [],
       detailsRows: []
     },
@@ -81,15 +83,15 @@
         self.setActiveKey(key);
       });
 
-      // Summary row click（委派）
+      // Summary row click（委派）：vendor
       document.addEventListener('click', function (e) {
-        var tr = e.target && e.target.closest ? e.target.closest('tr[data-tool-id]') : null;
+        var tr = e.target && e.target.closest ? e.target.closest('tr[data-vendor-id]') : null;
         if (!tr) return;
-        var tid = tr.getAttribute('data-tool-id');
-        if (!tid) return;
-        var id = parseInt(tid, 10);
-        if (!id || id === self.state.activeToolId) return;
-        self.setActiveTool(id);
+        var vid = tr.getAttribute('data-vendor-id');
+        if (!vid) return;
+        var id = parseInt(vid, 10);
+        if (!id || id === self.state.activeVendorId) return;
+        self.setActiveVendor(id);
       });
 
       // Print（直接列印）
@@ -112,11 +114,11 @@
         self.state.activeKey = self.state.defaultKey || '';
 
         self.state.summaryRows = d.summaryRows || [];
-        self.state.activeToolId = d.activeToolId || null;
+        self.state.activeVendorId = d.activeVendorId || null;
         self.state.detailsRows = d.detailsRows || [];
 
         if (global.EquStatsCapsules) global.EquStatsCapsules.render(self.els.capsules, self.state.capsules, self.state.activeKey);
-        if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeToolId, fmtInt);
+        if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVendorId, fmtInt);
         if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
 
         self.updateMeta();
@@ -131,8 +133,9 @@
       this.state.activeKey = key;
 
       if (global.EquStatsCapsules) global.EquStatsCapsules.setActive(this.els.capsules, key);
+
       this.els.summaryBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
-      this.els.detailsBody.innerHTML = '<tr><td colspan="8" class="es-empty">載入中…</td></tr>';
+      this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
 
       apiGet('/api/equ/equ_stats_summary', { key: key }).then(function (j) {
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入彙總失敗');
@@ -140,19 +143,19 @@
         self.state.summaryRows = rows;
 
         var first = rows && rows.length ? rows[0] : null;
-        self.state.activeToolId = first ? (first.tool_id || null) : null;
+        self.state.activeVendorId = first ? (first.vendor_id || null) : null;
 
-        if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeToolId, fmtInt);
+        if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVendorId, fmtInt);
         self.updateMeta();
 
-        if (!self.state.activeToolId) {
+        if (!self.state.activeVendorId) {
           self.state.detailsRows = [];
           if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, [], fmtInt);
           self.updateMeta();
           return;
         }
 
-        return apiGet('/api/equ/equ_stats_details', { key: key, tool_id: self.state.activeToolId });
+        return apiGet('/api/equ/equ_stats_details', { key: key, vendor_id: self.state.activeVendorId });
       }).then(function (j2) {
         if (!j2) return;
         if (!j2.success) throw new Error(j2.error || '載入明細失敗');
@@ -165,21 +168,21 @@
       });
     },
 
-    setActiveTool: function (toolId) {
+    setActiveVendor: function (vendorId) {
       var self = this;
-      this.state.activeToolId = toolId;
+      this.state.activeVendorId = vendorId;
 
-      if (global.EquStatsSummary) global.EquStatsSummary.setActive(this.els.summaryBody, toolId);
-      this.els.detailsBody.innerHTML = '<tr><td colspan="8" class="es-empty">載入中…</td></tr>';
+      if (global.EquStatsSummary) global.EquStatsSummary.setActive(this.els.summaryBody, vendorId);
+      this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
 
-      apiGet('/api/equ/equ_stats_details', { key: this.state.activeKey, tool_id: toolId }).then(function (j) {
+      apiGet('/api/equ/equ_stats_details', { key: this.state.activeKey, vendor_id: vendorId }).then(function (j) {
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入明細失敗');
         var rows = (j.data && j.data.rows) ? j.data.rows : [];
         self.state.detailsRows = rows;
         if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
         self.updateMeta();
       }).catch(function (err) {
-        toast('error', '切換工具失敗', err && err.message ? err.message : String(err));
+        toast('error', '切換廠商失敗', err && err.message ? err.message : String(err));
       });
     },
 
@@ -197,14 +200,14 @@
       var sN = (this.state.summaryRows || []).length;
       var dN = (this.state.detailsRows || []).length;
 
-      if (this.els.summaryMeta) this.els.summaryMeta.textContent = key ? ('期間：' + periodText + '｜工具數：' + sN) : ('工具數：' + sN);
-      if (this.els.detailsMeta) this.els.detailsMeta.textContent = this.state.activeToolId ? ('明細筆數：' + dN) : '';
+      if (this.els.summaryMeta) this.els.summaryMeta.textContent = key ? ('期間：' + periodText + '｜廠商數：' + sN) : ('廠商數：' + sN);
+      if (this.els.detailsMeta) this.els.detailsMeta.textContent = this.state.activeVendorId ? ('明細筆數：' + dN) : '';
     },
 
     renderEmpty: function () {
       if (this.els.capsules) this.els.capsules.innerHTML = '';
       if (this.els.summaryBody) this.els.summaryBody.innerHTML = '<tr><td colspan="6" class="es-empty">無資料</td></tr>';
-      if (this.els.detailsBody) this.els.detailsBody.innerHTML = '<tr><td colspan="8" class="es-empty">無資料</td></tr>';
+      if (this.els.detailsBody) this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="es-empty">無資料</td></tr>';
     },
 
     doPrint: function () {

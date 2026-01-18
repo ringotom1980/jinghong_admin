@@ -25,15 +25,17 @@
       var lastYear = null;
 
       capsules.forEach(function (c) {
-        var y = yearFromKey(c.key);
+        var key = String((c && c.key) || '');
+        var y = yearFromKey(key);
+
         if (lastYear !== null && y !== lastYear) {
           html += '<div class="es-yearSep" role="separator" aria-hidden="true"></div>';
         }
         lastYear = y;
 
-        var isActive = (c.key === activeKey);
-        html += '<button type="button" class="es-cap' + (isActive ? ' is-active' : '') + '" data-es-key="' + esc(c.key) + '">'
-          + esc(c.label || c.key) + '</button>';
+        var isActive = (String(key) === String(activeKey));
+        html += '<button type="button" class="es-cap' + (isActive ? ' is-active' : '') + '" data-es-key="' + esc(key) + '">'
+          + esc(c.label || key) + '</button>';
       });
 
       host.innerHTML = html || '<span class="es-empty">無可用期間</span>';
@@ -45,7 +47,7 @@
       for (var i = 0; i < btns.length; i++) {
         var b = btns[i];
         var k = b.getAttribute('data-es-key') || '';
-        if (k === activeKey) b.classList.add('is-active');
+        if (String(k) === String(activeKey)) b.classList.add('is-active');
         else b.classList.remove('is-active');
       }
     }

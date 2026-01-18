@@ -1,6 +1,6 @@
 /* Path: Public/assets/js/equ_stats_summary.js
  * 說明: 左側彙總表渲染 + active 樣式管理
- * - 依工具統計：工具名稱/次數/公司負擔/工班負擔/總金額/Top3
+ * - 依廠商統計：廠商/次數/公司負擔/工班負擔/總金額/Top3(工具名稱)
  */
 
 (function (global) {
@@ -15,7 +15,7 @@
   function fmtMoney(v) {
     var n = Number(v || 0);
     if (!isFinite(n)) n = 0;
-    return Math.round(n).toLocaleString('en-US');
+    return Math.round(n).toLocaleString('zh-TW');
   }
 
   function renderTop3(list) {
@@ -30,7 +30,7 @@
   }
 
   var Mod = {
-    render: function (tbody, rows, activeToolId, fmtInt) {
+    render: function (tbody, rows, activeVendorId, fmtInt) {
       if (!tbody) return;
       rows = rows || [];
 
@@ -41,11 +41,11 @@
 
       var html = '';
       rows.forEach(function (r) {
-        var tid = r.tool_id;
-        var isAct = (String(tid) === String(activeToolId));
+        var vid = r.vendor_id;
+        var isAct = (String(vid) === String(activeVendorId));
 
-        html += '<tr data-tool-id="' + esc(tid) + '" class="' + (isAct ? 'is-active' : '') + '">';
-        html += '<td>' + esc(r.tool_name || '') + '</td>';
+        html += '<tr data-vendor-id="' + esc(vid) + '" class="' + (isAct ? 'is-active' : '') + '">';
+        html += '<td>' + esc(r.vendor_name || '') + '</td>';
         html += '<td class="ta-r">' + esc(fmtInt(r.count || 0)) + '</td>';
         html += '<td class="ta-r">' + esc(fmtMoney(r.company_amount_total || 0)) + '</td>';
         html += '<td class="ta-r">' + esc(fmtMoney(r.team_amount_total || 0)) + '</td>';
@@ -57,13 +57,13 @@
       tbody.innerHTML = html;
     },
 
-    setActive: function (tbody, activeToolId) {
+    setActive: function (tbody, activeVendorId) {
       if (!tbody) return;
-      var trs = tbody.querySelectorAll('tr[data-tool-id]');
+      var trs = tbody.querySelectorAll('tr[data-vendor-id]');
       for (var i = 0; i < trs.length; i++) {
         var tr = trs[i];
-        var tid = tr.getAttribute('data-tool-id') || '';
-        if (String(tid) === String(activeToolId)) tr.classList.add('is-active');
+        var vid = tr.getAttribute('data-vendor-id') || '';
+        if (String(vid) === String(activeVendorId)) tr.classList.add('is-active');
         else tr.classList.remove('is-active');
       }
     }
