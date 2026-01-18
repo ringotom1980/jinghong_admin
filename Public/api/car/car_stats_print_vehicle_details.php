@@ -21,13 +21,8 @@ try {
     }
 
     $svc = new VehicleRepairStatsService(db());
-    $rows = $svc->getPrintVehicleDetails($key, $vehicleId);
-
-    json_ok([
-        'key'        => $key,
-        'vehicle_id' => $vehicleId,
-        'rows'       => $rows,
-    ]);
+    $payload = $svc->getPrintVehicleDetails($key, $vehicleId);
+    json_ok($payload);
 } catch (Throwable $e) {
     json_error($e->getMessage(), 500);
 }

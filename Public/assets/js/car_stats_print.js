@@ -218,24 +218,78 @@
             });
         }
 
-        // ===== vehicle_details =====
+        // ===== vehicle_details (單車維修明細)=====
         if (payload && payload.type === 'vehicle_details') {
             var v2 = payload.vehicle || {};
-            html += '<div class="sec">';
-            html += '<h3>' + esc(v2.vehicle_code || '') + '（' + esc(v2.plate_no || '') + '）</h3>';
-            html += '<table><thead><tr>';
-            html += '<th>日期</th><th>內容</th><th class="ta-r">公司</th><th class="ta-r">工班</th><th class="ta-r">總額</th>';
+            var vTitleRight = (v2.vehicle_code || '') + '（' + (v2.plate_no || '') + '）';
+
+            html += '<div class="sec sec--vehicle">';
+            html += '<table class="t-details"><thead>';
+
+            // ✅ 欄寬定錨列（沿用同一份 CSS 欄寬）
+            html += '<tr class="col-guard">';
+            html += '<th class="col-no"></th>';
+            html += '<th class="col-date"></th>';
+            html += '<th class="col-vendor"></th>';
+            html += '<th class="col-type"></th>';
+            html += '<th class="col-detail"></th>';
+            html += '<th class="col-company"></th>';
+            html += '<th class="col-team"></th>';
+            html += '<th class="col-grand"></th>';
+            html += '</tr>';
+
+            // ✅ 文件標題列（同 all_details：LOGO + title + 右側車號/車牌）
+            html += '<tr class="print-head-row">';
+            html += '<th colspan="8">';
+            html += '<header class="print-head print-head--vehicle">';
+            html += '<div class="print-head__left">';
+            html += '<img class="print-head__logo" src="' + esc(logoSrc) + '" alt="LOGO">';
+            html += '<h1 class="print-head__title">' + esc(title) + '</h1>';
+            html += '</div>';
+            html += '<div class="print-head__right">' + esc(vTitleRight) + '</div>';
+            html += '</header>';
+            html += '</th>';
+            html += '</tr>';
+
+            // ✅ 欄位列（8 欄，完全一致）
+            html += '<tr>';
+            html += '<th class="ta-c col-no">項次</th>';
+            html += '<th class="ta-c col-date">維修時間</th>';
+            html += '<th class="ta-c col-vendor">維修廠商</th>';
+            html += '<th class="ta-c col-type">類型</th>';
+            html += '<th class="ta-c col-detail">維修明細</th>';
+            html += '<th class="ta-c col-company">公司負擔</th>';
+            html += '<th class="ta-c col-team">工班負擔</th>';
+            html += '<th class="ta-c col-grand">維修金額</th>';
             html += '</tr></thead><tbody>';
 
-            (payload.rows || []).forEach(function (r) {
+            var sumCompany = 0, sumTeam = 0, sumGrand = 0;
+
+            (payload.rows || []).forEach(function (r, idx) {
+                var c = Number(r.company_amount_total || 0);
+                var t = Number(r.team_amount_total || 0);
+                var g = Number(r.grand_total || 0);
+                sumCompany += c; sumTeam += t; sumGrand += g;
+
                 html += '<tr>';
-                html += '<td>' + esc(r.repair_date || '') + '</td>';
-                html += '<td>' + esc(r.content || '') + '</td>';
-                html += '<td class="ta-r">' + esc(fmtMoney(r.company_amount_total)) + '</td>';
-                html += '<td class="ta-r">' + esc(fmtMoney(r.team_amount_total)) + '</td>';
-                html += '<td class="ta-r">' + esc(fmtMoney(r.grand_total)) + '</td>';
+                html += '<td class="ta-c col-no">' + esc(String(idx + 1)) + '</td>';
+                html += '<td class="ta-c col-date">' + esc(r.repair_date || '') + '</td>';
+                html += '<td class="ta-c col-vendor">' + esc(r.vendor_name || '') + '</td>';
+                html += '<td class="ta-c col-type">' + esc(r.repair_type || '') + '</td>';
+                html += '<td class="ta-l col-detail">' + esc(r.detail || '') + '</td>';
+                html += '<td class="ta-r col-company">' + esc(fmtMoney(c)) + '</td>';
+                html += '<td class="ta-r col-team">' + esc(fmtMoney(t)) + '</td>';
+                html += '<td class="ta-r col-grand">' + esc(fmtMoney(g)) + '</td>';
                 html += '</tr>';
             });
+
+            // ✅ 合計列（同 all_details）
+            html += '<tr class="sum-row">';
+            html += '<td class="ta-c" colspan="5">合計</td>';
+            html += '<td class="ta-r col-company">' + esc(fmtMoney(sumCompany)) + '</td>';
+            html += '<td class="ta-r col-team">' + esc(fmtMoney(sumTeam)) + '</td>';
+            html += '<td class="ta-r col-grand">' + esc(fmtMoney(sumGrand)) + '</td>';
+            html += '</tr>';
 
             html += '</tbody></table></div>';
         }
