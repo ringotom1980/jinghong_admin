@@ -155,7 +155,6 @@ thead tr.col-guard th {
 tr.sum-row td {
   font-weight: 800;
   background: #fff;
-  border-top: 2px solid #111;   /* 你截圖那種「上方一條較粗的線」 */
 }
 
 @media print {
