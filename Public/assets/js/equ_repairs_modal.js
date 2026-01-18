@@ -68,7 +68,7 @@
         vendorDatalist: qs('#equVendorDatalist'),
 
         addItemBtn: qs('#equAddItemBtn'),
-        itemsTbody: qs('#equItemsTbody'),
+        itemsWrap: qs('#equItemsWrap'),
 
         sumCompany: qs('#equSumCompany'),
         sumTeam: qs('#equSumTeam'),
@@ -98,20 +98,19 @@
         });
       }
 
-      // 明細 input / 刪除
-      if (this.els.itemsTbody) {
-        this.els.itemsTbody.addEventListener('input', function () {
+      // 明細 input / 刪除（div-grid）
+      if (this.els.itemsWrap) {
+        this.els.itemsWrap.addEventListener('input', function () {
           self.syncItemsFromDom();
           self.recalcTotals();
         });
-        this.els.itemsTbody.addEventListener('click', function (e) {
+        this.els.itemsWrap.addEventListener('click', function (e) {
           var del = e.target && e.target.closest ? e.target.closest('button[data-act="del-item"]') : null;
           if (!del) return;
-          var tr = del.closest('tr');
-          var idx = tr ? Number(tr.getAttribute('data-idx') || 0) : -1;
+          var row = del.closest('.crm-itemRow');
+          var idx = row ? Number(row.getAttribute('data-idx') || 0) : -1;
           if (idx < 0) return;
 
-          // 這裡不彈 confirm（保持操作快速；若你要跟 car 一樣彈窗再說）
           self.deleteItemRow(idx);
           self.recalcTotals();
         });
@@ -274,15 +273,25 @@
       if (!this.state.data) this.state.data = { header: {}, items: [] };
       this.state.data.items = items;
 
-      var tb = this.els && this.els.itemsTbody;
-      if (!tb) return;
+      var wrap = this.els && this.els.itemsWrap;
+      if (!wrap) return;
 
       if (!items.length) {
-        tb.innerHTML = '';
+        wrap.innerHTML = '';
         return;
       }
 
       var html = '';
+      // 表頭只顯示一次（同 car）
+      html += ''
+        + '<div class="crm-itemsHeadRow">'
+        + '  <div class="crm-itemsHeadCell">項次</div>'
+        + '  <div class="crm-itemsHeadCell">項目內容</div>'
+        + '  <div class="crm-itemsHeadCell" style="text-align:right;">公司負擔</div>'
+        + '  <div class="crm-itemsHeadCell" style="text-align:right;">工班負擔</div>'
+        + '  <div class="crm-itemsHeadCell" style="text-align:center;">刪除</div>'
+        + '</div>';
+
       for (var i = 0; i < items.length; i++) {
         var it = items[i] || {};
         var seq = i + 1;
@@ -291,16 +300,22 @@
         var team = (it.team_amount !== null && it.team_amount !== undefined) ? it.team_amount : 0;
 
         html += ''
-          + '<tr data-idx="' + i + '">'
-          + '  <td>' + esc(seq) + '</td>'
-          + '  <td><input class="input" type="text" data-f="content" value="' + esc(content) + '" placeholder="例：更換零件" /></td>'
-          + '  <td class="ta-r"><input class="input" type="number" step="0.01" data-f="company_amount" value="' + esc(comp) + '" /></td>'
-          + '  <td class="ta-r"><input class="input" type="number" step="0.01" data-f="team_amount" value="' + esc(team) + '" /></td>'
-          + '  <td><button type="button" class="btn btn--danger" data-act="del-item" title="刪除"><i class="fa-solid fa-xmark"></i></button></td>'
-          + '</tr>';
+          + '<div class="crm-itemRow" data-idx="' + i + '">'
+          + '  <div class="crm-seq">' + esc(seq) + '</div>'
+          + '  <div class="crm-field">'
+          + '    <input class="input" type="text" data-f="content" value="' + esc(content) + '" placeholder="例：更換零件" />'
+          + '  </div>'
+          + '  <div class="crm-field">'
+          + '    <input class="input" type="number" step="0.01" data-f="company_amount" value="' + esc(comp) + '" style="text-align:right;" />'
+          + '  </div>'
+          + '  <div class="crm-field">'
+          + '    <input class="input" type="number" step="0.01" data-f="team_amount" value="' + esc(team) + '" style="text-align:right;" />'
+          + '  </div>'
+          + '  <button type="button" class="crm-del" data-act="del-item" title="刪除"><i class="fa-solid fa-xmark"></i></button>'
+          + '</div>';
       }
 
-      tb.innerHTML = html;
+      wrap.innerHTML = html;
     },
 
     addItemRow: function () {
@@ -326,7 +341,7 @@
       var tb = this.els && this.els.itemsTbody;
       if (!tb) return;
 
-      var rows = qsa('tr[data-idx]', tb);
+      var rows = qsa('.crm-itemRow[data-idx]', tb);
       var items = [];
 
       for (var i = 0; i < rows.length; i++) {

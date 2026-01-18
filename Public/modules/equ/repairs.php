@@ -109,9 +109,10 @@ $pageJs = [
         </section>
     </main>
 
-    <!-- Modal -->
+    <!-- Modal（對齊 car 維修 modal 的 crm 版型：grid + 明細 div-grid + 三卡 totals） -->
     <div class="equ-modal" id="equModal" aria-hidden="true">
         <div class="equ-modal__backdrop" data-close="1"></div>
+
         <div class="equ-modal__panel" role="dialog" aria-modal="true" aria-labelledby="equModalTitle">
             <header class="equ-modal__head">
                 <h2 id="equModalTitle">新增紀錄</h2>
@@ -119,70 +120,71 @@ $pageJs = [
             </header>
 
             <div class="equ-modal__body">
-                <div class="equ-form">
+
+                <!-- ✅ 改成 car 同款：crm 結構（但 id 仍沿用 equ 的，JS 綁定不會壞） -->
+                <div class="crm crm--equ">
                     <input type="hidden" id="equId" value="0" />
 
-                    <div class="equ-grid">
-                        <label class="equ-field">
-                            <span>日期</span>
-                            <input type="date" id="equDate" />
-                        </label>
+                    <!-- 第一列：日期 / 類型 / 機具名稱 / 廠商；第二列：備註全寬 -->
+                    <div class="crm-grid crm-grid--equ">
+                        <div class="crm-field">
+                            <label class="form-label">日期</label>
+                            <input class="input" type="date" id="equDate" />
+                        </div>
 
-                        <label class="equ-field">
-                            <span>類型</span>
-                            <select id="equRepairType">
+                        <div class="crm-field">
+                            <label class="form-label">類型</label>
+                            <select class="input" id="equRepairType">
                                 <option value="維修">維修</option>
                                 <option value="保養">保養</option>
                                 <option value="購買">購買</option>
                                 <option value="租賃">租賃</option>
                             </select>
-                        </label>
+                        </div>
 
-                        <label class="equ-field">
-                            <span>機具名稱</span>
-                            <input type="text" id="equToolName" placeholder="可直接輸入" list="equToolDatalist" />
+                        <div class="crm-field">
+                            <label class="form-label">機具名稱</label>
+                            <input class="input" type="text" id="equToolName" placeholder="可直接輸入" list="equToolDatalist" />
                             <datalist id="equToolDatalist"></datalist>
-                        </label>
+                        </div>
 
-                        <label class="equ-field">
-                            <span>廠商</span>
-                            <input type="text" id="equVendorName" placeholder="可直接輸入" list="equVendorDatalist" />
+                        <div class="crm-field">
+                            <label class="form-label">廠商</label>
+                            <input class="input" type="text" id="equVendorName" placeholder="可直接輸入" list="equVendorDatalist" />
                             <datalist id="equVendorDatalist"></datalist>
-                        </label>
+                        </div>
 
-                        <label class="equ-field equ-field--full">
-                            <span>備註</span>
-                            <input type="text" id="equNote" maxlength="255" />
-                        </label>
+                        <div class="crm-field crm-field--full">
+                            <label class="form-label">備註</label>
+                            <textarea class="input" id="equNote" rows="2" maxlength="255" placeholder="備註"></textarea>
+                        </div>
                     </div>
 
-                    <div class="equ-items">
-                        <div class="equ-items__head">
-                            <div class="equ-items__title">明細</div>
-                            <button type="button" class="btn btn--secondary" id="equAddItemBtn">新增明細</button>
+                    <!-- 明細：改用 div-grid（car 同款），tbody 改成容器 #equItemsWrap -->
+                    <div class="crm-items">
+                        <div class="crm-items__head">
+                            <div class="crm-items__title">明細</div>
+                            <button type="button" class="btn btn--secondary" id="equAddItemBtn">
+                                <i class="fa-solid fa-plus"></i><span>新增明細</span>
+                            </button>
                         </div>
 
-                        <div class="equ-items__tablewrap">
-                            <table class="table equ-items__table">
-                                <thead>
-                                    <tr>
-                                        <th style="width:56px;">序</th>
-                                        <th>項目內容</th>
-                                        <th class="ta-r" style="width:140px;">公司負擔</th>
-                                        <th class="ta-r" style="width:140px;">工班負擔</th>
-                                        <th style="width:80px;">刪除</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="equItemsTbody"></tbody>
-                            </table>
-                        </div>
+                        <div class="crm-items__body" id="equItemsWrap"></div>
+                    </div>
 
-                        <div class="equ-items__foot">
-                            <div class="equ-sum">
-                                <div>公司負擔：<b id="equSumCompany">0</b></div>
-                                <div>工班負擔：<b id="equSumTeam">0</b></div>
-                                <div>總金額：<b id="equSumGrand">0</b></div>
-                            </div>
+                    <!-- totals：三卡（car 同款） -->
+                    <div class="crm-totals">
+                        <div class="crm-totalCard">
+                            <div class="crm-totalCard__label">工班負擔合計</div>
+                            <div class="crm-totalCard__value" id="equSumTeam">0</div>
+                        </div>
+                        <div class="crm-totalCard">
+                            <div class="crm-totalCard__label">公司負擔合計</div>
+                            <div class="crm-totalCard__value" id="equSumCompany">0</div>
+                        </div>
+                        <div class="crm-totalCard">
+                            <div class="crm-totalCard__label">維修金額（總計）</div>
+                            <div class="crm-totalCard__value" id="equSumGrand">0</div>
                         </div>
                     </div>
 

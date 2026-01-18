@@ -211,7 +211,7 @@
 
 /* 整列 hover（match car） */
 .equ-table tbody tr {
-  transition: background-color .15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .equ-table tbody tr:hover {
@@ -334,6 +334,16 @@
   color: #0f172a;
 }
 
+.equ-field textarea {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+  color: #0f172a;
+  resize: vertical;
+  min-height: 78px; /* 接近車輛備註高度 */
+}
+
 .equ-field--grow {
   min-width: 260px;
   flex: 1;
@@ -380,4 +390,205 @@
   display: flex;
   gap: 18px;
   justify-content: flex-end;
+}
+
+.equ-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.equ-totalCard {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  display: grid;
+  gap: 6px;
+}
+
+.equ-totalCard__label {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.62);
+  font-weight: 800;
+}
+
+.equ-totalCard__value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* ===== Equ modal：對齊 car 維修 modal 的 crm 版型（只作用在 equ modal） ===== */
+
+/* 讓 equ modal 面板尺寸/滾動行為接近 car（但不依賴 ui_modal.css） */
+.equ-modal__panel {
+  width: min(1040px, calc(100vw - 48px));
+  max-width: 1040px;
+  max-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 讓 body 可捲、footer 固定 */
+.equ-modal__body {
+  overflow: auto;
+  max-height: calc(100vh - 72px - 56px - 64px);
+}
+
+/* crm 本體（沿用 car 的視覺語言） */
+.equ-modal .crm {
+  display: grid;
+  gap: 14px;
+}
+
+/* 工具版：第一列 4 欄（日期/類型/機具/廠商），備註 full */
+.equ-modal .crm-grid.crm-grid--equ {
+  display: grid;
+  grid-template-columns: 1fr 0.9fr 1.35fr 1.35fr;
+  gap: 12px;
+}
+.equ-modal .crm-grid .crm-field {
+  display: grid;
+  gap: 6px;
+}
+.equ-modal .crm-grid .crm-field--full {
+  grid-column: 1 / -1;
+}
+
+/* items 區塊：同 car */
+.equ-modal .crm-items {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.78);
+}
+.equ-modal .crm-items__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(15, 23, 42, 0.03);
+}
+.equ-modal .crm-items__title {
+  font-weight: 900;
+  font-size: 14px;
+  color: rgba(15, 23, 42, 0.86);
+}
+.equ-modal .crm-items__body {
+  padding: 10px 12px 12px 12px;
+  display: grid;
+  gap: 10px;
+}
+
+/* 表頭一次顯示 */
+.equ-modal .crm-itemsHeadRow {
+  display: grid;
+  grid-template-columns: 70px 1fr 160px 160px 44px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0 8px 0;
+  border-bottom: 1px dashed rgba(15, 23, 42, 0.1);
+}
+.equ-modal .crm-itemsHeadCell {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+/* 明細列 */
+.equ-modal .crm-itemRow {
+  display: grid;
+  grid-template-columns: 70px 1fr 160px 160px 44px;
+  gap: 10px;
+  align-items: start;
+}
+
+/* seq badge */
+.equ-modal .crm-seq {
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.78);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 刪除按鈕（同 car） */
+.equ-modal .crm-del {
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(190, 18, 60, 0.26);
+  background: rgba(190, 18, 60, 0.1);
+  color: rgba(136, 19, 55, 0.95);
+  cursor: pointer;
+}
+.equ-modal .crm-del:hover {
+  background: rgba(190, 18, 60, 0.14);
+}
+
+/* totals 三卡（同 car） */
+.equ-modal .crm-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding-top: 6px;
+}
+.equ-modal .crm-totalCard {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+}
+.equ-modal .crm-totalCard__label {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.6);
+  font-weight: 800;
+}
+.equ-modal .crm-totalCard__value {
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* RWD */
+@media (max-width: 980px) {
+  .equ-modal .crm-grid.crm-grid--equ {
+    grid-template-columns: 1fr 1fr;
+  }
+  .equ-modal .crm-itemsHeadRow,
+  .equ-modal .crm-itemRow {
+    grid-template-columns: 60px 1fr 130px 130px 44px;
+  }
+}
+@media (max-width: 680px) {
+  .equ-modal .crm-grid.crm-grid--equ {
+    grid-template-columns: 1fr;
+  }
+  .equ-modal .crm-itemsHeadRow {
+    display: none;
+  }
+  .equ-modal .crm-itemRow {
+    grid-template-columns: 1fr;
+  }
+  .equ-modal .crm-seq {
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+  .equ-modal .crm-totals {
+    grid-template-columns: 1fr;
+  }
 }
