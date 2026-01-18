@@ -71,7 +71,7 @@
             html += '<th class="ta-c col-code">編號</th><th class="ta-c col-plate">車牌</th>';
 
             (payload.months || []).forEach(function (m) {
-                html += '<th class="ta-r">' + esc(fmtMonth(m)) + '</th>';
+                html += '<th class="ta-c">' + esc(fmtMonth(m)) + '</th>';
             });
 
             html += '<th class="ta-c">公司負擔</th><th class="ta-c">工班負擔</th><th class="ta-c">維修金額</th>';
