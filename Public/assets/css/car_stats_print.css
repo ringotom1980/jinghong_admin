@@ -45,6 +45,11 @@ body { padding: 0; margin: 0; }
   padding-top: 18mm; /* 原本 14mm 太小 -> 第二頁容易撞到 */
 }
 
+@media print {
+  table { margin-top: 18mm; }
+}
+
+
 .print-head__logo {
   width: 34px;
   height: 34px;

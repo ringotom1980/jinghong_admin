@@ -74,7 +74,7 @@
                 html += '<th class="ta-c">' + esc(fmtMonth(m)) + '</th>';
             });
 
-            html += '<th class="ta-c">公司負擔</th><th class="ta-c">工班負擔</th><th class="ta-c">維修金額</th>';
+            html += '<th class="ta-c col-company">公司負擔</th><th class="ta-c col-team">工班負擔</th><th class="ta-c col-grand">維修金額</th>';
             html += '</tr></thead><tbody>';
 
             (payload.rows || []).forEach(function (r) {
