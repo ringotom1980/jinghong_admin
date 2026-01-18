@@ -338,10 +338,11 @@
     syncItemsFromDom: function () {
       if (!this.state.data) this.state.data = { header: {}, items: [] };
 
-      var tb = this.els && this.els.itemsTbody;
-      if (!tb) return;
+      var wrap = this.els && this.els.itemsWrap;
+      if (!wrap) return;
 
-      var rows = qsa('.crm-itemRow[data-idx]', tb);
+      // 以 itemsWrap 當 root（不是 itemsTbody）
+      var rows = qsa('.crm-itemRow[data-idx]', wrap);
       var items = [];
 
       for (var i = 0; i < rows.length; i++) {
