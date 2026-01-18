@@ -14,6 +14,12 @@ require_login();
 require_once __DIR__ . '/../../../app/services/VehicleRepairStatsService.php';
 
 try {
+    // ✅ GET query: ?key=2025 / 2025-H1 / 2025-H2
+    $key = isset($_GET['key']) ? trim((string)$_GET['key']) : '';
+    if ($key === '') {
+        json_error('Missing key', 400);
+    }
+
     $svc = new VehicleRepairStatsService(db());
     $rows = $svc->getPrintAllVehicleDetails($key);
 
@@ -24,3 +30,4 @@ try {
 } catch (Throwable $e) {
     json_error($e->getMessage(), 500);
 }
+
