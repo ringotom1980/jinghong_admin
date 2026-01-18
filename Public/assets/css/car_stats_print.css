@@ -216,11 +216,11 @@ tr.sum-row td {
 /* ===== all_details(各車維修明細表)：8欄 欄寬（可自行調整）===== */
 th.col-no,
 td.col-no {
-  width: 34px;
+  width: 40px;
 }
 th.col-date,
 td.col-date {
-  width: 86px;
+  width: 92px;
 }
 th.col-vendor,
 td.col-vendor {
@@ -228,7 +228,7 @@ td.col-vendor {
 }
 th.col-type,
 td.col-type {
-  width: 56px;
+  width: 46px;
 }
 th.col-detail,
 td.col-detail {
@@ -236,11 +236,11 @@ td.col-detail {
 } /* 主欄位：吃剩餘寬 */
 th.col-company,
 td.col-company {
-  width: 78px;
+  width: 70px;
 }
 th.col-team,
 td.col-team {
-  width: 78px;
+  width: 70px;
 }
 th.col-grand,
 td.col-grand {
