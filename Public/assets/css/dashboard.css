@@ -22,7 +22,7 @@
 .dash-section__title {
   margin: 0;
   font-size: 18px;
-  letter-spacing: .3px;
+  letter-spacing: 0.3px;
 }
 
 .dash-section__meta {
@@ -50,24 +50,29 @@
 }
 
 @media (max-width: 1200px) {
-  .dash-grid--mat { grid-template-columns: 1fr 1fr; }
-  .dash-grid--vehicle { grid-template-columns: 1fr; }
+  .dash-grid--mat {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dash-grid--vehicle {
+    grid-template-columns: 1fr;
+  }
 }
 
 .dash-card {
-  background: rgba(255,255,255,.92);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 12px 12px 12px;
-  box-shadow: 0 8px 22px rgba(15,23,42,.06);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .dash-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15,23,42,.08);
-  border-color: rgba(15,23,42,.14);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.14);
 }
 
 .dash-card--wide {
@@ -80,7 +85,9 @@
 }
 
 @media (max-width: 1200px) {
-  .dash-card--wide { grid-column: 1 / -1; }
+  .dash-card--wide {
+    grid-column: 1 / -1;
+  }
 }
 
 .dash-card__top {
@@ -103,6 +110,58 @@
   white-space: nowrap;
 }
 
+/* =========================================================
+ * 共用：小卡片浮起來（soft-elevation）
+ * 用法：
+ * - 在小卡元素加 class="ui-float-card"
+ * - 若要更輕：加 ui-float-card--sm
+ * - 若要更明顯：加 ui-float-card--md
+ * ========================================================= */
+
+.ui-float-card {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 14px;
+
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
+
+  transition: transform 0.14s ease, box-shadow 0.14s ease,
+    border-color 0.14s ease, background 0.14s ease;
+}
+
+.ui-float-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.94);
+
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 30px rgba(15, 23, 42, 0.1);
+}
+
+/* 按下去的手感（button / a） */
+.ui-float-card:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+/* 鍵盤可用性（若元素可 focus） */
+.ui-float-card:focus-visible {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.1),
+    0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* 輕量版 */
+.ui-float-card--sm {
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.07);
+}
+
+/* 明顯版 */
+.ui-float-card--md {
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 16px 34px rgba(15, 23, 42, 0.12);
+}
+/* ===========  共用：小卡片浮起來（soft-elevation）結束============= */
+
 /* rows */
 .dash-row {
   display: flex;
@@ -110,9 +169,9 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  border: 1px solid rgba(15,23,42,.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
-  background: rgba(255,255,255,.65);
+  background: rgba(255, 255, 255, 0.65);
   margin-bottom: 10px;
 }
 
@@ -130,36 +189,27 @@
 /* lights */
 .dash-lights {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
 @media (max-width: 1200px) {
-  .dash-lights { grid-template-columns: 1fr 1fr; }
+  .dash-lights {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* ===== 領退管理：狀態小卡（上方色條） ===== */
 
+/* dash-light 只負責 layout；視覺交給 ui-float-card */
 .dash-light {
   position: relative;
-
-  /* ⬇ 改回系統原本的淡框線風格 */
-  border: 1px solid rgba(15, 23, 42, .10);
-  background: rgba(255, 255, 255, .85);
-
   border-radius: 14px;
-  padding: 22px 12px 14px; /* 上方仍留給燈條 */
+  padding: 22px 12px 14px; /* 上方留給燈條 */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-
-  transition: border-color .15s ease, background .15s ease;
-}
-
-.dash-light:hover {
-  border-color: rgba(15, 23, 42, .16);
-  background: rgba(255, 255, 255, .95);
 }
 
 /* 上方狀態燈條（細版） */
@@ -169,25 +219,25 @@
   left: 18px;
   right: 18px;
 
-  height: 6px;              /* ⬅ 原本 10px → 6px */
+  height: 6px; /* ⬅ 原本 10px → 6px */
   border-radius: 4px;
 
-  background: #cbd5e1;      /* 預設淡灰（幾乎不顯眼） */
+  background: #cbd5e1; /* 預設淡灰（幾乎不顯眼） */
 }
 
 /* 狀態色（降飽和） */
 .dash-light__dot.is-green {
-  background: #4ade80;   /* 原本 #22c55e，太亮 → 改柔和 */
+  background: #4ade80; /* 原本 #22c55e，太亮 → 改柔和 */
 }
 
 .dash-light__dot.is-red {
-  background: #f87171;   /* 原本 #ef4444，太刺 → 改柔紅 */
+  background: #f87171; /* 原本 #ef4444，太刺 → 改柔紅 */
 }
 
 /* 文字 */
 .dash-light__text {
-  font-size: 14px;     /* 原本 16px */
-  font-weight: 600;    /* 原本 700 */
+  font-size: 14px; /* 原本 16px */
+  font-weight: 600; /* 原本 700 */
   color: var(--muted);
 }
 
@@ -205,8 +255,8 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.08);
-  background: rgba(255,255,255,.64);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.64);
 }
 
 .dash-item__k {
@@ -231,7 +281,7 @@
 /* mini 2x2 */
 .dash-mini-grid {
   display: grid;
-  grid-template-columns: .7fr 1fr 1fr;
+  grid-template-columns: 0.7fr 1fr 1fr;
   gap: 8px;
   align-items: center;
   margin-top: 6px;
@@ -250,15 +300,15 @@
   color: var(--text);
   padding: 8px 6px;
   border-radius: 12px;
-  background: rgba(15,23,42,.04);
-  border: 1px solid rgba(15,23,42,.06);
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .dash-mini-grid__cell {
   padding: 10px;
   border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.08);
-  background: rgba(255,255,255,.64);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.64);
   font-weight: 900;
   text-align: right;
 }
@@ -275,13 +325,13 @@
   justify-content: space-between;
   padding: 10px;
   border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.08);
-  background: rgba(255,255,255,.64);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.64);
 }
 
 .dash-kv__row--total {
-  border-color: rgba(15,23,42,.14);
-  background: rgba(255,255,255,.86);
+  border-color: rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .dash-kv__k {
@@ -298,8 +348,8 @@
 
 /* chart placeholder */
 .dash-chart-placeholder {
-  border: 1px dashed rgba(15,23,42,.18);
-  background: rgba(255,255,255,.58);
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.58);
   border-radius: 14px;
   padding: 18px;
   min-height: 110px;

@@ -49,22 +49,22 @@ $pageJs    = ['assets/js/dashboard.js'];
         </div>
 
         <div class="dash-lights" role="group" aria-label="作業狀態燈號">
-          <button type="button" class="dash-light" data-action="go_issue" data-type="LWK">
+          <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="LWK">
             <span class="dash-light__dot" data-light="LWK" aria-hidden="true"></span>
             <span class="dash-light__text">領料資料</span>
           </button>
 
-          <button type="button" class="dash-light" data-action="go_issue" data-type="T">
+          <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="T">
             <span class="dash-light__dot" data-light="T" aria-hidden="true"></span>
             <span class="dash-light__text">退料資料</span>
           </button>
 
-          <button type="button" class="dash-light" data-action="go_issue" data-type="S">
+          <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="S">
             <span class="dash-light__dot" data-light="S" aria-hidden="true"></span>
             <span class="dash-light__text">用餘資料</span>
           </button>
 
-          <button type="button" class="dash-light" data-action="go_edit_b">
+          <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_edit_b">
             <span class="dash-light__dot" data-light="RECON" aria-hidden="true"></span>
             <span class="dash-light__text">對帳資料</span>
           </button>
