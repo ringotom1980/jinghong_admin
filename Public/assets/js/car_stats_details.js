@@ -24,7 +24,6 @@
         raw = (raw === null || raw === undefined) ? '' : String(raw).trim();
         if (!raw) return { text: '', title: '' };
 
-        // 後端用 "、" 分隔每個項目
         var items = raw.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
 
         // 顯示前 3 筆
@@ -54,7 +53,7 @@
                 html += '<tr>';
                 html += '<td>' + esc(r.vehicle_code || '') + '</td>';
                 html += '<td>' + esc(r.repair_date || '') + '</td>';
-                var cc = buildContentCell(r.content || '');
+                var cc = buildContentCell(r.detail || '');
                 html += '<td title="' + esc(cc.title) + '">' + esc(cc.text) + '</td>';
                 html += '<td class="ta-r">' + esc(fmtMoney(r.company_amount_total || 0)) + '</td>';
                 html += '<td class="ta-r">' + esc(fmtMoney(r.team_amount_total || 0)) + '</td>';
