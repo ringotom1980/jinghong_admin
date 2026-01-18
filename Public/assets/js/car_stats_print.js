@@ -64,17 +64,17 @@
         html += '</header>';
         html += '<main class="print-body">';
 
-        // ===== summary =====
+        // ===== summary (維修統計表)=====
         if (payload && payload.type === 'summary') {
             html += '<div class="sec">';
             html += '<table><thead><tr>';
-            html += '<th class="ta-l">編號</th><th class="ta-l">車牌</th>';
+            html += '<th class="ta-c col-code">編號</th><th class="ta-c col-plate">車牌</th>';
 
             (payload.months || []).forEach(function (m) {
                 html += '<th class="ta-r">' + esc(fmtMonth(m)) + '</th>';
             });
 
-            html += '<th class="ta-r">公司負擔</th><th class="ta-r">工班負擔</th><th class="ta-r">維修金額</th>';
+            html += '<th class="ta-c">公司負擔</th><th class="ta-c">工班負擔</th><th class="ta-c">維修金額</th>';
             html += '</tr></thead><tbody>';
 
             (payload.rows || []).forEach(function (r) {

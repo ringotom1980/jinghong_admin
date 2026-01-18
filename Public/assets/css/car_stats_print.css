@@ -98,7 +98,7 @@ th.col-code, th.col-company, th.col-team, th.col-grand { text-align: center; }
 /* 你指定：編號、車牌底下 td 置中 */
 td.col-code, td.col-plate { text-align: center; }
 
-/* 你指定：車牌欄寬一點，且不要換行 */
+/* 車牌欄寬，且不要換行 */
 th.col-plate, td.col-plate {
   width: 92px;        /* 你可以再加到 100~120 */
   white-space: nowrap;
@@ -106,7 +106,7 @@ th.col-plate, td.col-plate {
   text-overflow: ellipsis;
 }
 
-/* 編號欄也給個固定寬，避免被擠壓 */
+/* 編號欄寬，避免被擠壓 */
 th.col-code, td.col-code {
   width: 56px;
   white-space: nowrap;
