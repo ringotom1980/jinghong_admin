@@ -56,18 +56,23 @@
         html += '<title>' + esc(title) + '</title>';
         html += '<link rel="stylesheet" href="' + esc(cssHref) + '">';
         html += '</head><body>';
-
-        // Header：LOGO + Title
-        html += '<header class="print-head">';
-        html += '<img class="print-head__logo" src="' + esc(logoSrc) + '" alt="LOGO">';
-        html += '<h1 class="print-head__title">' + esc(title) + '</h1>';
-        html += '</header>';
         html += '<main class="print-body">';
 
         // ===== summary (維修統計表)=====
         if (payload && payload.type === 'summary') {
             html += '<div class="sec">';
-            html += '<table><thead><tr>';
+            html += '<table><thead>';
+            /* ✅ 文件標題列：放在 thead 內，靠 CSS 控制每頁留白、不要格線 */
+            html += '<tr class="print-head-row">';
+            html += '<th colspan="' + (2 + (payload.months || []).length + 3) + '">';
+            html += '<header class="print-head">';
+            html += '<img class="print-head__logo" src="' + esc(logoSrc) + '" alt="LOGO">';
+            html += '<h1 class="print-head__title">' + esc(title) + '</h1>';
+            html += '</header>';
+            html += '</th>';
+            html += '</tr>';
+            /* ✅ 原本表格欄位列 */
+            html += '<tr>';
             html += '<th class="ta-c col-code">編號</th><th class="ta-c col-plate">車牌</th>';
 
             (payload.months || []).forEach(function (m) {

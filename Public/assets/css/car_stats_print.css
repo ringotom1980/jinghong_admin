@@ -143,6 +143,14 @@ tr {
   page-break-inside: avoid;
 }
 
+/* ✅ thead 的「文件標題列」不需要格線（左/右/上） */
+thead tr.print-head-row > th {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  background: #fff !important;
+}
+
 @media print {
   a {
     text-decoration: none;
