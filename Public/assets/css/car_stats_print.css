@@ -4,7 +4,8 @@
 
 /* 邊界更小（佔版面更大） */
 @page {
-  margin: 6mm;
+  /* top 要留給固定頁首（LOGO+標題），才能每頁都不壓表格 */
+  margin: 24mm 6mm 10mm 6mm;
 
   @bottom-right {
     content: "第 " counter(page) " 頁";
@@ -38,17 +39,8 @@ body { padding: 0; margin: 0; }
 
   /* 關鍵：讓列印引擎在分頁時更穩（避免第二頁蓋表格） */
   z-index: 10;
+  height: 18mm;
 }
-
-/* 關鍵：內容往下推更多，避免第二頁開始時被 fixed header 蓋住 */
-.print-body {
-  padding-top: 18mm; /* 原本 14mm 太小 -> 第二頁容易撞到 */
-}
-
-@media print {
-  table { margin-top: 18mm; }
-}
-
 
 .print-head__logo {
   width: 34px;
@@ -98,7 +90,7 @@ th {
 
 /* 你指定：編號、公司負擔、工班負擔、維修金額 標題置中
    （其實 th 預設置中已做到，但保險） */
-th.col-code, th.col-company, th.col-team, th.col-grand { text-align: center; }
+th.col-code, th.col-company, th.col-team, th.col-grand { text-align: center !important; }
 
 /* 你指定：編號、車牌底下 td 置中 */
 td.col-code, td.col-plate { text-align: center; }
