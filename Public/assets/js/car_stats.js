@@ -74,6 +74,9 @@
             this.els.printBtn = qs('#csPrintBtn');
             this.els.printModal = qs('#csPrintModal');
             this.els.printConfirm = qs('#csPrintConfirm');
+            this.els.printMetaSummary = qs('#csPrintMetaSummary');
+            this.els.printMetaAllDetails = qs('#csPrintMetaAllDetails');
+            this.els.printMetaVehicle = qs('#csPrintMetaVehicle');
 
             this.bindUI();
             this.loadInit();
@@ -234,6 +237,53 @@
             if (this.els.detailsMeta) this.els.detailsMeta.textContent = this.state.activeVehicleId ? ('明細筆數：' + dN) : '';
         },
 
+        getActivePeriodLabel: function () {
+            var key = this.state.activeKey || '';
+            if (!key) return '';
+
+            var caps = this.state.capsules || [];
+            for (var i = 0; i < caps.length; i++) {
+                if (caps[i] && String(caps[i].key) === String(key)) {
+                    return String(caps[i].label || caps[i].key || key);
+                }
+            }
+            return String(key);
+        },
+
+        getActiveVehicleLabel: function () {
+            var vid = this.state.activeVehicleId;
+            if (!vid) return '';
+
+            // 從 summaryRows 找出目前車輛（不用再打 API）
+            var rows = this.state.summaryRows || [];
+            for (var i = 0; i < rows.length; i++) {
+                var r = rows[i] || {};
+                if (String(r.vehicle_id) === String(vid)) {
+                    var code = r.vehicle_code || r.code || '';
+                    var plate = r.plate_no || r.plate || '';
+                    var s = (code ? String(code) : '');
+                    if (plate) s += (s ? '   ' : '') + String(plate);
+                    return s;
+                }
+            }
+            return '';
+        },
+
+        updatePrintOptionMetas: function () {
+            var period = this.getActivePeriodLabel();
+            var vtxt = this.getActiveVehicleLabel();
+
+            if (this.els.printMetaSummary) {
+                this.els.printMetaSummary.textContent = period ? ('(' + period + ')') : '';
+            }
+            if (this.els.printMetaAllDetails) {
+                this.els.printMetaAllDetails.textContent = period ? ('(' + period + ')') : '';
+            }
+            if (this.els.printMetaVehicle) {
+                this.els.printMetaVehicle.textContent = vtxt ? ('(' + vtxt + ')') : '(尚未選擇車輛)';
+            }
+        },
+
         renderEmpty: function () {
             if (this.els.capsules) this.els.capsules.innerHTML = '';
             if (this.els.summaryBody) this.els.summaryBody.innerHTML = '<tr><td colspan="7" class="cs-empty">無資料</td></tr>';
@@ -242,6 +292,7 @@
 
         openPrintModal: function () {
             if (!this.els.printModal) return;
+            this.updatePrintOptionMetas();
             this.els.printModal.setAttribute('aria-hidden', 'false');
         },
 

@@ -141,13 +141,24 @@ $pageJs = [
 
                 <div class="cs-modal__body">
                     <div class="cs-radio">
-                        <label><input type="radio" name="csPrintType" value="summary" checked> 列印維修統計表</label>
-                        <label><input type="radio" name="csPrintType" value="all_details"> 列印各車維修明細表</label>
-                        <label><input type="radio" name="csPrintType" value="vehicle_details"> 僅列印目前車輛維修明細</label>
+                        <label class="cs-radio__item">
+                            <input type="radio" name="csPrintType" value="summary" checked>
+                            <span class="cs-radio__text">列印維修統計表</span>
+                            <span class="cs-radio__meta" id="csPrintMetaSummary"></span>
+                        </label>
+
+                        <label class="cs-radio__item">
+                            <input type="radio" name="csPrintType" value="all_details">
+                            <span class="cs-radio__text">列印各車維修明細表</span>
+                            <span class="cs-radio__meta" id="csPrintMetaAllDetails"></span>
+                        </label>
+
+                        <label class="cs-radio__item">
+                            <input type="radio" name="csPrintType" value="vehicle_details">
+                            <span class="cs-radio__text">僅列印目前車輛維修明細</span>
+                            <span class="cs-radio__meta" id="csPrintMetaVehicle"></span>
+                        </label>
                     </div>
-                    <p class="cs-hint">
-                        提醒：列印版面由 print.css / 專用 print CSS 控制；本頁只負責資料與流程。
-                    </p>
                 </div>
 
                 <div class="cs-modal__foot">
