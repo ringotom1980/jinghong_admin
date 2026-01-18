@@ -1,6 +1,8 @@
 /* Path: Public/assets/js/equ_repairs.js
- * 說明: 工具維修模組總控（初始化/查詢/協調列表與 modal）
- * 對齊：Public/assets/js/api.js（apiGet/apiPost 回 Promise）
+ * 說明: 工具紀錄頁主控（初始化、膠囊、事件、協調 list + modal）
+ * - 比照 car_repairs.js
+ * - 膠囊來源：/api/equ/equ_dicts.php（回 dicts + capsules）
+ * - 列表來源：/api/equ/equ_repair_list?key=...
  */
 
 (function (global) {
@@ -8,112 +10,191 @@
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
+  function esc(s) {
+    s = (s === null || s === undefined) ? '' : String(s);
+    return s.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   var App = {
     els: {},
-    dicts: { tools: [], vendors: [] },
+    state: {
+      list: [],
+      loading: false,
+      capsules: [],
+      activeKey: '',
+      dicts: null
+    },
 
     init: function () {
+      // 列表區
       this.els.tbody = qs('#equTbody');
-      this.els.month = qs('#equMonth');
-      this.els.type = qs('#equType');
-      this.els.q = qs('#equQ');
-      this.els.searchBtn = qs('#equSearchBtn');
+      this.els.empty = qs('#equEmpty');
+      this.els.loading = qs('#equLoading');
+      this.els.totalCount = qs('#equTotalCount');
       this.els.addBtn = qs('#equAddBtn');
 
-      // 預設本月
-      var now = new Date();
-      var ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-      this.els.month.value = ym;
+      // 膠囊區（需在 equ/repairs.php 版面比照 car 放入）
+      this.els.caps = qs('#equCapsules');
+      this.els.capsHint = qs('#equCapsulesHint');
 
-      this.bind();
-      this.loadDicts();
-      this.search();
+      if (this.els.addBtn) {
+        this.els.addBtn.addEventListener('click', function () {
+          if (!global.EquRepairsModal) return;
+          global.EquRepairsModal.openCreate();
+        });
+      }
+
+      if (this.els.caps) {
+        this.els.caps.addEventListener('click', this.onCapsClick.bind(this));
+      }
+
+      // 子模組 init
+      if (global.EquRepairsList) global.EquRepairsList.init(this);
+      if (global.EquRepairsModal) global.EquRepairsModal.init(this);
+
+      // ✅ 先載入膠囊 + dicts，再載入列表（依 default key）
+      this.loadCapsules();
     },
 
-    bind: function () {
+    setLoading: function (on) {
+      this.state.loading = !!on;
+      if (this.els.loading) this.els.loading.hidden = !this.state.loading;
+    },
+
+    setEmpty: function (on) {
+      if (this.els.empty) this.els.empty.hidden = !on;
+    },
+
+    setCapsHint: function (text, show) {
+      if (!this.els.capsHint) return;
+      this.els.capsHint.textContent = text || '';
+      this.els.capsHint.hidden = !show;
+    },
+
+    renderCapsules: function () {
+      var el = this.els.caps;
+      if (!el) return;
+
+      var caps = this.state.capsules || [];
+      if (!caps.length) {
+        el.innerHTML = '';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < caps.length; i++) {
+        var c = caps[i] || {};
+        var key = String(c.key || '');
+        var active = (key && key === this.state.activeKey) ? ' is-active' : '';
+        var label = esc(c.label || key);
+        var count = (typeof c.count === 'number') ? c.count : Number(c.count || 0);
+
+        html += ''
+          + '<button type="button" class="equ-cap' + active + '" data-key="' + esc(key) + '">'
+          + '  <span class="equ-cap__label">' + label + '</span>'
+          + '  <span class="equ-cap__count">' + esc(String(count)) + ' 筆</span>'
+          + '</button>';
+      }
+
+      el.innerHTML = html;
+    },
+
+    pickDefaultKey: function (caps) {
+      caps = caps || [];
+      for (var i = 0; i < caps.length; i++) {
+        if (caps[i] && caps[i].is_default) return String(caps[i].key || '');
+      }
+      return caps[0] ? String(caps[0].key || '') : '';
+    },
+
+    loadCapsules: function () {
       var self = this;
+      if (!global.apiGet) return;
 
-      this.els.searchBtn.addEventListener('click', function () { self.search(); });
+      self.setCapsHint('載入中…', true);
 
-      this.els.addBtn.addEventListener('click', function () {
-        global.EquRepairsModal.openCreate(self.dicts);
+      global.apiGet('/api/equ/equ_dicts').then(function (j) {
+        if (!j || !j.success) {
+          self.state.dicts = null;
+          self.state.capsules = [];
+          self.state.activeKey = '';
+          self.renderCapsules();
+          self.setCapsHint('載入失敗', true);
+
+          // fallback：仍可載全列表
+          self.loadList('');
+          return;
+        }
+
+        // dicts（給 modal datalist）
+        self.state.dicts = (j.data && j.data.dicts) ? j.data.dicts : null;
+
+        // capsules
+        var caps = (j.data && j.data.capsules) ? j.data.capsules : [];
+        self.state.capsules = caps;
+
+        var defKey = self.pickDefaultKey(caps);
+        self.state.activeKey = defKey;
+
+        self.renderCapsules();
+        self.setCapsHint('', false);
+
+        self.loadList(defKey);
+      }).catch(function () {
+        self.setCapsHint('載入失敗', true);
+        self.loadList('');
       });
+    },
 
-      // 列表事件委派
-      this.els.tbody.addEventListener('click', function (e) {
-        var btn = e.target.closest('[data-act]');
-        if (!btn) return;
+    onCapsClick: function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('button[data-key]') : null;
+      if (!btn) return;
 
-        var act = btn.getAttribute('data-act');
-        var id = Number(btn.getAttribute('data-id') || 0);
-        if (!id) return;
+      var key = btn.getAttribute('data-key') || '';
+      if (!key) return;
+      if (key === this.state.activeKey) return;
 
-        if (act === 'edit') self.openEdit(id);
-        if (act === 'del') self.del(id);
+      this.state.activeKey = key;
+      this.renderCapsules();
+      this.loadList(key);
+    },
+
+    loadList: function (key) {
+      var self = this;
+      if (!global.apiGet) return;
+
+      if (key === undefined || key === null) key = self.state.activeKey || '';
+
+      self.setLoading(true);
+      self.setEmpty(false);
+
+      var url = '/api/equ/equ_repair_list';
+      if (key) url += '?key=' + encodeURIComponent(key);
+
+      global.apiGet(url).then(function (j) {
+        if (!j || !j.success) {
+          Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j && j.error) ? j.error : '未知錯誤' });
+          self.state.list = [];
+          if (global.EquRepairsList) global.EquRepairsList.render([]);
+          if (self.els.totalCount) self.els.totalCount.textContent = '0';
+          self.setEmpty(true);
+          return;
+        }
+
+        var rows = (j.data && j.data.rows) ? j.data.rows : [];
+        self.state.list = rows;
+
+        if (self.els.totalCount) self.els.totalCount.textContent = String(rows.length || 0);
+        if (global.EquRepairsList) global.EquRepairsList.render(rows);
+
+        self.setEmpty(!rows.length);
+      }).finally(function () {
+        self.setLoading(false);
       });
-    },
-
-    loadDicts: function () {
-      var self = this;
-      if (typeof global.apiGet !== 'function') return;
-
-      global.apiGet('/api/equ/equ_dicts.php', {})
-        .then(function (j) {
-          if (!j || !j.success) return;
-          self.dicts = j.data || self.dicts;
-          global.EquRepairsModal.applyDicts(self.dicts);
-        });
-    },
-
-    search: function () {
-      var self = this;
-      if (typeof global.apiGet !== 'function') return;
-
-      var month = (this.els.month.value || '').trim(); // YYYY-MM
-      var type = (this.els.type.value || '').trim();
-      var q = (this.els.q.value || '').trim();
-
-      // loading
-      if (self.els.tbody) self.els.tbody.innerHTML = '<tr><td colspan="9" class="cs-empty">載入中…</td></tr>';
-
-      global.apiGet('/api/equ/equ_repair_list.php', { month: month, repair_type: type, q: q })
-        .then(function (j) {
-          if (!j || !j.success) {
-            global.EquRepairsList.renderEmpty(self.els.tbody, (j && j.error) ? j.error : '載入失敗');
-            return;
-          }
-          global.EquRepairsList.render(self.els.tbody, j.data || []);
-        });
-    },
-
-    openEdit: function (id) {
-      var self = this;
-      if (typeof global.apiGet !== 'function') return;
-
-      global.apiGet('/api/equ/equ_repair_get.php', { id: id })
-        .then(function (j) {
-          if (!j || !j.success) {
-            alert((j && j.error) ? j.error : '載入失敗');
-            return;
-          }
-          global.EquRepairsModal.openEdit(self.dicts, j.data);
-        });
-    },
-
-    del: function (id) {
-      if (typeof global.apiPost !== 'function') return;
-      if (!confirm('確定刪除此筆紀錄？')) return;
-
-      var self = this;
-
-      global.apiPost('/api/equ/equ_repair_delete.php', { id: id })
-        .then(function (j) {
-          if (!j || !j.success) {
-            alert((j && j.error) ? j.error : '刪除失敗');
-            return;
-          }
-          self.search();
-        });
     }
   };
 
