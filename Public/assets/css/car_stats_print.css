@@ -141,6 +141,16 @@ thead tr.print-head-row > th {
   background: #fff !important;
 }
 
+/* ✅ 欄寬定錨列：不顯示、不佔高度、不留格線，但保留欄寬計算 */
+thead tr.col-guard th {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  background: transparent !important;
+}
+
 @media print {
   a {
     text-decoration: none;

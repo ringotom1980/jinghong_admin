@@ -62,6 +62,15 @@
         if (payload && payload.type === 'summary') {
             html += '<div class="sec">';
             html += '<table><thead>';
+            /* ✅ 欄寬定錨列：必須放在 thead 第一列，讓 table-layout:fixed 先吃到每欄 width */
+            html += '<tr class="col-guard">';
+            html += '<th class="col-code"></th>';
+            html += '<th class="col-plate"></th>';
+            (payload.months || []).forEach(function () { html += '<th></th>'; });
+            html += '<th class="col-company"></th>';
+            html += '<th class="col-team"></th>';
+            html += '<th class="col-grand"></th>';
+            html += '</tr>';
             /* ✅ 文件標題列：放在 thead 內，靠 CSS 控制每頁留白、不要格線 */
             html += '<tr class="print-head-row">';
             html += '<th colspan="' + (2 + (payload.months || []).length + 3) + '">';
