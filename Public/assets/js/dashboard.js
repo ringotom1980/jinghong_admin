@@ -200,7 +200,7 @@
             return;
         }
 
-        global.apiGet('/api/dashboard/kpi.php', {}).then(function (j) {
+        global.apiGet('/api/dashboard/kpi', {}).then(function (j) {
             if (!j || j.success !== true) {
                 applyData(Fake);
                 return;
