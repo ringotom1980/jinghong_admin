@@ -117,13 +117,14 @@
 }
 
 .dash-row__label {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .dash-row__value {
   font-size: 14px;
   font-weight: 800;
+  color: var(--muted);
 }
 
 /* lights */
@@ -185,9 +186,9 @@
 
 /* 文字 */
 .dash-light__text {
-  font-size: 15px;     /* 原本 16px */
+  font-size: 14px;     /* 原本 16px */
   font-weight: 600;    /* 原本 700 */
-  color: #0f172a;
+  color: var(--muted);
 }
 
 /* list */
