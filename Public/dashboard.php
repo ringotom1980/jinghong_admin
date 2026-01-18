@@ -44,7 +44,7 @@ $pageJs    = ['assets/js/dashboard.js'];
         </div>
 
         <div class="dash-row">
-          <div class="dash-row__label">作業時間</div>
+          <div class="dash-row__label">領退時間</div>
           <div class="dash-row__value" id="matNextDateText">—</div>
         </div>
 

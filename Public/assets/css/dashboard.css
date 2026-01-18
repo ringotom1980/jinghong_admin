@@ -129,8 +129,8 @@
 /* lights */
 .dash-lights {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 @media (max-width: 1200px) {
@@ -154,17 +154,43 @@
   background: rgba(255,255,255,.86);
 }
 
-.dash-light__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  border: 1px solid rgba(15,23,42,.22);
-  background: #ef4444; /* default red, JS will toggle green */
+/* ===== 領退管理：狀態小卡（上方色條） ===== */
+
+.dash-light {
+  position: relative;
+  border: 2px solid #0f172a;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 26px 12px 16px; /* 上方留給色條 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
+/* 上方狀態色條 */
+.dash-light__dot {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  right: 16px;
+  height: 10px;
+  border-radius: 6px;
+  background: #ef4444; /* default red */
+}
+
+/* 狀態色 */
 .dash-light__dot.is-green { background: #22c55e; }
-.dash-light__dot.is-red { background: #ef4444; }
+.dash-light__dot.is-red   { background: #ef4444; }
+
+/* 文字 */
+.dash-light__text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  white-space: nowrap;
+}
 
 .dash-light__text {
   font-size: 13px;
