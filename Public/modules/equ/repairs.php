@@ -3,6 +3,8 @@
 /**
  * Path: Public/modules/equ/repairs.php
  * 說明: 工具管理｜維修/保養/購買/租賃（列表 + 新增/編輯 modal）
+ * 版型：比照 Public/modules/car/repairs.php
+ * 注意：本頁不放「期間/類型/關鍵字/查詢」那排篩選列（車輛維修沒有）
  */
 
 declare(strict_types=1);
@@ -14,19 +16,23 @@ $pageTitle = '工具管理｜維修/保養/購買/租賃';
 
 $pageCss = [
     'assets/css/equ_repairs.css',
+    // 若你有共用回頂部，保留；沒有就刪掉這行
+    'assets/css/ui_back_to_top.css',
 ];
 
 $pageJs = [
     'assets/js/equ_repairs.js',
     'assets/js/equ_repairs_list.js',
     'assets/js/equ_repairs_modal.js',
+    // 若你有共用回頂部，保留；沒有就刪掉這行
+    'assets/js/ui_back_to_top.js',
 ];
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <?php require __DIR__ . '/../../partials/head.php'; ?>
 
-<body class="page-enter">
+<body data-backtop-target="#equCapsules" class="page-enter">
 
     <?php require __DIR__ . '/../../partials/header.php'; ?>
     <?php require __DIR__ . '/../../partials/sidebar.php'; ?>
@@ -34,65 +40,74 @@ $pageJs = [
     <main class="page equ-repairs" role="main">
         <section class="page-head">
             <h1>工具管理｜維修/保養/購買/租賃</h1>
-            <div class="page-head__actions">
-                <button type="button" class="btn btn--primary" id="equAddBtn">新增紀錄</button>
-            </div>
+            <p class="page-sub">本頁僅提供：列表檢視、新增/編輯（同一視窗）。</p>
         </section>
 
-        <section class="panel equ-panel">
-            <div class="equ-toolbar">
-                <div class="equ-toolbar__left">
-                    <label class="equ-field">
-                        <span>期間</span>
-                        <input type="month" id="equMonth" />
-                    </label>
-
-                    <label class="equ-field">
-                        <span>類型</span>
-                        <select id="equType">
-                            <option value="">全部</option>
-                            <option value="維修">維修</option>
-                            <option value="保養">保養</option>
-                            <option value="購買">購買</option>
-                            <option value="租賃">租賃</option>
-                        </select>
-                    </label>
-
-                    <label class="equ-field equ-field--grow">
-                        <span>關鍵字</span>
-                        <input type="text" id="equQ" placeholder="工具/廠商/內容" />
-                    </label>
-
-                    <button type="button" class="btn btn--info" id="equSearchBtn">查詢</button>
+        <section class="equ-shell card">
+            <header class="equ-head">
+                <div class="equ-head__left">
+                    <div class="equ-kpi">
+                        <div class="equ-kpi__label">共</div>
+                        <div class="equ-kpi__value" id="equTotalCount">0</div>
+                        <div class="equ-kpi__label">筆</div>
+                    </div>
                 </div>
+
+                <div class="equ-head__right">
+                    <button type="button" class="btn btn--primary" id="equAddBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>新增紀錄</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 比照車輛維修：capsules（你若不需要可留空，JS 不塞資料就不顯示） -->
+            <div class="equ-caps" aria-label="時間篩選">
+                <div class="equ-caps__list" id="equCapsules"></div>
+                <div class="equ-caps__hint" id="equCapsulesHint" hidden>載入中…</div>
             </div>
 
-            <div class="table-wrap">
-                <table class="table equ-table">
-                    <thead>
-                        <tr>
-                            <th style="width:120px;">日期</th>
-                            <th style="width:120px;">類型</th>
-                            <th style="width:180px;">工具</th>
-                            <th style="width:180px;">廠商</th>
-                            <th>內容摘要</th>
-                            <th class="ta-r" style="width:140px;">公司</th>
-                            <th class="ta-r" style="width:140px;">工班</th>
-                            <th class="ta-r" style="width:140px;">總額</th>
-                            <th style="width:140px;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="equTbody">
-                        <tr>
-                            <td colspan="9" class="cs-empty">載入中…</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="equ-body">
+                <div class="equ-tableWrap">
+                    <table class="table equ-table" aria-label="工具紀錄列表">
+                        <!-- ✅ 欄寬由 colgroup 控制（不要在 th 寫 width） -->
+                        <colgroup>
+                            <col class="equ-col equ-col--date">     <!-- 日期 -->
+                            <col class="equ-col equ-col--type">     <!-- 類型 -->
+                            <col class="equ-col equ-col--tool">     <!-- 工具 -->
+                            <col class="equ-col equ-col--vendor">   <!-- 廠商 -->
+                            <col class="equ-col equ-col--summary">  <!-- 內容摘要 -->
+                            <col class="equ-col equ-col--company">  <!-- 公司 -->
+                            <col class="equ-col equ-col--team">     <!-- 工班 -->
+                            <col class="equ-col equ-col--total">    <!-- 總額 -->
+                            <col class="equ-col equ-col--actions">  <!-- 操作 -->
+                        </colgroup>
+
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>類型</th>
+                                <th>工具</th>
+                                <th>廠商</th>
+                                <th>內容摘要</th>
+                                <th class="num">公司</th>
+                                <th class="num">工班</th>
+                                <th class="num">總額</th>
+                                <th class="actions">操作</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="equTbody"></tbody>
+                    </table>
+
+                    <div class="equ-empty" id="equEmpty" hidden>目前沒有紀錄</div>
+                    <div class="equ-loading" id="equLoading" hidden>載入中…</div>
+                </div>
             </div>
         </section>
     </main>
 
-    <!-- Modal（外殼若你有 ui_modal.css/js 可改成共用） -->
+    <!-- Modal（先保留你原本外殼與 ID，不動 JS 事件綁定） -->
     <div class="equ-modal" id="equModal" aria-hidden="true">
         <div class="equ-modal__backdrop" data-close="1"></div>
         <div class="equ-modal__panel" role="dialog" aria-modal="true" aria-labelledby="equModalTitle">
@@ -178,7 +193,6 @@ $pageJs = [
                     <span class="btn__text">儲存</span>
                     <span class="btn__spinner" aria-hidden="true"></span>
                 </button>
-
             </footer>
         </div>
     </div>
