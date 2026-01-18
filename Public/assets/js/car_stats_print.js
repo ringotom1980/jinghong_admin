@@ -46,8 +46,9 @@
 
         // 依你專案慣例：部署在 /jinghong_admin 時要加 base
         var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
-        var cssHref = base + '/assets/css/car_stats_print.css?v=2';
-        var logoSrc = base + '/assets/img/brand/JH_logo.png?v=1';
+        var ts = Date.now(); // cache-bust：每次列印都重新載入
+        var cssHref = base + '/assets/css/car_stats_print.css?t=' + ts;
+        var logoSrc = base + '/assets/img/brand/JH_logo.png?t=' + ts;
 
         var html = '';
         html += '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">';
@@ -67,19 +68,19 @@
         if (payload && payload.type === 'summary') {
             html += '<div class="sec">';
             html += '<table><thead><tr>';
-            html += '<th class="ta-l">車輛編號</th><th class="ta-l">車牌</th>';
+            html += '<th class="ta-l">編號</th><th class="ta-l">車牌</th>';
 
             (payload.months || []).forEach(function (m) {
                 html += '<th class="ta-r">' + esc(fmtMonth(m)) + '</th>';
             });
 
-            html += '<th class="ta-r">公司合計</th><th class="ta-r">工班合計</th><th class="ta-r">總合計</th>';
+            html += '<th class="ta-r">公司負擔</th><th class="ta-r">工班負擔</th><th class="ta-r">維修金額</th>';
             html += '</tr></thead><tbody>';
 
             (payload.rows || []).forEach(function (r) {
                 html += '<tr>';
-                html += '<td class="ta-l">' + esc(r.vehicle_code || '') + '</td>';
-                html += '<td class="ta-l">' + esc(r.plate_no || '') + '</td>';
+                html += '<td class="ta-c col-code">' + esc(r.vehicle_code || '') + '</td>';
+                html += '<td class="ta-c col-plate">' + esc(r.plate_no || '') + '</td>';
 
                 (payload.months || []).forEach(function (m) {
                     var cell = (r.by_month && r.by_month[m]) ? r.by_month[m] : { grand_total: 0 };

@@ -1,18 +1,11 @@
 /* Path: Public/assets/css/car_stats_print.css
- * 說明: 車輛維修統計｜列印專用樣式（外掛，不內嵌）
- * 需求：
- * 1) 邊界縮小（內容佔版面更大）
- * 2) 表格標題列置中（第一列 th 一律置中）
- * 3) 文件標題底下不顯示分隔線
- * 4) 每頁重複文件標題（含 LOGO）
- * 5) 每頁頁碼
+ * 說明: 車輛維修統計｜列印專用樣式（外掛）
  */
 
-/* 1) 邊界更小 */
+/* 邊界更小（佔版面更大） */
 @page {
   margin: 6mm;
 
-  /* 5) 頁碼（Chrome/Edge 多數可用） */
   @bottom-right {
     content: "第 " counter(page) " 頁";
     font-size: 11px;
@@ -24,12 +17,9 @@ html, body {
   color: #111;
 }
 
-body {
-  padding: 0;
-  margin: 0;
-}
+body { padding: 0; margin: 0; }
 
-/* 4) 固定頁首：每頁都重複 */
+/* 固定頁首：每頁都顯示 */
 .print-head {
   position: fixed;
   top: 0;
@@ -43,15 +33,16 @@ body {
   padding: 4mm 0 2mm;
   margin: 0;
 
-  /* 3) 不要分隔線 */
-  border-bottom: none;
-
+  border-bottom: none; /* 標題底下不要分隔線 */
   background: #fff;
+
+  /* 關鍵：讓列印引擎在分頁時更穩（避免第二頁蓋表格） */
+  z-index: 10;
 }
 
-/* 內容要往下推，不要被固定頁首蓋住 */
+/* 關鍵：內容往下推更多，避免第二頁開始時被 fixed header 蓋住 */
 .print-body {
-  padding-top: 14mm; /* 視 title 高度，可微調 12~16mm */
+  padding-top: 18mm; /* 原本 14mm 太小 -> 第二頁容易撞到 */
 }
 
 .print-head__logo {
@@ -67,9 +58,7 @@ body {
   letter-spacing: 0.2px;
 }
 
-.sec {
-  margin: 10px 0 14px;
-}
+.sec { margin: 10px 0 14px; }
 
 h3 {
   margin: 10px 0 8px;
@@ -92,20 +81,40 @@ th, td {
 
 th {
   background: #f5f6f8;
-  text-align: center; /* 2) 第一列 th 置中 */
+  text-align: center;
   font-weight: 800;
   white-space: nowrap;
 }
 
-/* 2) 只讓 .ta-l 影響 td，不影響 th（避免你 JS header th.ta-l 被拉左） */
-th.ta-l { text-align: center !important; }
+/* 對齊工具 */
+.ta-r { text-align: right; font-variant-numeric: tabular-nums; }
+.ta-c { text-align: center; }
+.ta-l { text-align: left; }
 
-td {
-  background: #fff;
+/* 你指定：編號、公司負擔、工班負擔、維修金額 標題置中
+   （其實 th 預設置中已做到，但保險） */
+th.col-code, th.col-company, th.col-team, th.col-grand { text-align: center; }
+
+/* 你指定：編號、車牌底下 td 置中 */
+td.col-code, td.col-plate { text-align: center; }
+
+/* 你指定：車牌欄寬一點，且不要換行 */
+th.col-plate, td.col-plate {
+  width: 92px;        /* 你可以再加到 100~120 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.ta-r { text-align: right; font-variant-numeric: tabular-nums; }
-.ta-l { text-align: left; }
+/* 編號欄也給個固定寬，避免被擠壓 */
+th.col-code, td.col-code {
+  width: 56px;
+  white-space: nowrap;
+}
+
+/* 列印時避免表格標題列被切開 */
+thead { display: table-header-group; }
+tr { break-inside: avoid; page-break-inside: avoid; }
 
 @media print {
   a { text-decoration: none; color: inherit; }
