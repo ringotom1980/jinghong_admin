@@ -163,6 +163,8 @@ final class VehicleRepairStatsService
   SELECT
     v.vehicle_code,
     DATE_FORMAT(h.repair_date, '%Y-%m-%d') AS repair_date,
+    COALESCE(vd.name, '') AS vendor_name,
+    COALESCE(h.repair_type, '') AS repair_type,
     COALESCE(
       GROUP_CONCAT(
         CONCAT(
@@ -173,20 +175,23 @@ final class VehicleRepairStatsService
           CAST(ROUND(COALESCE(i.team_amount,0), 0) AS UNSIGNED),
           ')'
         )
-        ORDER BY i.id
+        ORDER BY i.seq, i.id
         SEPARATOR '\n'
       ),
       ''
-    ) AS content,
+    ) AS detail,
     h.company_amount_total,
     h.team_amount_total,
     h.grand_total
   FROM vehicle_repair_headers h
   JOIN vehicle_vehicles v ON v.id = h.vehicle_id
+  LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
   LEFT JOIN vehicle_repair_items i ON i.repair_id = h.id
   WHERE h.vehicle_id = :vid
     AND h.repair_date BETWEEN :s AND :e
-  GROUP BY h.id, v.vehicle_code, h.repair_date, h.company_amount_total, h.team_amount_total, h.grand_total
+  GROUP BY
+    h.id, v.vehicle_code, h.repair_date, vd.name, h.repair_type,
+    h.company_amount_total, h.team_amount_total, h.grand_total
   ORDER BY h.repair_date DESC, h.id DESC
 ";
 
