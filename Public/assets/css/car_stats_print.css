@@ -25,26 +25,16 @@ body {
   margin: 0;
 }
 
-/* 固定頁首：每頁都顯示 */
 .print-head {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 14mm;
-
+  position: static;     /* ✅ 取消 fixed，不要覆蓋內容 */
+  height: auto;         /* ✅ 不要硬塞 14mm */
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 0 0 2mm;
   margin: 0;
-
-  border-bottom: none; /* 標題底下不要分隔線 */
-  background: #fff;
-
-  /* 關鍵：讓列印引擎在分頁時更穩（避免第二頁蓋表格） */
-  z-index: 10;
+  border-bottom: none;
+  background: transparent; /* ✅ thead 內不需要白底蓋住 */
 }
 
 .print-head__logo {
@@ -155,9 +145,6 @@ thead tr.print-head-row > th {
   a {
     text-decoration: none;
     color: inherit;
-  }
-  table {
-    margin-top: 14mm; /* 每頁自動留空，不靠 body */
   }
 }
 
