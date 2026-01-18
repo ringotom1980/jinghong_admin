@@ -358,7 +358,7 @@ final class VehicleRepairStatsService
 
     return [
       'type' => 'vehicle_details',
-      'title' => '境宏工程有限公司-單車維修明細（' . ($v['vehicle_code'] ?? '') . '｜' . $this->keyToLabel($key) . '）',
+      'title' => '境宏工程有限公司-單車維修明細（' . $this->keyToLabel($key) . '）',
       'key' => $key,
       'vehicle' => [
         'vehicle_id' => (int)$v['id'],
