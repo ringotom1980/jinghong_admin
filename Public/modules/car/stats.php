@@ -159,6 +159,9 @@ $pageJs = [
                             <span class="cs-radio__meta" id="csPrintMetaVehicle"></span>
                         </label>
                     </div>
+                    <p class="cs-hint">
+                        提醒：列印目前車輛維修明細前，請確認車輛編號及車牌號碼是否正確。
+                    </p>
                 </div>
 
                 <div class="cs-modal__foot">
