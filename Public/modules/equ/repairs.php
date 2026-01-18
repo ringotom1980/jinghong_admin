@@ -72,19 +72,21 @@ $pageJs = [
                     <table class="table equ-table" aria-label="工具紀錄列表">
                         <!-- ✅ 欄寬由 colgroup 控制（不要在 th 寫 width） -->
                         <colgroup>
-                            <col class="equ-col equ-col--date">     <!-- 日期 -->
-                            <col class="equ-col equ-col--type">     <!-- 類型 -->
-                            <col class="equ-col equ-col--tool">     <!-- 機具名稱 -->
-                            <col class="equ-col equ-col--vendor">   <!-- 廠商 -->
-                            <col class="equ-col equ-col--summary">  <!-- 內容摘要 -->
-                            <col class="equ-col equ-col--company">  <!-- 公司負擔 -->
-                            <col class="equ-col equ-col--team">     <!-- 工班負擔 -->
-                            <col class="equ-col equ-col--total">    <!-- 總金額 -->
-                            <col class="equ-col equ-col--actions">  <!-- 操作 -->
+                            <col class="equ-col equ-col--no"> <!-- 項次 -->
+                            <col class="equ-col equ-col--date"> <!-- 日期 -->
+                            <col class="equ-col equ-col--type"> <!-- 類型 -->
+                            <col class="equ-col equ-col--tool"> <!-- 機具名稱 -->
+                            <col class="equ-col equ-col--vendor"> <!-- 廠商 -->
+                            <col class="equ-col equ-col--summary"> <!-- 內容摘要 -->
+                            <col class="equ-col equ-col--company"> <!-- 公司負擔 -->
+                            <col class="equ-col equ-col--team"> <!-- 工班負擔 -->
+                            <col class="equ-col equ-col--total"> <!-- 總金額 -->
+                            <col class="equ-col equ-col--actions"> <!-- 操作 -->
                         </colgroup>
 
                         <thead>
                             <tr>
+                                <th>項次</th>
                                 <th>日期</th>
                                 <th>類型</th>
                                 <th>機具名稱</th>

@@ -114,6 +114,11 @@
   table-layout: fixed;
 }
 
+/* 項次 */
+.equ-table col.equ-col--no {
+  width: 4%;
+}
+
 /* 日期 */
 .equ-table col.equ-col--date {
   width: 12%;
