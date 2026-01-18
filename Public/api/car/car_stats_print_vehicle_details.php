@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/api/car/car_stats_print_vehicle_details.php
  * 說明: 列印用｜單一車輛維修明細（依期間 key + vehicle_id）
@@ -12,12 +13,19 @@ require_login();
 require_once __DIR__ . '/../../../app/services/VehicleRepairStatsService.php';
 
 try {
+    $key = isset($_GET['key']) ? trim((string)$_GET['key']) : '';
+    $vehicleId = isset($_GET['vehicle_id']) ? (int)$_GET['vehicle_id'] : 0;
+
+    if ($key === '' || $vehicleId <= 0) {
+        json_error('缺少必要參數：key 或 vehicle_id', 400);
+    }
+
     $svc = new VehicleRepairStatsService(db());
     $rows = $svc->getPrintVehicleDetails($key, $vehicleId);
 
     json_ok([
         'key'        => $key,
-        'vehicle_id'=> $vehicleId,
+        'vehicle_id' => $vehicleId,
         'rows'       => $rows,
     ]);
 } catch (Throwable $e) {
