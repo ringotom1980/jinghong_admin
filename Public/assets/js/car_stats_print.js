@@ -135,8 +135,6 @@
             html += '</tr>';
 
             html += '</tbody></table></div>';
-
-            html += '</tbody></table></div>';
         }
 
         // ===== all_details =====

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/api/car/car_stats_print_all_details.php
  * 說明: 列印用｜各車維修明細（依期間 key）
@@ -21,13 +22,13 @@ try {
     }
 
     $svc = new VehicleRepairStatsService(db());
+    $key = isset($_GET['key']) ? trim((string)$_GET['key']) : '';
+    if ($key === '') json_error('Missing key', 400);
+
     $rows = $svc->getPrintAllVehicleDetails($key);
 
-    json_ok([
-        'key'   => $key,
-        'rows'  => $rows,
-    ]);
+    // ✅ 回傳「service 已組好的列印 payload」當 data 根節點
+    json_ok($rows);
 } catch (Throwable $e) {
     json_error($e->getMessage(), 500);
 }
-
