@@ -38,7 +38,7 @@
 }
 
 .dash-grid--mat {
-  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .dash-grid--vehicle {
@@ -72,6 +72,11 @@
 
 .dash-card--wide {
   grid-column: 1 / span 2;
+}
+
+/* Dashboard：領退管理固定 4 卡同列（不允許 wide 跨欄） */
+.dash-grid--mat .dash-card--wide {
+  grid-column: auto;
 }
 
 @media (max-width: 1200px) {

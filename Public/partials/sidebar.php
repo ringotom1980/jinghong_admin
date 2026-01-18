@@ -28,7 +28,7 @@ $u = function (string $path) use ($base): string {
         <a class="rail__tab" data-nav="dashboard" data-drawer="drawer-dashboard"
             href="<?= htmlspecialchars($u('/dashboard'), ENT_QUOTES) ?>">
             <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-gauge-high"></i></span>
-            <span class="tab__abbr">儀錶板</span>
+            <span class="tab__abbr">導覽板</span>
         </a>
 
         <a class="rail__tab" data-nav="mat" data-drawer="drawer-mat"
