@@ -137,66 +137,57 @@
   .dash-lights { grid-template-columns: 1fr 1fr; }
 }
 
-.dash-light {
-  border: 1px solid rgba(15,23,42,.10);
-  background: rgba(255,255,255,.66);
-  border-radius: 12px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: border-color .15s ease, background .15s ease;
-}
-
-.dash-light:hover {
-  border-color: rgba(15,23,42,.16);
-  background: rgba(255,255,255,.86);
-}
-
 /* ===== 領退管理：狀態小卡（上方色條） ===== */
 
 .dash-light {
   position: relative;
-  border: 2px solid #0f172a;
-  background: #ffffff;
+
+  /* ⬇ 改回系統原本的淡框線風格 */
+  border: 1px solid rgba(15, 23, 42, .10);
+  background: rgba(255, 255, 255, .85);
+
   border-radius: 14px;
-  padding: 26px 12px 16px; /* 上方留給色條 */
+  padding: 22px 12px 14px; /* 上方仍留給燈條 */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+
+  transition: border-color .15s ease, background .15s ease;
 }
 
-/* 上方狀態色條 */
+.dash-light:hover {
+  border-color: rgba(15, 23, 42, .16);
+  background: rgba(255, 255, 255, .95);
+}
+
+/* 上方狀態燈條（細版） */
 .dash-light__dot {
   position: absolute;
   top: 10px;
-  left: 16px;
-  right: 16px;
-  height: 10px;
-  border-radius: 6px;
-  background: #ef4444; /* default red */
+  left: 18px;
+  right: 18px;
+
+  height: 6px;              /* ⬅ 原本 10px → 6px */
+  border-radius: 4px;
+
+  background: #cbd5e1;      /* 預設淡灰（幾乎不顯眼） */
 }
 
-/* 狀態色 */
-.dash-light__dot.is-green { background: #22c55e; }
-.dash-light__dot.is-red   { background: #ef4444; }
+/* 狀態色（降飽和） */
+.dash-light__dot.is-green {
+  background: #4ade80;   /* 原本 #22c55e，太亮 → 改柔和 */
+}
+
+.dash-light__dot.is-red {
+  background: #f87171;   /* 原本 #ef4444，太刺 → 改柔紅 */
+}
 
 /* 文字 */
 .dash-light__text {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;     /* 原本 16px */
+  font-weight: 600;    /* 原本 700 */
   color: #0f172a;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.dash-light__text {
-  font-size: 13px;
-  color: var(--text);
-  font-weight: 700;
-  text-align: left;
 }
 
 /* list */
