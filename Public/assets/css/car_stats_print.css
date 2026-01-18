@@ -39,7 +39,7 @@ body { padding: 0; margin: 0; }
 
   /* 關鍵：讓列印引擎在分頁時更穩（避免第二頁蓋表格） */
   z-index: 10;
-  height: 18mm;
+  height: 2mm;
 }
 
 .print-head__logo {
