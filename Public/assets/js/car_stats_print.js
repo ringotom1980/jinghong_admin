@@ -101,9 +101,9 @@
                     html += '<td class="ta-r">' + esc(fmtMoney(cell.grand_total)) + '</td>';
                 });
 
-                html += '<td class="ta-r">' + esc(fmtMoney(r.company_total)) + '</td>';
-                html += '<td class="ta-r">' + esc(fmtMoney(r.team_total)) + '</td>';
-                html += '<td class="ta-r">' + esc(fmtMoney(r.grand_total)) + '</td>';
+                html += '<td class="ta-r col-company">' + esc(fmtMoney(r.company_total)) + '</td>';
+                html += '<td class="ta-r col-team">' + esc(fmtMoney(r.team_total)) + '</td>';
+                html += '<td class="ta-r col-grand">' + esc(fmtMoney(r.grand_total)) + '</td>';
                 html += '</tr>';
             });
 
@@ -129,9 +129,9 @@
                 html += '<td class="ta-r">' + esc(fmtMoney(sumByMonth[m])) + '</td>';
             });
 
-            html += '<td class="ta-r">' + esc(fmtMoney(sumCompany)) + '</td>';
-            html += '<td class="ta-r">' + esc(fmtMoney(sumTeam)) + '</td>';
-            html += '<td class="ta-r">' + esc(fmtMoney(sumGrand)) + '</td>';
+            html += '<td class="ta-r col-company">' + esc(fmtMoney(sumCompany)) + '</td>';
+            html += '<td class="ta-r col-team">' + esc(fmtMoney(sumTeam)) + '</td>';
+            html += '<td class="ta-r col-grand">' + esc(fmtMoney(sumGrand)) + '</td>';
             html += '</tr>';
 
             html += '</tbody></table></div>';

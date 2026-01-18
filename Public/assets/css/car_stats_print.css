@@ -26,8 +26,8 @@ body {
 }
 
 .print-head {
-  position: static;     /* ✅ 取消 fixed，不要覆蓋內容 */
-  height: auto;         /* ✅ 不要硬塞 14mm */
+  position: static; /* ✅ 取消 fixed，不要覆蓋內容 */
+  height: auto; /* ✅ 不要硬塞 14mm */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -124,6 +124,23 @@ td.col-code {
   white-space: nowrap;
 }
 
+/* 公司負擔 / 工班負擔 / 維修金額：各自欄寬（可自行調整） */
+th.col-company,
+td.col-company {
+  width: 74px;
+  white-space: nowrap;
+}
+th.col-team,
+td.col-team {
+  width: 74px;
+  white-space: nowrap;
+}
+th.col-grand,
+td.col-grand {
+  width: 80px;
+  white-space: nowrap;
+}
+
 /* 列印時避免表格標題列被切開 */
 thead {
   display: table-header-group;
@@ -163,4 +180,3 @@ tr.sum-row td {
     color: inherit;
   }
 }
-
