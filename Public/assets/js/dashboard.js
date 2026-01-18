@@ -110,6 +110,72 @@
         }
     };
 
+    /**
+ * 由 A 班統計 rows 產生 1-2 卡片顯示資料
+ * @param {Array} rows - stats_ac 的 A 班 rows
+ * @return {Array<{k:string, v:string}>}
+ */
+    function buildMatACard(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) return [];
+
+        // 1️⃣ 固定材料編號對照
+        var mapByNumber = {
+            '1102000019': '#1一般電纜',
+            '1102000024': '#1防蟻電纜',
+            '1102000021': '500一般電纜',
+            '1102000025': '500防蟻電纜',
+            '1102000034': '477被覆線',
+            '1102000035': '#2被覆線'
+        };
+
+        // 2️⃣ 字串匹配（未分型 → 要加總）
+        var nameMatchers = [
+            { key: '四路開關(未分型)', match: '地下四路' },
+            { key: '氣封開關(未分型)', match: '氣封開關' }
+        ];
+
+        var result = [];
+        var usedIndex = {};
+
+        // 3️⃣ 先處理「材料編號直對」
+        rows.forEach(function (r) {
+            var mn = String(r.material_number || '');
+            if (!mapByNumber[mn]) return;
+
+            var qty = Number(r.collar_new || 0) + Number(r.collar_old || 0);
+            if (qty <= 0) return;
+
+            result.push({
+                k: mapByNumber[mn],
+                v: String(qty)
+            });
+
+            usedIndex[mn] = true;
+        });
+
+        // 4️⃣ 再處理「字串匹配（合併）」
+        nameMatchers.forEach(function (rule) {
+            var sum = 0;
+
+            rows.forEach(function (r) {
+                if (!r.material_name) return;
+                if (String(r.material_name).indexOf(rule.match) === -1) return;
+
+                var qty = Number(r.collar_new || 0) + Number(r.collar_old || 0);
+                if (qty > 0) sum += qty;
+            });
+
+            if (sum > 0) {
+                result.push({
+                    k: rule.key,
+                    v: String(sum)
+                });
+            }
+        });
+
+        return result;
+    }
+
     function applyData(d) {
         d = d || Fake;
 
@@ -129,7 +195,17 @@
         setLight('S', !!(d.mat && d.mat.status && d.mat.status.S));
         setLight('RECON', !!(d.mat && d.mat.status && d.mat.status.RECON));
 
-        renderList(qs('#matAList'), d.mat && d.mat.a_pick ? d.mat.a_pick : []);
+        // 1-2 即期 A 班領料（由統計頁 A 班邏輯共用）
+        var aRows =
+            d.mat &&
+                d.mat.stats &&
+                d.mat.stats.A &&
+                Array.isArray(d.mat.stats.A.rows)
+                ? d.mat.stats.A.rows
+                : [];
+
+        renderList(qs('#matAList'), buildMatACard(aRows));
+
         renderList(qs('#matDNegList'), d.mat && d.mat.d_negative_returns ? d.mat.d_negative_returns : []);
 
         var ft = d.mat && d.mat.f_transformers ? d.mat.f_transformers : null;
