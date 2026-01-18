@@ -40,7 +40,7 @@ $pageJs = [
     <main class="page equ-repairs" role="main">
         <section class="page-head">
             <h1>工具管理｜維修/保養/購買/租賃</h1>
-            <p class="page-sub">本頁僅提供：列表檢視、新增/編輯（同一視窗）。</p>
+            <p class="page-sub">本頁僅提供：工具維修/保養/購買/租賃列表檢視、新增/編輯。</p>
         </section>
 
         <section class="equ-shell card">
@@ -61,7 +61,7 @@ $pageJs = [
                 </div>
             </header>
 
-            <!-- 比照車輛維修：capsules（你若不需要可留空，JS 不塞資料就不顯示） -->
+            <!-- 比照車輛維修：capsules -->
             <div class="equ-caps" aria-label="時間篩選">
                 <div class="equ-caps__list" id="equCapsules"></div>
                 <div class="equ-caps__hint" id="equCapsulesHint" hidden>載入中…</div>
@@ -74,12 +74,12 @@ $pageJs = [
                         <colgroup>
                             <col class="equ-col equ-col--date">     <!-- 日期 -->
                             <col class="equ-col equ-col--type">     <!-- 類型 -->
-                            <col class="equ-col equ-col--tool">     <!-- 工具 -->
+                            <col class="equ-col equ-col--tool">     <!-- 機具名稱 -->
                             <col class="equ-col equ-col--vendor">   <!-- 廠商 -->
                             <col class="equ-col equ-col--summary">  <!-- 內容摘要 -->
-                            <col class="equ-col equ-col--company">  <!-- 公司 -->
-                            <col class="equ-col equ-col--team">     <!-- 工班 -->
-                            <col class="equ-col equ-col--total">    <!-- 總額 -->
+                            <col class="equ-col equ-col--company">  <!-- 公司負擔 -->
+                            <col class="equ-col equ-col--team">     <!-- 工班負擔 -->
+                            <col class="equ-col equ-col--total">    <!-- 總金額 -->
                             <col class="equ-col equ-col--actions">  <!-- 操作 -->
                         </colgroup>
 
@@ -87,12 +87,12 @@ $pageJs = [
                             <tr>
                                 <th>日期</th>
                                 <th>類型</th>
-                                <th>工具</th>
+                                <th>機具名稱</th>
                                 <th>廠商</th>
                                 <th>內容摘要</th>
-                                <th class="num">公司</th>
-                                <th class="num">工班</th>
-                                <th class="num">總額</th>
+                                <th class="num">公司負擔</th>
+                                <th class="num">工班負擔</th>
+                                <th class="num">總金額</th>
                                 <th class="actions">操作</th>
                             </tr>
                         </thead>
@@ -107,7 +107,7 @@ $pageJs = [
         </section>
     </main>
 
-    <!-- Modal（先保留你原本外殼與 ID，不動 JS 事件綁定） -->
+    <!-- Modal -->
     <div class="equ-modal" id="equModal" aria-hidden="true">
         <div class="equ-modal__backdrop" data-close="1"></div>
         <div class="equ-modal__panel" role="dialog" aria-modal="true" aria-labelledby="equModalTitle">
@@ -137,7 +137,7 @@ $pageJs = [
                         </label>
 
                         <label class="equ-field">
-                            <span>工具</span>
+                            <span>機具名稱</span>
                             <input type="text" id="equToolName" placeholder="可直接輸入" list="equToolDatalist" />
                             <datalist id="equToolDatalist"></datalist>
                         </label>
@@ -166,8 +166,8 @@ $pageJs = [
                                     <tr>
                                         <th style="width:56px;">序</th>
                                         <th>項目內容</th>
-                                        <th class="ta-r" style="width:140px;">公司</th>
-                                        <th class="ta-r" style="width:140px;">工班</th>
+                                        <th class="ta-r" style="width:140px;">公司負擔</th>
+                                        <th class="ta-r" style="width:140px;">工班負擔</th>
                                         <th style="width:80px;">刪除</th>
                                     </tr>
                                 </thead>
@@ -177,9 +177,9 @@ $pageJs = [
 
                         <div class="equ-items__foot">
                             <div class="equ-sum">
-                                <div>公司：<b id="equSumCompany">0</b></div>
-                                <div>工班：<b id="equSumTeam">0</b></div>
-                                <div>總額：<b id="equSumGrand">0</b></div>
+                                <div>公司負擔：<b id="equSumCompany">0</b></div>
+                                <div>工班負擔：<b id="equSumTeam">0</b></div>
+                                <div>總金額：<b id="equSumGrand">0</b></div>
                             </div>
                         </div>
                     </div>

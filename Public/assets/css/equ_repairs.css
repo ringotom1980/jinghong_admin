@@ -1,45 +1,229 @@
 /* Path: Public/assets/css/equ_repairs.css
- * 說明: 工具維修模組樣式（外掛，不內嵌）
+ * 說明: 工具管理｜維修/保養/購買/租賃（列表 + 新增/編輯 modal）
+ * 目標：版型比照 Public/assets/css/car_repairs.css
+ * - 移除舊的 toolbar / panel / table-wrap 版型依賴（頁面已改成 equ-shell + equ-head + equ-caps + equ-body）
+ * - 保留/延續既有 modal / 明細區塊樣式（equ-modal / equ-items / equ-grid）
  */
 
-.equ-panel {
-  padding: 14px;
+/* ===== Page shell (match car) ===== */
+.equ-repairs .equ-shell {
+  padding: 0;
 }
 
-.equ-toolbar {
+.equ-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
-}
-.equ-toolbar__left {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-2);
 }
 
-.equ-field {
-  display: grid;
-  gap: 6px;
+.equ-kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.equ-kpi__label {
   font-size: 13px;
-  color: rgba(15, 23, 42, 0.7);
+  color: var(--muted);
+  font-weight: 700;
 }
-.equ-field input,
-.equ-field select {
-  height: 36px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 10px;
-  padding: 0 10px;
-  background: #fff;
+
+.equ-kpi__value {
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* ===== Capsules (match car cr-caps) ===== */
+.equ-caps {
+  margin-top: 10px;
+  padding: 10px 16px 0 16px; /* 與 equ-body 左右對齊 */
+}
+
+.equ-caps__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.equ-cap {
+  appearance: none;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(15, 23, 42, 0.86);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.equ-cap:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.equ-cap.is-active {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(30, 58, 138, 0.98);
+}
+
+.equ-cap__count {
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(15, 23, 42, 0.55);
+}
+
+.equ-cap.is-active .equ-cap__count {
+  color: rgba(30, 58, 138, 0.8);
+}
+
+.equ-caps__hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ===== Body / Table wrapper (match car) ===== */
+.equ-body {
+  padding: 14px 16px 16px 16px;
+}
+
+.equ-tableWrap {
+  position: relative;
+  overflow: auto;
+}
+
+.equ-table {
+  min-width: 1080px; /* 工具表欄位較少，給個安全值避免擠爆 */
+}
+
+/* ===== Table: colgroup widths (match car approach) ===== */
+.equ-table {
+  table-layout: fixed;
+}
+
+/* 日期 */
+.equ-table col.equ-col--date {
+  width: 12%;
+}
+
+/* 類型 */
+.equ-table col.equ-col--type {
+  width: 10%;
+}
+
+/* 工具 */
+.equ-table col.equ-col--tool {
+  width: 18%;
+}
+
+/* 廠商 */
+.equ-table col.equ-col--vendor {
+  width: 18%;
+}
+
+/* 內容摘要 */
+.equ-table col.equ-col--summary {
+  width: 24%;
+}
+
+/* 公司 */
+.equ-table col.equ-col--company {
+  width: 6%;
+}
+
+/* 工班 */
+.equ-table col.equ-col--team {
+  width: 6%;
+}
+
+/* 總額 */
+.equ-table col.equ-col--total {
+  width: 6%;
+}
+
+/* 操作 */
+.equ-table col.equ-col--actions {
+  width: 10%;
+}
+
+/* ===== Cell typography / alignment (match car behavior) ===== */
+.equ-table td {
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.equ-table td.num,
+.equ-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.equ-table td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 預設：表頭/內容置中（摘要欄例外靠左） */
+.equ-table th,
+.equ-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 例外：摘要欄靠左（你 JS 渲染 td 時請加 class="summary" 或包 .equ-summary） */
+.equ-table td.summary {
+  text-align: left;
+}
+
+.equ-summary {
+  text-align: left;
+  color: rgba(15, 23, 42, 0.76);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+
+/* 空/載入 */
+.equ-empty,
+.equ-loading {
+  padding: 14px 6px 4px 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* 整列 hover（match car） */
+.equ-table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.equ-table tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.04);
+}
+
+.equ-table tbody tr:hover td.num {
   color: #0f172a;
+  font-weight: 600;
 }
-.equ-field--grow {
-  min-width: 260px;
-  flex: 1;
-}
-.equ-field--full {
-  grid-column: 1 / -1;
+
+/* ===== Legacy toolbar/panel/table-wrap: keep harmless fallback =====
+ * （頁面版型已改成 equ-shell，不再使用 equ-panel / table-wrap / cs-empty）
+ * 仍保留 minimal，避免其他舊頁引用時炸掉
+ */
+.equ-panel {
+  padding: 14px;
 }
 
 .table-wrap {
@@ -48,29 +232,20 @@
   border-radius: 14px;
   background: #fff;
 }
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 10px 10px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-  font-size: 14px;
-}
-.table th {
-  background: rgba(15, 23, 42, 0.03);
-  text-align: left;
-  white-space: nowrap;
-}
+
 .ta-r {
   text-align: right;
 }
+
 .cs-empty {
   text-align: center;
   color: rgba(15, 23, 42, 0.55);
   padding: 18px !important;
 }
+
+/* =========================
+   Modal（保留你原本樣式）
+   ========================= */
 
 .equ-modal {
   position: fixed;
@@ -78,14 +253,17 @@
   display: none;
   z-index: 9999;
 }
+
 .equ-modal[aria-hidden="false"] {
   display: block;
 }
+
 .equ-modal__backdrop {
   position: absolute;
   inset: 0;
   background: rgba(2, 6, 23, 0.55);
 }
+
 .equ-modal__panel {
   position: absolute;
   left: 50%;
@@ -99,6 +277,7 @@
   border: 1px solid rgba(15, 23, 42, 0.12);
   box-shadow: 0 30px 80px rgba(2, 6, 23, 0.25);
 }
+
 .equ-modal__head,
 .equ-modal__foot {
   padding: 12px 14px;
@@ -107,18 +286,22 @@
   justify-content: space-between;
   gap: 10px;
 }
+
 .equ-modal__head {
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
+
 .equ-modal__foot {
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   justify-content: flex-end;
 }
+
 .equ-modal__body {
   padding: 12px 14px;
   overflow: auto;
   max-height: calc(100vh - 170px);
 }
+
 .equ-iconbtn {
   width: 34px;
   height: 34px;
@@ -128,6 +311,33 @@
   cursor: pointer;
 }
 
+/* 表單欄位（沿用你原本） */
+.equ-field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.equ-field input,
+.equ-field select {
+  height: 36px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  padding: 0 10px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.equ-field--grow {
+  min-width: 260px;
+  flex: 1;
+}
+
+.equ-field--full {
+  grid-column: 1 / -1;
+}
+
 .equ-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -135,11 +345,13 @@
   margin-bottom: 12px;
 }
 
+/* 明細區（沿用你原本） */
 .equ-items {
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 14px;
   overflow: hidden;
 }
+
 .equ-items__head {
   padding: 10px 12px;
   display: flex;
@@ -147,15 +359,18 @@
   justify-content: space-between;
   background: rgba(15, 23, 42, 0.03);
 }
+
 .equ-items__tablewrap {
   overflow: auto;
   background: #fff;
 }
+
 .equ-items__foot {
   padding: 10px 12px;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(15, 23, 42, 0.02);
 }
+
 .equ-sum {
   display: flex;
   gap: 18px;
