@@ -100,7 +100,7 @@ td.col-code, td.col-plate { text-align: center; }
 
 /* 車牌欄寬，且不要換行 */
 th.col-plate, td.col-plate {
-  width: 60px;        /* 你可以再加到 100~120 */
+  width: 66px;        /* 你可以再加到 100~120 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -108,7 +108,7 @@ th.col-plate, td.col-plate {
 
 /* 編號欄寬，避免被擠壓 */
 th.col-code, td.col-code {
-  width: 40px;
+  width: 36px;
   white-space: nowrap;
 }
 
