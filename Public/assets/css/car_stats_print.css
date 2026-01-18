@@ -127,17 +127,17 @@ td.col-code {
 /* 公司負擔 / 工班負擔 / 維修金額：各自欄寬（可自行調整） */
 th.col-company,
 td.col-company {
-  width: 74px;
+  width: 72px;
   white-space: nowrap;
 }
 th.col-team,
 td.col-team {
-  width: 74px;
+  width: 72px;
   white-space: nowrap;
 }
 th.col-grand,
 td.col-grand {
-  width: 80px;
+  width: 78px;
   white-space: nowrap;
 }
 
