@@ -1,0 +1,151 @@
+/**
+ * Path: Public/assets/css/equ_stats_print.css
+ * 說明: 工具維修統計｜列印專用樣式（外掛）
+ */
+
+@page {
+  margin: 6mm;
+  @bottom-right {
+    content: "第 " counter(page) " 頁";
+    font-size: 11px;
+  }
+}
+
+html,
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC",
+    sans-serif;
+  color: #111;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Print Head ===== */
+.print-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 2mm;
+}
+
+.print-head__logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.print-head__title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* ===== Section ===== */
+.sec {
+  margin: 10px 0 14px;
+}
+
+h3 {
+  margin: 8px 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* ===== Table ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th,
+td {
+  border: 1px solid #d9d9d9;
+  padding: 7px 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+th {
+  background: #f5f6f8;
+  text-align: center;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* 對齊 */
+.ta-r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ta-c {
+  text-align: center;
+}
+.ta-l {
+  text-align: left;
+}
+
+/* ===== 欄寬（工具統計）===== */
+th.col-vendor,
+td.col-vendor {
+  width: 120px;
+}
+th.col-month,
+td.col-month {
+  width: 70px;
+}
+
+th.col-company,
+td.col-company {
+  width: 80px;
+}
+th.col-team,
+td.col-team {
+  width: 80px;
+}
+th.col-grand,
+td.col-grand {
+  width: 90px;
+}
+
+/* ===== 合計列 ===== */
+tr.sum-row td {
+  font-weight: 800;
+  background: #fff;
+}
+
+/* ===== 分頁控制 ===== */
+thead {
+  display: table-header-group;
+}
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+@media print {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* ===== thead 輔助列（JS 會用到）===== */
+
+/* ✅ 欄寬定錨列：不顯示、不佔高度、不留格線，但保留欄寬計算 */
+thead tr.col-guard th {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  background: transparent !important;
+}
+
+/* ✅ 文件標題列（LOGO + 標題）不要外框、不要灰底 */
+thead tr.print-head-row > th {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  background: #fff !important;
+  padding-bottom: 6px;
+}
