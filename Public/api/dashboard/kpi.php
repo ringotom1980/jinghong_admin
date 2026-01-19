@@ -140,47 +140,40 @@ try {
     }
 
     /* ===============================
- * 4-2) 取得 D 班「負數列」（給 1-3 用）
- * - 來源：stats_d.php 的 mat_stats_d()
- * - 判斷：row_kind=ITEM 且 (total_new < 0 OR total_old < 0)
- * - 顯示：名稱 + 最負的那個值（min(total_new,total_old)）
- * - Top N：先固定 6
- * =============================== */
+        4-2) 取得 D 班「領退合計(舊) total_old < 0」（給 1-3 用）
+    * =============================== */
+
     $dNeg = [];
     if ($asof) {
         $dg = mat_stats_d($asof);
-        $dRows = (isset($dg['D']['rows']) && is_array($dg['D']['rows'])) ? $dg['D']['rows'] : [];
+        $dRows = (isset($dg['D']['rows']) && is_array($dg['D']['rows']))
+            ? $dg['D']['rows']
+            : [];
 
         foreach ($dRows as $r) {
-            $kind = strtoupper((string)($r['row_kind'] ?? ''));
-            if ($kind !== 'ITEM') continue;
+            // 只要材料列
+            if (($r['row_kind'] ?? '') !== 'ITEM') continue;
 
             $name = trim((string)($r['material_name'] ?? ''));
             if ($name === '') continue;
 
-            $tn = (float)($r['total_new'] ?? 0);
-            $to = (float)($r['total_old'] ?? 0);
+            // ✅ 只看你統計表已算好的 total_old
+            $totalOld = (float)($r['total_old'] ?? 0);
 
-            // ✅ 跟統計表一致：看 total_new / total_old
-            if ($tn >= 0 && $to >= 0) continue;
-
-            // 顯示「更負的那個」：例如 total_old=-27788.6 會被抓出來
-            $v = min($tn, $to);
+            if ($totalOld >= 0) continue;
 
             $dNeg[] = [
                 'k' => $name,
-                'v' => (string)$v,
+                'v' => (string)$totalOld
             ];
         }
 
-        // 由負到更負（-27788 在最前）
+        // ✅ 最負的排最前
         usort($dNeg, function ($a, $b) {
-            $va = (float)($a['v'] ?? 0);
-            $vb = (float)($b['v'] ?? 0);
-            if ($va === $vb) return 0;
-            return ($va < $vb) ? -1 : 1;
+            return (float)$a['v'] <=> (float)$b['v'];
         });
 
+        // Top N
         $dNeg = array_slice($dNeg, 0, 6);
     }
 
