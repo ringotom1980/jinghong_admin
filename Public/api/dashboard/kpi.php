@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/api/dashboard/kpi.php
  * 說明: Dashboard KPI
@@ -13,6 +14,7 @@ require_login();
 
 /* 共用 A/C 班統計邏輯 */
 require_once __DIR__ . '/../mat/stats_ac.php';
+require_once __DIR__ . '/../mat/stats_d.php';
 
 /**
  * 從日期清單中挑選「即期日期」
@@ -138,6 +140,45 @@ try {
     }
 
     /* ===============================
+     * 4-2) 取得 D 班退料負數材料（給 1-3 用）
+     * - 來源：stats_d.php 的 mat_stats_d()
+     * - 條件：row_kind=ITEM 且 (recede_new + recede_old) < 0
+     * - 顯示：Top N（先固定 6）
+     * =============================== */
+    $dNeg = [];
+    if ($asof) {
+        $dg = mat_stats_d($asof);
+        $dRows = (isset($dg['D']['rows']) && is_array($dg['D']['rows'])) ? $dg['D']['rows'] : [];
+
+        foreach ($dRows as $r) {
+            $kind = strtoupper((string)($r['row_kind'] ?? ''));
+            if ($kind !== 'ITEM') continue;
+
+            $name = trim((string)($r['material_name'] ?? ''));
+            if ($name === '') continue;
+
+            $rn = (float)($r['recede_new'] ?? 0);
+            $ro = (float)($r['recede_old'] ?? 0);
+
+            $neg = $rn + $ro;              // 退料合計
+            if ($neg >= 0) continue;       // 只要負數
+
+            $dNeg[] = ['k' => $name, 'v' => (string)$neg];
+        }
+
+        // qty 越負越前（-10 在 -2 前）
+        usort($dNeg, function ($a, $b) {
+            $va = (float)($a['v'] ?? 0);
+            $vb = (float)($b['v'] ?? 0);
+            if ($va === $vb) return 0;
+            return ($va < $vb) ? -1 : 1;
+        });
+
+        // Top N
+        $dNeg = array_slice($dNeg, 0, 6);
+    }
+
+    /* ===============================
      * 5) 回傳 KPI
      * =============================== */
     json_ok([
@@ -148,10 +189,11 @@ try {
                 'A' => [
                     'rows' => $aRows
                 ]
-            ]
+            ],
+            // 1-3：即期 D 班退料負數材料（Top N）
+            'd_negative_returns' => $dNeg
         ]
     ]);
-
 } catch (Throwable $e) {
     json_error($e->getMessage(), 500);
 }
