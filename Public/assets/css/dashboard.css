@@ -186,3 +186,6 @@
   width: 100%;
   display: block;
 }
+
+.page.dashboard { outline: 6px solid red !important; }
+.dash-section { outline: 6px solid blue !important; }
