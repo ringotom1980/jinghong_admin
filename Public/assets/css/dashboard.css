@@ -198,10 +198,10 @@
 }
 
 /* 左側：桿上型/亭置式/合計 → 靠近數字框 + 置中 */
-.dash-tx2__grid > .db-sub{
+.dash-tx2__grid > .db-sub:nth-child(3n + 1){
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* 文字靠右，縮短與數字框距離 */
+  justify-content: flex-end; /* 靠右貼近數字框 */
   padding-right: 2px;
   margin: 0;
   line-height: 1;
