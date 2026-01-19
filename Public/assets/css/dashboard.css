@@ -185,3 +185,22 @@
   flex: 1 1 0;         /* 平均分配寬度 → 直接擠在同一列 */
   min-width: 0;        /* 允許縮到很窄（關鍵） */
 }
+
+/* =====================================================
+ * 1-4卡片排版
+ * ===================================================== */
+/* 1-4：領料 / 退料 左右排（只排版） */
+.dash-tx2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* 新 / 舊 / 合計 的位置排列（只排版） */
+.dash-tx2__grid{
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  row-gap: 8px;
+  column-gap: 10px;
+  align-items: center;
+}
