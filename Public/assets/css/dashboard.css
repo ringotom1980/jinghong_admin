@@ -1,5 +1,5 @@
 /*
- * Path: Public/assets/css/dashboard_base.css
+ * Path: Public/assets/css/dashboard.css
  * 說明: Dashboard 共用視覺基底（字型 / 卡片 / 動畫 / 語彙）
  * 原則: 不含任何業務、不依賴任何舊 class
  */
@@ -169,4 +169,20 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* =====================================================
+ * 7. Layout（只針對 dashboard 這頁）
+ * ===================================================== */
+
+/* 讓 main.page.dashboard 的子元素（3 個 dash-section）一個一列往下排 */
+.page.dashboard{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.page.dashboard > .dash-section{
+  width: 100%;
+  display: block;
 }
