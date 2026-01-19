@@ -25,21 +25,21 @@ $pageJs    = ['assets/js/dashboard.js'];
 <main class="page page-enter dashboard" role="main">
   <div class="page-head">
     <h1>導覽板</h1>
-    <div class="page-sub">即期作業監控（目前為骨架：先跑版面與導頁，下一步再接 API）</div>
+    <div class="page-sub">近期作業監控</div>
   </div>
 
   <!-- ========== Section: Materials (領退管理) ========== -->
   <section class="dash-section" id="dash-mat" aria-label="領退管理">
     <div class="dash-section__head">
       <h2 class="dash-section__title">領退管理</h2>
-      <div class="dash-section__meta">即期膠囊：<span id="dashAsOfDate">—</span></div>
+      <div class="dash-section__meta">近期膠囊：<span id="dashAsOfDate">—</span></div>
     </div>
 
     <div class="dash-grid dash-grid--mat">
       <!-- 1-1 -->
       <article class="dash-card dash-card--wide" data-jump="mat_stats" data-section="capsule">
         <div class="dash-card__top">
-          <div class="dash-card__k">即期領退作業狀態</div>
+          <div class="dash-card__k">近期領退作業狀態</div>
           <div class="dash-card__tag">點日期→統計；點燈號→對應頁</div>
         </div>
 
@@ -74,7 +74,7 @@ $pageJs    = ['assets/js/dashboard.js'];
       <!-- 1-2 -->
       <article class="dash-card" data-jump="mat_stats" data-section="A">
         <div class="dash-card__top">
-          <div class="dash-card__k">即期 A 班領料（#1/#2/#500）</div>
+          <div class="dash-card__k">近期 A 班領料</div>
           <div class="dash-card__tag">點卡片→統計 A 班</div>
         </div>
         <div class="dash-list" id="matAList">
@@ -85,7 +85,7 @@ $pageJs    = ['assets/js/dashboard.js'];
       <!-- 1-3 -->
       <article class="dash-card" data-jump="mat_stats" data-section="D">
         <div class="dash-card__top">
-          <div class="dash-card__k">即期 D 班退料</div>
+          <div class="dash-card__k">近期 D 班退料</div>
           <div class="dash-card__tag">點卡片→統計 D 班</div>
         </div>
         <div class="dash-list" id="matDNegList">
@@ -96,7 +96,7 @@ $pageJs    = ['assets/js/dashboard.js'];
       <!-- 1-4 -->
       <article class="dash-card" data-jump="mat_stats" data-section="F">
         <div class="dash-card__top">
-          <div class="dash-card__k">即期 F 班變壓器領退</div>
+          <div class="dash-card__k">近期 F 班變壓器領退</div>
           <div class="dash-card__tag">點卡片→統計 F 班</div>
         </div>
 
