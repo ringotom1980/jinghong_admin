@@ -193,8 +193,18 @@
   display: grid;
   grid-template-columns: auto minmax(56px, 22%) minmax(56px, 22%);
   row-gap: 8px;
-  column-gap: 10px;
-  align-items: start;
+  column-gap: 6px;
+  align-items: center;
+}
+
+/* 左側：桿上型/亭置式/合計 → 靠近數字框 + 置中 */
+.dash-tx2__grid > .db-sub{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 文字靠右，縮短與數字框距離 */
+  padding-right: 2px;
+  margin: 0;
+  line-height: 1;
 }
 
 /* 1-4：領料/退料 標題底下虛線（符合你示意圖的位置） */
@@ -224,15 +234,11 @@
   margin-top: 0;
 }
 
-/* 1-4：數字欄不要被撐開 */
-.dash-tx2 .db-row-v{
-  font-size: 14px;       /* 明確鎖回原本大小 */
-}
-
-/* 1-4：標籤文字統一放大（比照桿上型） */
+/* 1-4：數字欄、標籤文字 */
 .dash-tx2 .db-h3,
-.dash-tx2 .db-sub{
-  font-size: 14px;       /* 就用你現在認可的那個大小 */
+.dash-tx2 .db-sub,
+.dash-tx2 .db-row-v{
+  font-size: 14px;       
   font-weight: 700;
 }
 
