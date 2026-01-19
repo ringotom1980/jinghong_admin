@@ -197,26 +197,22 @@
   align-items: start;
 }
 
-/* 1-4：讓表頭那一列（空白 / 新 / 舊）高度固定，虛線才會穩 */
-.dash-tx2__grid { 
+/* 1-4：領料/退料 標題底下虛線（符合你示意圖的位置） */
+.dash-tx2 > div > .db-h3{
   position: relative;
+  text-align: center;
+  color: var(--text);
+  margin: 0 0 10px;
+  padding-bottom: 10px;
 }
 
-/* 第 1 列：前三個格子（空白 / 新 / 舊）固定高度，避免「新舊」看起來飄 */
-.dash-tx2__grid > :nth-child(-n + 3){
-  height: 22px;
-  display: flex;
-  align-items: center;
-}
-
-/* 1-4：新/舊 下方的淡虛線（跨整個 grid） */
-.dash-tx2__grid::after{
+.dash-tx2 > div > .db-h3::after{
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 22px; /* 必須跟上面 height 一致 */
-  border-top: 1px dashed rgba(15, 23, 42, 0.25);
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  border-bottom: 1px dashed rgba(15, 23, 42, 0.28);
 }
 
 /* 1-4：小卡片更小（只影響 dash-tx2 內） */
