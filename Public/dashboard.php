@@ -51,22 +51,22 @@ $pageJs    = ['assets/js/dashboard.js'];
           </div>
 
           <div class="dash-lights" role="group" aria-label="作業狀態燈號">
-            <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="LWK">
+            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="LWK">
               <span class="dash-light__dot" data-light="LWK" aria-hidden="true"></span>
               <span class="dash-light__text">領料資料</span>
             </button>
 
-            <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="T">
+            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="T">
               <span class="dash-light__dot" data-light="T" aria-hidden="true"></span>
               <span class="dash-light__text">退料資料</span>
             </button>
 
-            <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_issue" data-type="S">
+            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="S">
               <span class="dash-light__dot" data-light="S" aria-hidden="true"></span>
               <span class="dash-light__text">用餘資料</span>
             </button>
 
-            <button type="button" class="dash-light ui-float-card ui-float-card--sm" data-action="go_edit_b">
+            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_edit_b">
               <span class="dash-light__dot" data-light="RECON" aria-hidden="true"></span>
               <span class="dash-light__text">對帳資料</span>
             </button>
@@ -107,42 +107,48 @@ $pageJs    = ['assets/js/dashboard.js'];
             <!-- 領料 -->
             <div class="dash-tx2__card">
               <div class="dash-tx2__title">領料</div>
+
               <div class="dash-tx2__grid">
                 <div></div>
-                <div class="dash-tx2__col">新</div>
-                <div class="dash-tx2__col">舊</div>
+                <div class="dash-mini-grid__head">新</div>
+                <div class="dash-mini-grid__head">舊</div>
 
-                <div class="dash-tx2__row">桿上型</div>
-                <div class="dash-tx2__box"><span id="fIssuePoleNew">—</span></div>
-                <div class="dash-tx2__box"><span id="fIssuePoleOld">—</span></div>
+                <div class="dash-mini-grid__rowhead">桿上型</div>
+                <div class="dash-mini-grid__cell"><span id="fIssuePoleNew">—</span></div>
+                <div class="dash-mini-grid__cell"><span id="fIssuePoleOld">—</span></div>
 
-                <div class="dash-tx2__row">亭置式</div>
-                <div class="dash-tx2__box"><span id="fIssuePadNew">—</span></div>
-                <div class="dash-tx2__box"><span id="fIssuePadOld">—</span></div>
+                <div class="dash-mini-grid__rowhead">亭置式</div>
+                <div class="dash-mini-grid__cell"><span id="fIssuePadNew">—</span></div>
+                <div class="dash-mini-grid__cell"><span id="fIssuePadOld">—</span></div>
 
-                <div class="dash-tx2__sumlabel">合計</div>
-                <div class="dash-tx2__sum" style="grid-column: 2 / span 2;"><span id="fIssueTotal">—</span></div>
+                <div class="dash-mini-grid__head">合計</div>
+                <div class="dash-mini-grid__cell dash-mini-grid__cell--total" style="grid-column: 2 / span 2;">
+                  <span id="fIssueTotal">—</span>
+                </div>
               </div>
             </div>
 
             <!-- 退料 -->
             <div class="dash-tx2__card">
               <div class="dash-tx2__title">退料</div>
+
               <div class="dash-tx2__grid">
                 <div></div>
-                <div class="dash-tx2__col">新</div>
-                <div class="dash-tx2__col">舊</div>
+                <div class="dash-mini-grid__head">新</div>
+                <div class="dash-mini-grid__head">舊</div>
 
-                <div class="dash-tx2__row">桿上型</div>
-                <div class="dash-tx2__box"><span id="fReturnPoleNew">—</span></div>
-                <div class="dash-tx2__box"><span id="fReturnPoleOld">—</span></div>
+                <div class="dash-mini-grid__rowhead">桿上型</div>
+                <div class="dash-mini-grid__cell"><span id="fReturnPoleNew">—</span></div>
+                <div class="dash-mini-grid__cell"><span id="fReturnPoleOld">—</span></div>
 
-                <div class="dash-tx2__row">亭置式</div>
-                <div class="dash-tx2__box"><span id="fReturnPadNew">—</span></div>
-                <div class="dash-tx2__box"><span id="fReturnPadOld">—</span></div>
+                <div class="dash-mini-grid__rowhead">亭置式</div>
+                <div class="dash-mini-grid__cell"><span id="fReturnPadNew">—</span></div>
+                <div class="dash-mini-grid__cell"><span id="fReturnPadOld">—</span></div>
 
-                <div class="dash-tx2__sumlabel">合計</div>
-                <div class="dash-tx2__sum" style="grid-column: 2 / span 2;"><span id="fReturnTotal">—</span></div>
+                <div class="dash-mini-grid__head">合計</div>
+                <div class="dash-mini-grid__cell dash-mini-grid__cell--total" style="grid-column: 2 / span 2;">
+                  <span id="fReturnTotal">—</span>
+                </div>
               </div>
             </div>
 

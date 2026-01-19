@@ -1,12 +1,18 @@
 /*
  * Path: Public/assets/css/dashboard.css
- * 說明: Dashboard v1.0（骨架可運行版）
+ * 說明: Dashboard v1.0（本頁自洽統一版）
+ * 原則：
+ * - 本頁內「框線/底色/圓角/陰影/hover」集中在 dash-surface
+ * - 列/小卡/格子沿用同一套語彙（避免 1-4 再長一套）
  */
 
 .dashboard {
   padding-bottom: 30px;
 }
 
+/* =========================
+ * Page section
+ * ========================= */
 .dash-section {
   margin-top: 18px;
 }
@@ -31,7 +37,66 @@
   white-space: nowrap;
 }
 
-/* grids */
+/* =========================
+ * Shared tokens (dashboard-only)
+ * ========================= */
+:root {
+  /* 只在本頁使用的語彙（不動 app.css） */
+  --dash-radius-lg: 16px;
+  --dash-radius-md: 14px;
+  --dash-radius-sm: 12px;
+
+  --dash-bg: rgba(255, 255, 255, 0.92);
+  --dash-bg-soft: rgba(255, 255, 255, 0.64);
+  --dash-bg-soft-2: rgba(255, 255, 255, 0.86);
+
+  --dash-line: rgba(15, 23, 42, 0.10);
+  --dash-line-2: rgba(15, 23, 42, 0.08);
+  --dash-line-strong: rgba(15, 23, 42, 0.14);
+
+  --dash-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  --dash-shadow-hover: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+/* =========================
+ * Shared surface (統一卡片/小卡/按鈕浮起來)
+ * ========================= */
+.dash-surface {
+  border: 1px solid var(--dash-line);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: var(--dash-radius-md);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease,
+    background 0.14s ease;
+}
+
+.dash-surface:hover {
+  transform: translateY(-1px);
+  border-color: var(--dash-line-strong);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 30px rgba(15, 23, 42, 0.10);
+}
+
+.dash-surface:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.dash-surface:focus-visible {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.10),
+    0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+/* 輕量版（燈號按鈕用） */
+.dash-surface--sm {
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.07);
+}
+
+/* =========================
+ * Grids
+ * ========================= */
 .dash-grid {
   display: grid;
   gap: 12px;
@@ -58,28 +123,30 @@
   }
 }
 
+/* =========================
+ * Cards (大卡統一)
+ * ========================= */
 .dash-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 12px 12px 12px;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  background: var(--dash-bg);
+  border: 1px solid var(--dash-line);
+  border-radius: var(--dash-radius-lg);
+  padding: 12px;
+  box-shadow: var(--dash-shadow);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .dash-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
-  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: var(--dash-shadow-hover);
+  border-color: var(--dash-line-strong);
 }
 
 .dash-card--wide {
   grid-column: 1 / span 2;
 }
 
-/* Dashboard：領退管理固定 4 卡同列（不允許 wide 跨欄） */
+/* 領退管理固定 4 卡同列（不允許 wide 跨欄） */
 .dash-grid--mat .dash-card--wide {
   grid-column: auto;
 }
@@ -102,6 +169,7 @@
   font-weight: 800;
   color: var(--text);
   line-height: 1.25;
+  font-size: 15px;
 }
 
 .dash-card__tag {
@@ -110,139 +178,33 @@
   white-space: nowrap;
 }
 
-/* =========================================================
- * 共用：小卡片浮起來（soft-elevation）
- * 用法：
- * - 在小卡元素加 class="ui-float-card"
- * - 若要更輕：加 ui-float-card--sm
- * - 若要更明顯：加 ui-float-card--md
- * ========================================================= */
-
-.ui-float-card {
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  background: rgba(255, 255, 255, 0.88);
-  border-radius: 14px;
-
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
-
-  transition: transform 0.14s ease, box-shadow 0.14s ease,
-    border-color 0.14s ease, background 0.14s ease;
+/* =========================
+ * Shared row/list item (統一小格語彙)
+ * ========================= */
+.dash-row,
+.dash-item,
+.dash-kv__row {
+  border-radius: var(--dash-radius-sm);
+  border: 1px solid var(--dash-line-2);
+  background: var(--dash-bg-soft);
 }
 
-.ui-float-card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(15, 23, 42, 0.14);
-  background: rgba(255, 255, 255, 0.94);
-
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 30px rgba(15, 23, 42, 0.1);
-}
-
-/* 按下去的手感（button / a） */
-.ui-float-card:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
-}
-
-/* 鍵盤可用性（若元素可 focus） */
-.ui-float-card:focus-visible {
-  outline: none;
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.1),
-    0 0 0 4px rgba(59, 130, 246, 0.12);
-}
-
-/* 輕量版 */
-.ui-float-card--sm {
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.07);
-}
-
-/* 明顯版 */
-.ui-float-card--md {
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 16px 34px rgba(15, 23, 42, 0.12);
-}
-/* ===========  共用：小卡片浮起來（soft-elevation）結束============= */
-
-/* rows */
 .dash-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
   margin-bottom: 10px;
 }
 
-.dash-row__label {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--muted);
-}
-
+.dash-row__label,
 .dash-row__value {
   font-size: 14px;
   font-weight: 800;
   color: var(--muted);
 }
 
-/* lights */
-.dash-lights {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-@media (max-width: 1200px) {
-  .dash-lights {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* ===== 領退管理：狀態小卡（上方色條） ===== */
-
-/* dash-light 只負責 layout；視覺交給 ui-float-card */
-.dash-light {
-  position: relative;
-  border-radius: 14px;
-  padding: 22px 12px 14px; /* 上方留給燈條 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-/* 上方狀態燈條（細版） */
-.dash-light__dot {
-  position: absolute;
-  top: 10px;
-  left: 18px;
-  right: 18px;
-
-  height: 6px; /* ⬅ 原本 10px → 6px */
-  border-radius: 4px;
-
-  background: #cbd5e1; /* 預設淡灰（幾乎不顯眼） */
-}
-
-/* 狀態色（降飽和） */
-.dash-light__dot.is-green {
-  background: #4ade80; /* 原本 #22c55e，太亮 → 改柔和 */
-}
-
-.dash-light__dot.is-red {
-  background: #f87171; /* 原本 #ef4444，太刺 → 改柔紅 */
-}
-
-/* 文字 */
-.dash-light__text {
-  font-size: 14px; /* 原本 16px */
-  font-weight: 600; /* 原本 700 */
-  color: var(--muted);
-}
-
-/* list */
 .dash-list {
   display: grid;
   gap: 8px;
@@ -255,44 +217,80 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.64);
 }
 
-.dash-item__k {
+.dash-item__k,
+.dash-item__v {
   font-size: 14px;
   color: var(--muted);
   font-weight: 600;
 }
 
 .dash-item__v {
-  font-size: 14px;
-  color: var(--muted);
-  font-weight: 600;
   white-space: nowrap;
 }
 
 .dash-muted {
-  font-size: 14px; 
+  font-size: 14px;
   color: var(--muted);
   padding: 8px 2px;
 }
 
-/* mini 2x2 */
-.dash-mini-grid {
+/* =========================
+ * Lights
+ * ========================= */
+.dash-lights {
   display: grid;
-  grid-template-columns: 0.7fr 1fr 1fr;
-  gap: 8px;
-  align-items: center;
-  margin-top: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
+@media (max-width: 1200px) {
+  .dash-lights {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* dash-light 只做 layout；視覺吃 dash-surface */
+.dash-light {
+  position: relative;
+  border-radius: var(--dash-radius-md);
+  padding: 22px 12px 14px; /* 上方留給燈條 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 上方狀態燈條 */
+.dash-light__dot {
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  right: 18px;
+  height: 6px;
+  border-radius: 4px;
+  background: #cbd5e1;
+}
+
+.dash-light__dot.is-green { background: #4ade80; }
+.dash-light__dot.is-red { background: #f87171; }
+
+.dash-light__text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* =========================
+ * Mini grid（你同頁既有的格子語彙，1-4 直接沿用）
+ * ========================= */
 .dash-mini-grid__head {
   font-size: 12px;
   color: var(--muted);
   font-weight: 800;
   padding: 2px 2px;
+  text-align: center;
 }
 
 .dash-mini-grid__rowhead {
@@ -300,21 +298,29 @@
   font-weight: 900;
   color: var(--text);
   padding: 8px 6px;
-  border-radius: 12px;
+  border-radius: var(--dash-radius-sm);
   background: rgba(15, 23, 42, 0.04);
   border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .dash-mini-grid__cell {
   padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.64);
+  border-radius: var(--dash-radius-sm);
+  border: 1px solid var(--dash-line-2);
+  background: var(--dash-bg-soft);
   font-weight: 900;
   text-align: right;
+  color: var(--text);
 }
 
-/* kv */
+.dash-mini-grid__cell--total {
+  border-color: var(--dash-line-strong);
+  background: var(--dash-bg-soft-2);
+}
+
+/* =========================
+ * KV
+ * ========================= */
 .dash-kv {
   display: grid;
   gap: 8px;
@@ -325,14 +331,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.64);
 }
 
 .dash-kv__row--total {
-  border-color: rgba(15, 23, 42, 0.14);
-  background: rgba(255, 255, 255, 0.86);
+  border-color: var(--dash-line-strong);
+  background: var(--dash-bg-soft-2);
 }
 
 .dash-kv__k {
@@ -347,11 +350,13 @@
   font-weight: 900;
 }
 
-/* chart placeholder */
+/* =========================
+ * Chart placeholder
+ * ========================= */
 .dash-chart-placeholder {
   border: 1px dashed rgba(15, 23, 42, 0.18);
   background: rgba(255, 255, 255, 0.58);
-  border-radius: 14px;
+  border-radius: var(--dash-radius-md);
   padding: 18px;
   min-height: 110px;
   display: flex;
@@ -367,77 +372,43 @@
 }
 
 /* =========================
- * 1-4：F 班變壓器（雙卡：領料/退料）
+ * 1-4 變壓器：只留「巢狀排版」，格子視覺全部沿用 dash-mini-grid*
  * ========================= */
-.dash-tx2{
-  display:grid;
+.dash-tx2 {
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-@media (max-width: 1200px){
-  .dash-tx2{ grid-template-columns: 1fr; }
+@media (max-width: 1200px) {
+  .dash-tx2 {
+    grid-template-columns: 1fr;
+  }
 }
 
-.dash-tx2__card{
-  border: 2px solid rgba(15, 23, 42, 0.78);
-  border-radius: 22px;
-  padding: 14px 14px 12px;
-  background: rgba(255,255,255,0.92);
+.dash-tx2__card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 
-.dash-tx2__title{
-  text-align:center;
+.dash-tx2__title {
+  font-size: 13px;
   font-weight: 900;
-  font-size: 18px;
   color: var(--text);
-  padding: 4px 0 10px;
-  border-bottom: 2px dashed rgba(15,23,42,0.32);
-  margin-bottom: 10px;
+  margin: 2px 0 8px;
 }
 
-.dash-tx2__grid{
-  display:grid;
-  grid-template-columns: 0.95fr 1fr 1fr;
-  gap: 10px 10px;
-  align-items:center;
+.dash-tx2__grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
 }
 
-.dash-tx2__col{
-  text-align:center;
-  font-weight: 900;
-  color: rgba(15,23,42,0.72);
-  letter-spacing: 2px;
-}
-
-.dash-tx2__row{
-  font-weight: 900;
-  color: rgba(15,23,42,0.72);
-}
-
-.dash-tx2__box{
-  border: 2px solid rgba(15,23,42,0.72);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.88);
-  padding: 8px 10px;
-  text-align:center;
-  font-weight: 900;
-  font-size: 18px;
-  color: rgba(15,23,42,0.78);
-}
-
-.dash-tx2__sumlabel{
-  font-weight: 900;
-  color: rgba(15,23,42,0.72);
-}
-
-.dash-tx2__sum{
-  border: 2px solid rgba(15,23,42,0.72);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.88);
-  padding: 8px 10px;
-  text-align:center;
-  font-weight: 900;
-  font-size: 18px;
-  color: rgba(15,23,42,0.78);
+/* 讓 1-4 的 head 合計 label 靠左好看一點 */
+.dash-tx2__grid .dash-mini-grid__head:first-child {
+  text-align: left;
 }
