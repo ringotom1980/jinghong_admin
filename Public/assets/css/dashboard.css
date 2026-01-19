@@ -191,7 +191,7 @@
 /* 新 / 舊 / 合計 的位置排列（只排版） */
 .dash-tx2__grid {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: auto minmax(56px, 22%) minmax(56px, 22%);
   row-gap: 8px;
   column-gap: 10px;
   align-items: center;
@@ -199,8 +199,10 @@
 
 /* 1-4：小卡片更小（只影響 dash-tx2 內） */
 .dash-tx2 .db-row{
-  padding: 2px 4px;      /* 原本 8px 10px → 變窄 */
+  padding: 4px 6px;
   min-width: 0;
+  justify-content: center;  /* 取代 space-between 的視覺飄移 */
+  width: 100%;              /* 讓框吃滿固定欄寬，左右自然齊 */
 }
 
 /* 1-4：數字欄不要被撐開 */
