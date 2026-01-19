@@ -177,6 +177,7 @@
 
 .dash-row__label {
   font-size: 14px;
+  font-weight: 800;
   color: var(--muted);
 }
 
