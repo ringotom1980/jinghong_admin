@@ -151,22 +151,30 @@ try {
             : [];
 
         foreach ($dRows as $r) {
-            // 只要材料列
-            if (($r['row_kind'] ?? '') !== 'ITEM') continue;
+
+            // 只要材料列（你的 stats_d.php：未分類材料列才會有 material_name）
+            $kind = strtoupper((string)($r['row_kind'] ?? ''));
+            if ($kind !== 'ITEM') continue;
 
             $name = trim((string)($r['material_name'] ?? ''));
             if ($name === '') continue;
 
-            // ✅ 只看你統計表已算好的 total_old
-            $totalOld = (float)($r['total_old'] ?? 0);
+            // ✅ 你要的：只看「領退合計(舊)」為負
+            if (!array_key_exists('total_old', $r)) continue;
 
+            $totalOld = (float)$r['total_old'];
             if ($totalOld >= 0) continue;
 
-            $dNeg[] = [
-                'k' => $name,
-                'v' => (string)$totalOld
-            ];
+            $dNeg[] = ['k' => $name, 'v' => (string)$totalOld];
         }
+
+        // 最負的排最前（-1525.4 會在 -7 前面）
+        usort($dNeg, function ($a, $b) {
+            return (float)($a['v'] ?? 0) <=> (float)($b['v'] ?? 0);
+        });
+
+        // Top 6
+        $dNeg = array_slice($dNeg, 0, 6);
 
         // ✅ 最負的排最前
         usort($dNeg, function ($a, $b) {
