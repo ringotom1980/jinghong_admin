@@ -140,54 +140,48 @@ try {
     }
 
     /* ===============================
- * 4-2) 取得 D 班「合計為負」材料（給 1-3 用）
- * - 與統計頁一致：負數來自 total_new / total_old（領 - 退）
- * - 來源：mat_issue_items 彙總到 material_number
- * - 條件：total_new < 0 OR total_old < 0
- * - 顯示：取更負的那個值（min(total_new,total_old)）
+ * 4-2) 取得 D 班「負數列」（給 1-3 用）
+ * - 來源：stats_d.php 的 mat_stats_d()
+ * - 判斷：row_kind=ITEM 且 (total_new < 0 OR total_old < 0)
+ * - 顯示：名稱 + 最負的那個值（min(total_new,total_old)）
  * - Top N：先固定 6
  * =============================== */
     $dNeg = [];
     if ($asof) {
-        $st = db()->prepare("
-        SELECT *
-        FROM (
-          SELECT
-            i.material_number,
-            MAX(i.material_name) AS material_name,
-            SUM(i.collar_new) AS collar_new,
-            SUM(i.collar_old) AS collar_old,
-            SUM(i.recede_new) AS recede_new,
-            (SUM(i.recede_old)+SUM(i.scrap)+SUM(i.footprint)) AS recede_old2,
-            (SUM(i.collar_new) - SUM(i.recede_new)) AS total_new,
-            (SUM(i.collar_old) - (SUM(i.recede_old)+SUM(i.scrap)+SUM(i.footprint))) AS total_old
-          FROM mat_issue_items i
-          WHERE i.withdraw_date = ?
-            AND i.shift = 'D'
-          GROUP BY i.material_number
-        ) t
-        WHERE t.total_new < 0 OR t.total_old < 0
-        ORDER BY LEAST(t.total_new, t.total_old) ASC
-        LIMIT 6
-    ");
-        $st->execute([$asof]);
-        $rows = $st->fetchAll();
+        $dg = mat_stats_d($asof);
+        $dRows = (isset($dg['D']['rows']) && is_array($dg['D']['rows'])) ? $dg['D']['rows'] : [];
 
-        foreach ($rows as $r) {
+        foreach ($dRows as $r) {
+            $kind = strtoupper((string)($r['row_kind'] ?? ''));
+            if ($kind !== 'ITEM') continue;
+
             $name = trim((string)($r['material_name'] ?? ''));
             if ($name === '') continue;
 
             $tn = (float)($r['total_new'] ?? 0);
             $to = (float)($r['total_old'] ?? 0);
-            $v = min($tn, $to); // 取更負的那個，對齊你畫面紅字
 
-            if ($v >= 0) continue;
+            // ✅ 跟統計表一致：看 total_new / total_old
+            if ($tn >= 0 && $to >= 0) continue;
+
+            // 顯示「更負的那個」：例如 total_old=-27788.6 會被抓出來
+            $v = min($tn, $to);
 
             $dNeg[] = [
                 'k' => $name,
-                'v' => (string)$v
+                'v' => (string)$v,
             ];
         }
+
+        // 由負到更負（-27788 在最前）
+        usort($dNeg, function ($a, $b) {
+            $va = (float)($a['v'] ?? 0);
+            $vb = (float)($b['v'] ?? 0);
+            if ($va === $vb) return 0;
+            return ($va < $vb) ? -1 : 1;
+        });
+
+        $dNeg = array_slice($dNeg, 0, 6);
     }
 
     /* ===============================
