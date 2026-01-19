@@ -198,19 +198,23 @@
 }
 
 /* 1-4：小卡片更小、字更大（只影響 dash-tx2 內） */
-.dash-tx2 .db-row {
-  padding: 6px 8px;
-  border-radius: 10px;
+.dash-tx2 .db-row{
+  padding: 4px 6px;      /* 原本 8px 10px → 變窄 */
+  min-width: 0;
 }
-.dash-tx2 .db-row-v {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.1;
+
+/* 1-4：數字欄不要被撐開 */
+.dash-tx2 .db-row-v{
+  font-size: 14px;       /* 明確鎖回原本大小 */
 }
-.dash-tx2 .db-sub {
-  font-size: 14px;
+
+/* 1-4：標籤文字統一放大（比照桿上型） */
+.dash-tx2 .db-h3,
+.dash-tx2 .db-sub{
+  font-size: 12px;       /* 就用你現在認可的那個大小 */
   font-weight: 700;
 }
+
 /* =====================================================
  * 1-4卡片排版----結束
  * ===================================================== */
