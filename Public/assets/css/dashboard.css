@@ -172,20 +172,16 @@
 }
 
 /* =====================================================
- * 7. Layout（只針對 dashboard 這頁）
+ * 7. dash-grid：卡片強制擠在同一列（不換行、不捲動）
  * ===================================================== */
 
-/* 讓 main.page.dashboard 的子元素（3 個 dash-section）一個一列往下排 */
-.page.dashboard{
+.dash-grid{
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  flex-wrap: nowrap;   /* 不准換行 */
+  gap: 12px;
 }
 
-.page.dashboard > .dash-section{
-  width: 100%;
-  display: block;
+.dash-grid > .db-card{
+  flex: 1 1 0;         /* 平均分配寬度 → 直接擠在同一列 */
+  min-width: 0;        /* 允許縮到很窄（關鍵） */
 }
-
-.page.dashboard { outline: 6px solid red !important; }
-.dash-section { outline: 6px solid blue !important; }
