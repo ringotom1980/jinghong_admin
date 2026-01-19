@@ -197,9 +197,9 @@
   align-items: center;
 }
 
-/* 1-4：小卡片更小、字更大（只影響 dash-tx2 內） */
+/* 1-4：小卡片更小（只影響 dash-tx2 內） */
 .dash-tx2 .db-row{
-  padding: 4px 6px;      /* 原本 8px 10px → 變窄 */
+  padding: 2px 4px;      /* 原本 8px 10px → 變窄 */
   min-width: 0;
 }
 
@@ -211,7 +211,7 @@
 /* 1-4：標籤文字統一放大（比照桿上型） */
 .dash-tx2 .db-h3,
 .dash-tx2 .db-sub{
-  font-size: 12px;       /* 就用你現在認可的那個大小 */
+  font-size: 14px;       /* 就用你現在認可的那個大小 */
   font-weight: 700;
 }
 
