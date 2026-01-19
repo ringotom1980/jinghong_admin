@@ -39,115 +39,115 @@ $pageJs    = ['assets/js/dashboard.js'];
 
       <div class="dash-grid dash-grid--mat">
         <!-- 1-1 -->
-        <article class="dash-card dash-card--wide" data-jump="mat_stats" data-section="capsule">
-          <div class="dash-card__top">
-            <div class="dash-card__k">近期領退作業狀態</div>
-            <div class="dash-card__tag">點日期→統計；點燈號→對應頁</div>
+        <article class="db-card" data-jump="mat_stats" data-section="capsule">
+          <div class="db-card-head">
+            <div class="db-card-title">近期領退作業狀態</div>
+            <div class="db-card-meta">點日期→統計；點燈號→對應頁</div>
           </div>
 
-          <div class="dash-row">
-            <div class="dash-row__label">領退時間</div>
-            <div class="dash-row__value" id="matNextDateText">—</div>
+          <div class="db-row">
+            <div class="db-row-k">領退時間</div>
+            <div class="db-row-v" id="matNextDateText">—</div>
           </div>
 
           <div class="dash-lights" role="group" aria-label="作業狀態燈號">
-            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="LWK">
+            <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="LWK">
               <span class="dash-light__dot" data-light="LWK" aria-hidden="true"></span>
-              <span class="dash-light__text">領料資料</span>
+              <span class="db-text">領料資料</span>
             </button>
 
-            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="T">
+            <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="T">
               <span class="dash-light__dot" data-light="T" aria-hidden="true"></span>
-              <span class="dash-light__text">退料資料</span>
+              <span class="db-text">退料資料</span>
             </button>
 
-            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_issue" data-type="S">
+            <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="S">
               <span class="dash-light__dot" data-light="S" aria-hidden="true"></span>
-              <span class="dash-light__text">用餘資料</span>
+              <span class="db-text">用餘資料</span>
             </button>
 
-            <button type="button" class="dash-light dash-surface dash-surface--sm" data-action="go_edit_b">
+            <button type="button" class="db-card db-card--sm dash-light" data-action="go_edit_b">
               <span class="dash-light__dot" data-light="RECON" aria-hidden="true"></span>
-              <span class="dash-light__text">對帳資料</span>
+              <span class="db-text">對帳資料</span>
             </button>
           </div>
         </article>
 
         <!-- 1-2 -->
-        <article class="dash-card" data-jump="mat_stats" data-section="A">
-          <div class="dash-card__top">
-            <div class="dash-card__k">近期 A 班領料</div>
-            <div class="dash-card__tag">點卡片→統計 A 班</div>
+        <article class="db-card" data-jump="mat_stats" data-section="A">
+          <div class="db-card-head">
+            <div class="db-card-title">近期 A 班領料</div>
+            <div class="db-card-meta">點卡片→統計 A 班</div>
           </div>
           <div class="dash-list" id="matAList">
-            <div class="dash-muted">—</div>
+            <div class="db-empty">—</div>
           </div>
         </article>
 
         <!-- 1-3 -->
-        <article class="dash-card" data-jump="mat_stats" data-section="D">
-          <div class="dash-card__top">
-            <div class="dash-card__k">近期 D 班退料</div>
-            <div class="dash-card__tag">點卡片→統計 D 班</div>
+        <article class="db-card" data-jump="mat_stats" data-section="D">
+          <div class="db-card-head">
+            <div class="db-card-title">近期 D 班退料</div>
+            <div class="db-card-meta">點卡片→統計 D 班</div>
           </div>
           <div class="dash-list" id="matDNegList">
-            <div class="dash-muted">—</div>
+            <div class="db-empty">—</div>
           </div>
         </article>
 
         <!-- 1-4 -->
-        <article class="dash-card" data-jump="mat_stats" data-section="F">
-          <div class="dash-card__top">
-            <div class="dash-card__k">近期 F 班變壓器領退</div>
-            <div class="dash-card__tag">點卡片→統計 F 班</div>
+        <article class="db-card" data-jump="mat_stats" data-section="F">
+          <div class="db-card-head">
+            <div class="db-card-title">近期 F 班變壓器領退</div>
+            <div class="db-card-meta">點卡片→統計 F 班</div>
           </div>
 
           <div class="dash-tx2" aria-label="變壓器領退（新/舊、桿上/亭置、合計）">
 
             <!-- 領料 -->
-            <div class="dash-tx2__card">
-              <div class="dash-tx2__title">領料</div>
+            <div>
+              <div class="db-h3">領料</div>
 
               <div class="dash-tx2__grid">
                 <div></div>
-                <div class="dash-mini-grid__head">新</div>
-                <div class="dash-mini-grid__head">舊</div>
+                <div class="db-sub" style="text-align:center;">新</div>
+                <div class="db-sub" style="text-align:center;">舊</div>
 
-                <div class="dash-mini-grid__rowhead">桿上型</div>
-                <div class="dash-mini-grid__cell"><span id="fIssuePoleNew">—</span></div>
-                <div class="dash-mini-grid__cell"><span id="fIssuePoleOld">—</span></div>
+                <div class="db-sub">桿上型</div>
+                <div class="db-row"><div class="db-row-v" id="fIssuePoleNew">—</div></div>
+                <div class="db-row"><div class="db-row-v" id="fIssuePoleOld">—</div></div>
 
-                <div class="dash-mini-grid__rowhead">亭置式</div>
-                <div class="dash-mini-grid__cell"><span id="fIssuePadNew">—</span></div>
-                <div class="dash-mini-grid__cell"><span id="fIssuePadOld">—</span></div>
+                <div class="db-sub">亭置式</div>
+                <div class="db-row"><div class="db-row-v" id="fIssuePadNew">—</div></div>
+                <div class="db-row"><div class="db-row-v" id="fIssuePadOld">—</div></div>
 
-                <div class="dash-mini-grid__head">合計</div>
-                <div class="dash-mini-grid__cell dash-mini-grid__cell--total" style="grid-column: 2 / span 2;">
-                  <span id="fIssueTotal">—</span>
+                <div class="db-sub">合計</div>
+                <div class="db-row" style="grid-column: 2 / span 2;">
+                  <div class="db-row-v" id="fIssueTotal">—</div>
                 </div>
               </div>
             </div>
 
             <!-- 退料 -->
-            <div class="dash-tx2__card">
-              <div class="dash-tx2__title">退料</div>
+            <div>
+              <div class="db-h3">退料</div>
 
               <div class="dash-tx2__grid">
                 <div></div>
-                <div class="dash-mini-grid__head">新</div>
-                <div class="dash-mini-grid__head">舊</div>
+                <div class="db-sub" style="text-align:center;">新</div>
+                <div class="db-sub" style="text-align:center;">舊</div>
 
-                <div class="dash-mini-grid__rowhead">桿上型</div>
-                <div class="dash-mini-grid__cell"><span id="fReturnPoleNew">—</span></div>
-                <div class="dash-mini-grid__cell"><span id="fReturnPoleOld">—</span></div>
+                <div class="db-sub">桿上型</div>
+                <div class="db-row"><div class="db-row-v" id="fReturnPoleNew">—</div></div>
+                <div class="db-row"><div class="db-row-v" id="fReturnPoleOld">—</div></div>
 
-                <div class="dash-mini-grid__rowhead">亭置式</div>
-                <div class="dash-mini-grid__cell"><span id="fReturnPadNew">—</span></div>
-                <div class="dash-mini-grid__cell"><span id="fReturnPadOld">—</span></div>
+                <div class="db-sub">亭置式</div>
+                <div class="db-row"><div class="db-row-v" id="fReturnPadNew">—</div></div>
+                <div class="db-row"><div class="db-row-v" id="fReturnPadOld">—</div></div>
 
-                <div class="dash-mini-grid__head">合計</div>
-                <div class="dash-mini-grid__cell dash-mini-grid__cell--total" style="grid-column: 2 / span 2;">
-                  <span id="fReturnTotal">—</span>
+                <div class="db-sub">合計</div>
+                <div class="db-row" style="grid-column: 2 / span 2;">
+                  <div class="db-row-v" id="fReturnTotal">—</div>
                 </div>
               </div>
             </div>
@@ -167,46 +167,46 @@ $pageJs    = ['assets/js/dashboard.js'];
 
       <div class="dash-grid dash-grid--vehicle">
         <!-- 2-1 -->
-        <article class="dash-card" data-jump="car_base" data-section="overdue">
-          <div class="dash-card__top">
-            <div class="dash-card__k">已逾期車輛</div>
-            <div class="dash-card__tag">點卡片→車輛基本資料</div>
+        <article class="db-card" data-jump="car_base" data-section="overdue">
+          <div class="db-card-head">
+            <div class="db-card-title">已逾期車輛</div>
+            <div class="db-card-meta">點卡片→車輛基本資料</div>
           </div>
           <div class="dash-list" id="carOverdueList">
-            <div class="dash-muted">—</div>
+            <div class="db-empty">—</div>
           </div>
         </article>
 
         <!-- 2-2 -->
-        <article class="dash-card" data-jump="car_base" data-section="due_soon">
-          <div class="dash-card__top">
-            <div class="dash-card__k">即將到期車輛（30 天內）</div>
-            <div class="dash-card__tag">點卡片→車輛基本資料</div>
+        <article class="db-card" data-jump="car_base" data-section="due_soon">
+          <div class="db-card-head">
+            <div class="db-card-title">即將到期車輛（30 天內）</div>
+            <div class="db-card-meta">點卡片→車輛基本資料</div>
           </div>
           <div class="dash-list" id="carDueSoonList">
-            <div class="dash-muted">—</div>
+            <div class="db-empty">—</div>
           </div>
         </article>
 
         <!-- 2-3 -->
-        <article class="dash-card" data-jump="car_stats" data-section="repair_6m">
-          <div class="dash-card__top">
-            <div class="dash-card__k">近半年維修金額</div>
-            <div class="dash-card__tag">點卡片→維修統計</div>
+        <article class="db-card" data-jump="car_stats" data-section="repair_6m">
+          <div class="db-card-head">
+            <div class="db-card-title">近半年維修金額</div>
+            <div class="db-card-meta">點卡片→維修統計</div>
           </div>
 
           <div class="dash-kv">
-            <div class="dash-kv__row">
-              <div class="dash-kv__k">公司負擔</div>
-              <div class="dash-kv__v" id="carRepairCompany">—</div>
+            <div class="db-row">
+              <div class="db-row-k">公司負擔</div>
+              <div class="db-row-v" id="carRepairCompany">—</div>
             </div>
-            <div class="dash-kv__row">
-              <div class="dash-kv__k">工班負擔</div>
-              <div class="dash-kv__v" id="carRepairTeam">—</div>
+            <div class="db-row">
+              <div class="db-row-k">工班負擔</div>
+              <div class="db-row-v" id="carRepairTeam">—</div>
             </div>
-            <div class="dash-kv__row dash-kv__row--total">
-              <div class="dash-kv__k">合計</div>
-              <div class="dash-kv__v" id="carRepairTotal">—</div>
+            <div class="db-row">
+              <div class="db-row-k">合計</div>
+              <div class="db-row-v" id="carRepairTotal">—</div>
             </div>
           </div>
         </article>
@@ -221,14 +221,14 @@ $pageJs    = ['assets/js/dashboard.js'];
       </div>
 
       <div class="dash-grid dash-grid--tools">
-        <article class="dash-card dash-card--wide" data-jump="equ_stats" data-section="repair_6m">
-          <div class="dash-card__top">
-            <div class="dash-card__k">半年維修金額折線（佔位）</div>
-            <div class="dash-card__tag">點卡片→工具統計</div>
+        <article class="db-card" data-jump="equ_stats" data-section="repair_6m">
+          <div class="db-card-head">
+            <div class="db-card-title">半年維修金額折線（佔位）</div>
+            <div class="db-card-meta">點卡片→工具統計</div>
           </div>
 
           <div class="dash-chart-placeholder" aria-label="折線圖佔位">
-            <div class="dash-chart-placeholder__text">
+            <div class="db-muted">
               這裡將放「三條折線」：公司 / 工班 / 合計（先用佔位骨架跑流程）
             </div>
           </div>
