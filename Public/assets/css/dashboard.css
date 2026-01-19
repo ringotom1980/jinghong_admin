@@ -201,8 +201,10 @@
 .dash-tx2 .db-row{
   padding: 4px 6px;
   min-width: 0;
-  justify-content: center;  /* 取代 space-between 的視覺飄移 */
-  width: 100%;              /* 讓框吃滿固定欄寬，左右自然齊 */
+  justify-content: center;
+  width: 100%;
+  height: 34px;           /* 固定高度 → 兩欄同列必齊 */
+  box-sizing: border-box; /* 避免 border 造成 1px 落差 */
 }
 
 /* 1-4：數字欄不要被撐開 */
