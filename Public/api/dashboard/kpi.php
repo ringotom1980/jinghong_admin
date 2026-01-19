@@ -139,6 +139,15 @@ try {
         }
     }
 
+    /* 4-3) 取得 F 班統計資料（給 1-4 用） */
+    $fRows = [];
+    if ($asof) {
+        $ef = mat_stats_ef($asof);
+        if (isset($ef['F']['rows']) && is_array($ef['F']['rows'])) {
+            $fRows = $ef['F']['rows'];
+        }
+    }
+
     /* 4-2) 取得 D 班「領退合計(舊) total_old < 0」Top N（給 1-3 用）
  * - 不限制 ITEM：因為很多材料會被歸類進 CAT，若只抓 ITEM 會漏掉大異常
  * - 顯示名稱：ITEM 用 material_name；CAT 用 category_name
@@ -186,9 +195,8 @@ try {
         'mat' => [
             'status' => $status,
             'stats' => [
-                'A' => [
-                    'rows' => $aRows
-                ]
+                'A' => ['rows' => $aRows],
+                'F' => ['rows' => $fRows],
             ],
             // 1-3：即期 D 班退料負數材料（Top N）
             'd_negative_returns' => $dNeg

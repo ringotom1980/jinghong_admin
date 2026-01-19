@@ -93,10 +93,17 @@
                 { k: '材料B', v: '-1' }
             ],
 
-            f_transformers: {
-                issue: { pole: 3, pad: 1 },
-                ret: { pole: 1, pad: 0 }
+            stats: {
+                A: { rows: [] },   // 先留空，A 班你已經走 API 了
+                F: {
+                    rows: [
+                        // 測試用：桿上 / 亭置 / 未分型（未分型只加合計）
+                        { material_name: '變壓器(桿上)', collar_new: 20, collar_old: 3, recede_new: 5, recede_old: 1 },
+                        { material_name: '變壓器(亭置)', collar_new: 20, collar_old: 3, recede_new: 5, recede_old: 1 }
+                    ]
+                }
             }
+
         },
 
         vehicle: {
@@ -177,6 +184,57 @@
         return result;
     }
 
+    /**
+ * 由 F 班統計 rows 產生 1-4 卡片（領/退 × 新/舊 × 桿上/亭置 + 合計）
+ * 規則：
+ * - material_name 含「桿上」→ pole
+ * - material_name 含「亭置」或「亭置式」→ pad
+ * - 其餘 → 未分型，只加到合計（不進 pole/pad）
+ */
+    function buildMatFTransformer(rows) {
+        var out = {
+            issue: { pole_new: 0, pole_old: 0, pad_new: 0, pad_old: 0, total: 0 },
+            ret: { pole_new: 0, pole_old: 0, pad_new: 0, pad_old: 0, total: 0 }
+        };
+        if (!Array.isArray(rows) || rows.length === 0) return out;
+
+        function pickType(name) {
+            name = (name == null) ? '' : String(name);
+            if (name.indexOf('桿上') !== -1) return 'POLE';
+            if (name.indexOf('亭置') !== -1) return 'PAD';
+            return 'UN';
+        }
+
+        rows.forEach(function (r) {
+            var name = r && r.material_name ? String(r.material_name) : '';
+            var t = pickType(name);
+
+            var collarNew = Number(r.collar_new || 0);
+            var collarOld = Number(r.collar_old || 0);
+            var recedeNew = Number(r.recede_new || 0);
+            var recedeOld = Number(r.recede_old || 0); // ✅ stats_ef 已定版：退舊=recede_old+scrap+footprint
+
+            // 合計（含未分型）
+            out.issue.total += (collarNew + collarOld);
+            out.ret.total += (recedeNew + recedeOld);
+
+            // 分型（匹配到才分流）
+            if (t === 'POLE') {
+                out.issue.pole_new += collarNew;
+                out.issue.pole_old += collarOld;
+                out.ret.pole_new += recedeNew;
+                out.ret.pole_old += recedeOld;
+            } else if (t === 'PAD') {
+                out.issue.pad_new += collarNew;
+                out.issue.pad_old += collarOld;
+                out.ret.pad_new += recedeNew;
+                out.ret.pad_old += recedeOld;
+            }
+        });
+
+        return out;
+    }
+
     function applyData(d) {
         d = d || Fake;
 
@@ -207,16 +265,56 @@
 
         renderList(qs('#matAList'), buildMatACard(aRows));
 
+        // 1-3 即期 D 班退料負數 Top N
         renderList(qs('#matDNegList'), d.mat && d.mat.d_negative_returns ? d.mat.d_negative_returns : []);
 
-        var ft = d.mat && d.mat.f_transformers ? d.mat.f_transformers : null;
-        if (ft) {
-            var fIssuePole = qs('#fIssuePole'); if (fIssuePole) fIssuePole.textContent = String(ft.issue && ft.issue.pole != null ? ft.issue.pole : '—');
-            var fIssuePad = qs('#fIssuePad'); if (fIssuePad) fIssuePad.textContent = String(ft.issue && ft.issue.pad != null ? ft.issue.pad : '—');
-            var fRetPole = qs('#fReturnPole'); if (fRetPole) fRetPole.textContent = String(ft.ret && ft.ret.pole != null ? ft.ret.pole : '—');
-            var fRetPad = qs('#fReturnPad'); if (fRetPad) fRetPad.textContent = String(ft.ret && ft.ret.pad != null ? ft.ret.pad : '—');
+        // 1-4 即期 F 班變壓器（字串匹配：桿上/亭置；未分型只加到合計）
+        var fRows =
+            d.mat &&
+                d.mat.stats &&
+                d.mat.stats.F &&
+                Array.isArray(d.mat.stats.F.rows)
+                ? d.mat.stats.F.rows
+                : [];
+
+        var fx = (typeof buildMatFTransformer === 'function')
+            ? buildMatFTransformer(fRows)
+            : null;
+
+        function setText(id, v) {
+            var el = qs('#' + id);
+            if (!el) return;
+            el.textContent = (v === null || v === undefined) ? '—' : String(v);
         }
 
+        if (fx) {
+            setText('fIssuePoleNew', fx.issue.pole_new);
+            setText('fIssuePoleOld', fx.issue.pole_old);
+            setText('fIssuePadNew', fx.issue.pad_new);
+            setText('fIssuePadOld', fx.issue.pad_old);
+            setText('fIssueTotal', fx.issue.total);
+
+            setText('fReturnPoleNew', fx.ret.pole_new);
+            setText('fReturnPoleOld', fx.ret.pole_old);
+            setText('fReturnPadNew', fx.ret.pad_new);
+            setText('fReturnPadOld', fx.ret.pad_old);
+            setText('fReturnTotal', fx.ret.total);
+        } else {
+            // 如果你還沒貼 buildMatFTransformer()，至少不讓畫面壞
+            setText('fIssuePoleNew', '—');
+            setText('fIssuePoleOld', '—');
+            setText('fIssuePadNew', '—');
+            setText('fIssuePadOld', '—');
+            setText('fIssueTotal', '—');
+
+            setText('fReturnPoleNew', '—');
+            setText('fReturnPoleOld', '—');
+            setText('fReturnPadNew', '—');
+            setText('fReturnPadOld', '—');
+            setText('fReturnTotal', '—');
+        }
+
+        // 車輛卡
         renderList(qs('#carOverdueList'), d.vehicle && d.vehicle.overdue ? d.vehicle.overdue : []);
         renderList(qs('#carDueSoonList'), d.vehicle && d.vehicle.due_soon ? d.vehicle.due_soon : []);
 

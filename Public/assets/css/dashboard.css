@@ -365,3 +365,79 @@
   text-align: center;
   line-height: 1.6;
 }
+
+/* =========================
+ * 1-4：F 班變壓器（雙卡：領料/退料）
+ * ========================= */
+.dash-tx2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 1200px){
+  .dash-tx2{ grid-template-columns: 1fr; }
+}
+
+.dash-tx2__card{
+  border: 2px solid rgba(15, 23, 42, 0.78);
+  border-radius: 22px;
+  padding: 14px 14px 12px;
+  background: rgba(255,255,255,0.92);
+}
+
+.dash-tx2__title{
+  text-align:center;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--text);
+  padding: 4px 0 10px;
+  border-bottom: 2px dashed rgba(15,23,42,0.32);
+  margin-bottom: 10px;
+}
+
+.dash-tx2__grid{
+  display:grid;
+  grid-template-columns: 0.95fr 1fr 1fr;
+  gap: 10px 10px;
+  align-items:center;
+}
+
+.dash-tx2__col{
+  text-align:center;
+  font-weight: 900;
+  color: rgba(15,23,42,0.72);
+  letter-spacing: 2px;
+}
+
+.dash-tx2__row{
+  font-weight: 900;
+  color: rgba(15,23,42,0.72);
+}
+
+.dash-tx2__box{
+  border: 2px solid rgba(15,23,42,0.72);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.88);
+  padding: 8px 10px;
+  text-align:center;
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(15,23,42,0.78);
+}
+
+.dash-tx2__sumlabel{
+  font-weight: 900;
+  color: rgba(15,23,42,0.72);
+}
+
+.dash-tx2__sum{
+  border: 2px solid rgba(15,23,42,0.72);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.88);
+  padding: 8px 10px;
+  text-align:center;
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(15,23,42,0.78);
+}
