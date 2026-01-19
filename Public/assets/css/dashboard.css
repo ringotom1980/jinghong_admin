@@ -261,7 +261,7 @@
 
 .dash-item__k {
   font-size: 14px;
-  color: var(--text);
+  color: var(--muted);
   font-weight: 600;
 }
 
