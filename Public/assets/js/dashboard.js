@@ -131,7 +131,8 @@
         // 2️⃣ 字串匹配（未分型 → 要加總）
         var nameMatchers = [
             { key: '四路開關(未分型)', match: '地下四路' },
-            { key: '氣封開關(未分型)', match: '氣封開關' }
+            { key: '氣封開關(未分型)', match: '氣封開關' },
+            { key: '架空自動線路開關(未分型)', match: '架空自動線路開關' }
         ];
 
         var result = [];
@@ -142,7 +143,7 @@
             var mn = String(r.material_number || '');
             if (!mapByNumber[mn]) return;
 
-            var qty = Number(r.collar_new || 0) + Number(r.collar_old || 0);
+            var qty = Number(r.total_new || 0);
             if (qty <= 0) return;
 
             result.push({
@@ -161,7 +162,7 @@
                 if (!r.material_name) return;
                 if (String(r.material_name).indexOf(rule.match) === -1) return;
 
-                var qty = Number(r.collar_new || 0) + Number(r.collar_old || 0);
+                var qty = Number(r.total_new || 0);
                 if (qty > 0) sum += qty;
             });
 

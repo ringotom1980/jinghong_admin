@@ -62,12 +62,12 @@ $u = function (string $path) use ($base): string {
     </div>
 
     <div class="sidenav__drawerHost" id="sidenavDrawerHost" aria-hidden="true">
-        <section class="drawerPanel" id="drawer-dashboard" aria-label="儀錶板選單">
+        <section class="drawerPanel" id="drawer-dashboard" aria-label="導覽板選單">
             <div class="drawer__head">
-                <div class="drawer__title"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> 儀錶板</div>
+                <div class="drawer__title"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> 導覽板</div>
             </div>
-            <nav class="drawer__nav" aria-label="儀錶板導覽">
-                <a class="nav__item" data-nav="dashboard" href="<?= htmlspecialchars($u('/dashboard'), ENT_QUOTES) ?>">儀錶板</a>
+            <nav class="drawer__nav" aria-label="導覽板導覽">
+                <a class="nav__item" data-nav="dashboard" href="<?= htmlspecialchars($u('/dashboard'), ENT_QUOTES) ?>">導覽板</a>
                 <a class="nav__item" data-nav="me_password" href="<?= htmlspecialchars($u('/me/password'), ENT_QUOTES) ?>">更換密碼</a>
             </nav>
         </section>
