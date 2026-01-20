@@ -117,6 +117,10 @@
   margin-bottom: 10px;
 }
 
+.db-card-title {
+  font-weight: 700; /* 或 bold */
+}
+
 .db-card-meta {
   color: var(--muted);
   white-space: nowrap;
