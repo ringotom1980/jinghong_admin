@@ -198,15 +198,15 @@ $pageJs    = ['assets/js/dashboard.js'];
           <div class="dash-kv">
             <div class="db-row">
               <div class="db-row-k">公司負擔</div>
-              <div class="db-row-v" id="carRepairCompany">—</div>
+              <div class="db-row-k" id="carRepairCompany">—</div>
             </div>
             <div class="db-row">
               <div class="db-row-k">工班負擔</div>
-              <div class="db-row-v" id="carRepairTeam">—</div>
+              <div class="db-row-k" id="carRepairTeam">—</div>
             </div>
             <div class="db-row">
               <div class="db-row-k">合計</div>
-              <div class="db-row-v" id="carRepairTotal">—</div>
+              <div class="db-row-k" id="carRepairTotal">—</div>
             </div>
           </div>
         </article>
