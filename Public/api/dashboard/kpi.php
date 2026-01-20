@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: Public/api/dashboard/kpi.php
  * 說明: Dashboard KPI（依卡片順序回傳）
@@ -195,8 +196,40 @@ try {
             ],
             'd_negative_returns' => $dNeg,
         ],
-    ]);
+        'vehicle' => (function () {
+            // 直接用既有聚合：overdue_count / soon_count
+            $v = VehicleService::listVehiclesWithInspectionAgg();
+            $vehicles = (isset($v['vehicles']) && is_array($v['vehicles'])) ? $v['vehicles'] : [];
 
+            $overdue = [];
+            $dueSoon = [];
+
+            foreach ($vehicles as $row) {
+                if (!is_array($row)) continue;
+
+                $code = trim((string)($row['vehicle_code'] ?? ''));
+                $plate = trim((string)($row['plate_no'] ?? ''));
+
+                // 顯示名稱：車輛編號 + (車牌)（車牌可空）
+                $name = $code;
+                if ($plate !== '') $name .= '（' . $plate . '）';
+                if ($name === '') continue;
+
+                $oc = (int)($row['overdue_count'] ?? 0);
+                $sc = (int)($row['soon_count'] ?? 0);
+
+                if ($oc > 0) $overdue[] = ['k' => $name, 'v' => (string)$oc];
+                if ($sc > 0) $dueSoon[] = ['k' => $name, 'v' => (string)$sc];
+            }
+
+            return [
+                'overdue' => $overdue,
+                'due_soon' => $dueSoon,
+                'due_soon_days' => 30,
+            ];
+        })(),
+
+    ]);
 } catch (Throwable $e) {
     json_error($e->getMessage(), 500);
 }
