@@ -19,6 +19,7 @@ require_once __DIR__ . '/../mat/stats_ac.php';
 require_once __DIR__ . '/../mat/stats_d.php';
 require_once __DIR__ . '/../mat/stats_ef.php';
 require_once __DIR__ . '/../../../app/services/VehicleService.php';
+require_once __DIR__ . '/../../../app/services/VehicleRepairStatsService.php';
 /**
  * 從日期清單中挑選「即期日期」
  * 規則：
@@ -196,10 +197,57 @@ try {
             ],
             'd_negative_returns' => $dNeg,
         ],
-        
+
         'vehicle' => (function () {
 
             $pdo = db();
+
+            /* =====================================================
+     * 2-3：近半年維修金額（依車輛維修統計膠囊：最新 end_date 的那顆）
+     * - 不用 rolling 6 months
+     * - 直接用 VehicleRepairStatsService 的 capsules/keyToRange
+     * ===================================================== */
+            $repair6m = (function () use ($pdo) {
+                $svc = new VehicleRepairStatsService($pdo);
+
+                // 近 N 年內有資料的 capsules（svc 內已用 end_ts desc 排序）
+                $caps = $svc->getCapsules(5);
+                $key = $svc->getDefaultKeyFromCapsules($caps);
+                if ($key === '') {
+                    return [
+                        'key' => '',
+                        'start' => '',
+                        'end' => '',
+                        'company' => 0,
+                        'team' => 0,
+                        'total' => 0,
+                    ];
+                }
+
+                [$start, $end] = $svc->keyToRange($key);
+
+                // KPI 只要總額 → 直接 SUM（不走 getSummary/top3）
+                $sql = "
+          SELECT
+            COALESCE(SUM(h.company_amount_total),0) AS company_total,
+            COALESCE(SUM(h.team_amount_total),0)    AS team_total,
+            COALESCE(SUM(h.grand_total),0)          AS grand_total
+          FROM vehicle_repair_headers h
+          WHERE h.repair_date BETWEEN :s AND :e
+        ";
+                $st = $pdo->prepare($sql);
+                $st->execute([':s' => $start, ':e' => $end]);
+                $r = $st->fetch(PDO::FETCH_ASSOC) ?: [];
+
+                return [
+                    'key' => $key,
+                    'start' => $start,
+                    'end' => $end,
+                    'company' => (float)($r['company_total'] ?? 0),
+                    'team' => (float)($r['team_total'] ?? 0),
+                    'total' => (float)($r['grand_total'] ?? 0),
+                ];
+            })();
 
             // 你已定義：到期門檻 30 天（與 VehicleService 一致）
             $today = new DateTimeImmutable('today');
@@ -244,7 +292,12 @@ try {
     ";
             $rows = $pdo->query($sql)->fetchAll();
             if (!$rows) {
-                return ['overdue' => [], 'due_soon' => [], 'due_soon_days' => 30];
+                return [
+                    'overdue' => [],
+                    'due_soon' => [],
+                    'due_soon_days' => 30,
+                    'repair_6m' => $repair6m,
+                ];
             }
 
             // 聚合：vehicle_id => { name, overdueItems[], soonItems[] }
@@ -315,6 +368,7 @@ try {
                 'overdue' => $overdue,
                 'due_soon' => $dueSoon,
                 'due_soon_days' => 30,
+                'repair_6m' => $repair6m,
             ];
         })(),
 

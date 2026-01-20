@@ -370,6 +370,12 @@
         renderVehicleList(qs('#carOverdueList'), 'overdue');
         renderVehicleList(qs('#carDueSoonList'), 'due_soon');
 
+        // ===== 2-3：近半年維修金額（依膠囊期間）=====
+        var r6 = (vpack && vpack.repair_6m) ? vpack.repair_6m : null;
+        setText('carRepairCompany', r6 ? r6.company : '—');
+        setText('carRepairTeam', r6 ? r6.team : '—');
+        setText('carRepairTotal', r6 ? r6.total : '—');
+
     }
 
     /* =====================================================
