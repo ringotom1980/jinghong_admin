@@ -304,3 +304,12 @@
   margin-top: 0;
 }
 
+/* 1-4：卡片內文字顏色（只影響 1-4，不影響其他卡片） */
+.dash-tx2,
+.dash-tx2 .db-sub,
+.dash-tx2 .db-h3,
+.dash-tx2 .db-row-k,
+.dash-tx2 .db-row-v,
+.dash-tx2 .db-row {
+  color: var(--muted);
+}
