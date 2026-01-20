@@ -30,6 +30,27 @@
         return y + '年' + m + '月' + d + '日';
     }
 
+    function formatTwdAmount(n) {
+        n = Number(n);
+        if (!isFinite(n) || n === 0) return '0元';
+
+        var abs = Math.abs(n);
+        var sign = n < 0 ? '-' : '';
+
+        if (abs < 10000) {
+            return sign + abs.toLocaleString('zh-TW') + '元';
+        }
+
+        var wan = Math.floor(abs / 10000);
+        var rest = abs % 10000;
+
+        if (rest === 0) {
+            return sign + wan + '萬元';
+        }
+
+        return sign + wan + '萬' + rest.toLocaleString('zh-TW') + '元';
+    }
+
     function setText(id, v) {
         var el = qs('#' + id);
         if (!el) return;
@@ -372,9 +393,9 @@
 
         // ===== 2-3：近半年維修金額（依膠囊期間）=====
         var r6 = (vpack && vpack.repair_6m) ? vpack.repair_6m : null;
-        setText('carRepairCompany', r6 ? r6.company : '—');
-        setText('carRepairTeam', r6 ? r6.team : '—');
-        setText('carRepairTotal', r6 ? r6.total : '—');
+        setText('carRepairCompany', r6 ? formatTwdAmount(r6.company) : '—');
+        setText('carRepairTeam', r6 ? formatTwdAmount(r6.team) : '—');
+        setText('carRepairTotal', r6 ? formatTwdAmount(r6.total) : '—');
         setText('carRepairPeriod', r6 ? r6.label : '—');
     }
 
