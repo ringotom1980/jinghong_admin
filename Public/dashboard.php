@@ -53,22 +53,22 @@ $pageJs    = ['assets/js/dashboard.js'];
           <div class="dash-lights" role="group" aria-label="作業狀態燈號">
             <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="LWK">
               <span class="dash-light__dot" data-light="LWK" aria-hidden="true"></span>
-              <span class="db-text">領料資料</span>
+              <span class="dash-light__label">領料資料</span>
             </button>
 
             <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="T">
               <span class="dash-light__dot" data-light="T" aria-hidden="true"></span>
-              <span class="db-text">退料資料</span>
+              <span class="dash-light__label">退料資料</span>
             </button>
 
             <button type="button" class="db-card db-card--sm dash-light" data-action="go_issue" data-type="S">
               <span class="dash-light__dot" data-light="S" aria-hidden="true"></span>
-              <span class="db-text">用餘資料</span>
+              <span class="dash-light__label">用餘資料</span>
             </button>
 
             <button type="button" class="db-card db-card--sm dash-light" data-action="go_edit_b">
               <span class="dash-light__dot" data-light="RECON" aria-hidden="true"></span>
-              <span class="db-text">對帳資料</span>
+              <span class="dash-light__label">對帳資料</span>
             </button>
           </div>
         </article>
