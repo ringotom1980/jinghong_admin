@@ -47,7 +47,7 @@ $pageJs    = ['assets/js/dashboard.js'];
 
           <div class="db-row">
             <div class="db-row-k">領退時間</div>
-            <div class="db-row-v" id="matNextDateText">—</div>
+            <div class="db-row-k" id="matNextDateText">—</div>
           </div>
 
           <div class="dash-lights" role="group" aria-label="作業狀態燈號">
