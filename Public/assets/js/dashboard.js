@@ -146,7 +146,7 @@
 
             return (
                 '<div class="db-row db-row--vehicle" data-vid="' + esc(r.vehicle_id || '') + '">' +
-                '<div class="db-vline">' +
+                '<div class="db-vrow">' +
                 '<div class="db-vname">' + esc(name) + '</div>' +
                 (pills ? ('<div class="db-pills" aria-label="逾期項目">' + pills + '</div>') : '') +
                 '</div>' +

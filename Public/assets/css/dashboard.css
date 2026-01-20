@@ -316,29 +316,37 @@
  * ===================================================== */
 
 .db-row--vehicle {
-  align-items: flex-start;
+  align-items: center;
 }
 
-.db-vline {
-  display: grid;
-  gap: 6px;
+/* 同一列：左車名 + 右膠囊（不換行） */
+.db-vrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
   min-width: 0;
 }
 
+/* 車名：同列省略號，不換行 */
 .db-vname {
+  flex: 1 1 auto;
+  min-width: 0;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 不換行、不橫向捲動：你已限定最多 4 顆 */
+/* 膠囊：同列、不換行、不捲動（最多 4 顆） */
 .db-pills {
-  display: flex;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
   flex-wrap: nowrap;
-  overflow: hidden;
+  white-space: nowrap;
 }
 
 .db-pill {
@@ -398,6 +406,7 @@
 .db-pill--more:hover {
   background: rgba(255, 255, 255, 0.92);
 }
+
 /* =====================================================
  * 2-1/2-2：車輛檢查項目膠囊 + 更多----結束
  * ===================================================== */
