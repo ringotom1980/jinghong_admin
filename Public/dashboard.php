@@ -230,8 +230,8 @@ $pageJs    = ['assets/js/dashboard.js'];
       </div>
     </section>
 
-    <!-- ========== Section: Tools (工具管理) ========== -->
-    <section class="dash-section" id="dash-tools" aria-label="工具管理">
+    <!-- ========== Section: Tools (工具管理)以後再來做 ========== -->
+    <!-- <section class="dash-section" id="dash-tools" aria-label="工具管理">
       <div class="dash-section__head">
         <h2 class="dash-section__title">工具管理</h2>
         <div class="dash-section__meta">近 6 個月維修金額（公司/工班/合計）</div>
@@ -251,7 +251,7 @@ $pageJs    = ['assets/js/dashboard.js'];
           </div>
         </article>
       </div>
-    </section>
+    </section> -->
 
   </main>
 
