@@ -32,8 +32,12 @@ $currentUserName = $currentUserName ?? '未登入';
     </div>
 
     <div class="topbar__actions">
-      <a class="btn btn--secondary" href="<?= htmlspecialchars($base . '/me/password', ENT_QUOTES) ?>">改密碼</a>
+      <!-- 由 auth_me.js 依角色動態改成：管理中心 / 管理帳號 -->
+      <a class="btn btn--secondary" id="navAccountLink"
+        href="<?= htmlspecialchars($base . '/me/account', ENT_QUOTES) ?>">管理帳號</a>
+
       <a class="btn btn--primary" href="<?= htmlspecialchars($base . '/logout', ENT_QUOTES) ?>">登出</a>
     </div>
+
   </div>
 </header>

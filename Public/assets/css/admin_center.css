@@ -1,0 +1,141 @@
+/* Path: Public/assets/css/admin_center.css
+ * 說明: 管理中心樣式
+ */
+
+.admin-center .ac-card{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.admin-center .ac-tabs{
+  display:flex;
+  gap:8px;
+  border-bottom: 1px solid rgba(15,23,42,.10);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-center .ac-tab{
+  appearance:none;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.8);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.admin-center .ac-tab.is-active{
+  border-color: rgba(37,99,235,.35);
+  box-shadow: 0 6px 18px rgba(37,99,235,.08);
+}
+
+.admin-center .ac-pane{ display:none; }
+.admin-center .ac-pane.is-active{ display:block; }
+
+.admin-center .ac-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 860px){
+  .admin-center .ac-grid{ grid-template-columns: 1fr; }
+}
+
+.admin-center .ac-field{ display:grid; gap: 6px; }
+.admin-center .ac-field--full{ grid-column: 1 / -1; }
+
+.admin-center .ac-label{
+  font-size: 13px;
+  color: rgba(15,23,42,.62);
+}
+
+.admin-center .ac-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-center .ac-toolbar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom: 10px;
+}
+
+.admin-center .ac-tablewrap{
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 14px;
+  overflow:hidden;
+  background: rgba(255,255,255,.78);
+}
+
+.admin-center .ac-table{
+  width:100%;
+  border-collapse: collapse;
+}
+
+.admin-center .ac-table th,
+.admin-center .ac-table td{
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  text-align:left;
+  vertical-align:middle;
+}
+
+.admin-center .ac-muted{
+  color: rgba(15,23,42,.55);
+}
+
+/* modal */
+.admin-center .ac-modal[hidden]{ display:none; }
+.admin-center .ac-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.admin-center .ac-modal__mask{
+  position:absolute;
+  inset:0;
+  background: rgba(15,23,42,.35);
+}
+
+.admin-center .ac-modal__panel{
+  position:absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 24px));
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,.12);
+  box-shadow: 0 18px 45px rgba(15,23,42,.18);
+  padding: 12px;
+}
+
+.admin-center .ac-modal__head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 4px 10px;
+  border-bottom: 1px solid rgba(15,23,42,.10);
+  margin-bottom: 10px;
+}
+
+.admin-center .ac-modal__title{
+  margin:0;
+  font-size: 16px;
+}
+
+.admin-center .ac-x{
+  appearance:none;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  cursor:pointer;
+  line-height: 1;
+}

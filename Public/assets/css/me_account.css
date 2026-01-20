@@ -1,0 +1,61 @@
+/* Path: Public/assets/css/me_account.css
+ * 說明: 管理帳號頁樣式
+ */
+
+.me-account .ma-card{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.me-account .ma-tabs{
+  display:flex;
+  gap:8px;
+  border-bottom: 1px solid rgba(15,23,42,.10);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.me-account .ma-tab{
+  appearance:none;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.8);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.me-account .ma-tab.is-active{
+  border-color: rgba(37,99,235,.35);
+  box-shadow: 0 6px 18px rgba(37,99,235,.08);
+}
+
+.me-account .ma-pane{ display:none; }
+.me-account .ma-pane.is-active{ display:block; }
+
+.me-account .ma-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 860px){
+  .me-account .ma-grid{ grid-template-columns: 1fr; }
+}
+
+.me-account .ma-field{
+  display:grid;
+  gap: 6px;
+}
+
+.me-account .ma-label{
+  font-size: 13px;
+  color: rgba(15,23,42,.62);
+}
+
+.me-account .ma-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top: 12px;
+}
