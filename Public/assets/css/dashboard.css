@@ -182,23 +182,40 @@
  * 1-1：近期領退作業狀態（燈號按鈕排版）
  * ===================================================== */
 
+/* 1-1：四顆燈號按鈕容器 */
 .dash-lights{
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2x2 */
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 10px;
 }
 
-/* 讓 4 顆按鈕一致高度、內容置中 */
+/* 1-1：燈號按鈕外觀（不要像大卡片那麼重） */
 .dash-light{
-  width: 100%;
-  min-width: 0;
-  padding: 10px 10px;       /* 比 db-card 小一點 */
-  border-radius: 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: 0 8px 18px rgba(15,23,42,.06);
+
+  min-height: 48px; /* 你要的「燈號高度」在這裡 */
+}
+
+/* hover/active 不要沿用 db-card 那套位移與重陰影 */
+.dash-light:hover{
+  transform: none;
+  border-color: rgba(15,23,42,.16);
+  box-shadow: 0 10px 22px rgba(15,23,42,.08);
+}
+.dash-light:active{
+  transform: none;
+  box-shadow: 0 6px 14px rgba(15,23,42,.06);
 }
 
 /* 這顆是「按鈕」，不是第二張卡片：陰影收斂一點 */
@@ -206,12 +223,14 @@
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
-/* 文字不要換行造成高度不同 */
+/* 1-1：燈號按鈕文字不要粗 */
 .dash-light .db-text{
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;     /* 原本突兀通常是 700 */
+  line-height: 1.1;
+  white-space: nowrap;  /* 仍然保留：避免換行造成高度不一致 */
 }
+
 /* =====================================================
  * 1-1：近期領退作業狀態（燈號按鈕排版）---結束
  * ===================================================== */
