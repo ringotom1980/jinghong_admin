@@ -32,6 +32,25 @@ function asset(string $path): string
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title><?= htmlspecialchars((string)$pageTitle, ENT_QUOTES) ?></title>
+    <?php
+    $ogTitle = (string)$pageTitle;
+    $ogDesc  = '境宏工程有限公司內部管理與作業系統';
+    $ogUrl   = 'https://jinghong.pw' . (base_url() ?: '/');
+    $ogImg   = 'https://jinghong.pw' . asset('assets/img/brand/JH_logo.png');
+  ?>
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="境宏工程有限公司" />
+  <meta property="og:title" content="<?= htmlspecialchars($ogTitle, ENT_QUOTES) ?>" />
+  <meta property="og:description" content="<?= htmlspecialchars($ogDesc, ENT_QUOTES) ?>" />
+  <meta property="og:url" content="<?= htmlspecialchars($ogUrl, ENT_QUOTES) ?>" />
+  <meta property="og:image" content="<?= htmlspecialchars($ogImg, ENT_QUOTES) ?>" />
+
+  <!-- Twitter / X（LINE 通常不看，但建議一併補） -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<?= htmlspecialchars($ogTitle, ENT_QUOTES) ?>" />
+  <meta name="twitter:description" content="<?= htmlspecialchars($ogDesc, ENT_QUOTES) ?>" />
+  <meta name="twitter:image" content="<?= htmlspecialchars($ogImg, ENT_QUOTES) ?>" />
 
   <!-- 提供前端使用：API / 連結 base（例：/jinghong_admin 或空字串） -->
   <script>
