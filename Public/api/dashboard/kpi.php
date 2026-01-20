@@ -17,8 +17,8 @@ require_login();
 /* ===== 共用統計邏輯（你原本就要共用） ===== */
 require_once __DIR__ . '/../mat/stats_ac.php';
 require_once __DIR__ . '/../mat/stats_d.php';
-require_once __DIR__ . '/../mat/stats_ef.php'; // ✅ 你原本漏了這個，會直接讓 API 爆掉
-
+require_once __DIR__ . '/../mat/stats_ef.php'; 
+require_once __DIR__ . '/../../../app/services/VehicleService.php';
 /**
  * 從日期清單中挑選「即期日期」
  * 規則：
