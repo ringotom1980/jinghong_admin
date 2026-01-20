@@ -30,14 +30,13 @@
 /* 你頁面目前用到的是 h1/h2：只在這裡做統一 */
 .dashboard h1 {
   /* 允許：h1~h6 的共用樣式 */
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-size: 22px;
+  font-weight: 760;
 }
 
 .dashboard h2 {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 730;
 }
 
 /* =====================================================
@@ -54,10 +53,6 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
-}
-
-.dash-section__title {
-  /* 這裡是 h2 */
 }
 
 .dash-section__meta {
@@ -284,10 +279,3 @@
   margin-top: 0;
 }
 
-/* 1-4：數字欄、標籤文字（你已定案，保留） */
-/* .dash-tx2 .db-h3,
-.dash-tx2 .db-sub,
-.dash-tx2 .db-row-v{
-  font-size: 14px;
-  font-weight: 700;
-} */
