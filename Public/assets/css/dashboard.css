@@ -1,58 +1,73 @@
 /*
  * Path: Public/assets/css/dashboard.css
- * 說明: Dashboard 共用視覺基底（字型 / 卡片 / 動畫 / 語彙）
- * 原則: 不含任何業務、不依賴任何舊 class
+ * 說明: Dashboard 共用視覺基底（卡片 / 按鈕 / hover / 陰影 / 排版）
+ * 規則：
+ * 1) 除了 h1-h6 以外，不設定任何字型/字級/字重（不碰 font-*）
+ * 2) 1-4（dash-tx2 內部卡片）整段不動
  */
 
 /* =====================================================
- * 1. 字型與文字階層
+ * 0. Dashboard scope（只管顏色，不管字體）
  * ===================================================== */
 
 .dashboard {
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang TC", "Noto Sans TC", sans-serif;
 }
 
-/* 標題層級 */
-.db-h1 {
+/* =====================================================
+ * 1. 標題（唯一允許的字體階層：h1~h6）
+ * ===================================================== */
+
+.dashboard h1,
+.dashboard h2,
+.dashboard h3,
+.dashboard h4,
+.dashboard h5,
+.dashboard h6 {
+  margin: 0;
+}
+
+/* 你頁面目前用到的是 h1/h2：只在這裡做統一 */
+.dashboard h1 {
+  /* 允許：h1~h6 的共用樣式 */
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.3px;
 }
 
-.db-h2 {
+.dashboard h2 {
   font-size: 15px;
   font-weight: 700;
 }
 
-.db-h3 {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
+/* =====================================================
+ * 2. Section 版型
+ * ===================================================== */
+
+.dash-section {
+  margin-top: 14px;
 }
 
-/* 一般文字 */
-.db-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
+.dash-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.db-muted {
-  font-size: 14px;
-  color: var(--muted);
+.dash-section__title {
+  /* 這裡是 h2 */
 }
 
-/* 小字 */
-.db-sub {
-  font-size: 12px;
-  font-weight: 600;
+.dash-section__meta {
   color: var(--muted);
+  white-space: nowrap;
 }
 
 /* =====================================================
- * 2. 卡片（最核心）
+ * 3. 卡片（系統級共用）
+ * - 不碰字體，只管：邊框/陰影/hover/間距
  * ===================================================== */
 
 .db-card {
@@ -60,29 +75,45 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 16px;
   padding: 14px;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 10px 24px rgba(15, 23, 42, 0.08);
 
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease;
-
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
 .db-card:hover {
   transform: translateY(-1px);
   border-color: rgba(15, 23, 42, 0.16);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 32px rgba(15, 23, 42, 0.12);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 14px 32px rgba(15, 23, 42, 0.12);
 }
 
 .db-card:active {
   transform: translateY(0);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
-/* =====================================================
- * 3. 卡片內結構語彙
- * ===================================================== */
+/* 小卡片（只收斂 padding/陰影，不碰字體） */
+.db-card--sm {
+  padding: 10px 12px;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 8px 18px rgba(15, 23, 42, 0.06);
+}
 
+.db-card--sm:hover {
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 12px 26px rgba(15, 23, 42, 0.10);
+}
+
+/* 卡片頭：只管排版 */
 .db-card-head {
   display: flex;
   justify-content: space-between;
@@ -91,19 +122,13 @@
   margin-bottom: 10px;
 }
 
-.db-card-title {
-  font-size: 15px;
-  font-weight: 800;
-}
-
 .db-card-meta {
-  font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
 }
 
 /* =====================================================
- * 4. 列 / 清單（dashboard 很常用）
+ * 4. Row（小列：只管排版/邊框/背景）
  * ===================================================== */
 
 .db-row {
@@ -123,29 +148,20 @@
 }
 
 .db-row-k {
-  font-size: 14px;
-  font-weight: 600;
   color: var(--muted);
 }
 
 .db-row-v {
-  font-size: 14px;
-  font-weight: 700;
   color: var(--text);
 }
 
-/* =====================================================
- * 5. 空狀態
- * ===================================================== */
-
 .db-empty {
   padding: 10px 4px;
-  font-size: 14px;
   color: var(--muted);
 }
 
 /* =====================================================
- * 6. 輔助動畫（可選）
+ * 5. 動畫（可選）
  * ===================================================== */
 
 .db-fade-in {
@@ -153,72 +169,68 @@
 }
 
 @keyframes dbFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* =====================================================
- * 7. dash-grid：卡片強制擠在同一列（不換行、不捲動）
+ * 6. dash-grid：卡片同列不換行
  * ===================================================== */
 
 .dash-grid {
   display: flex;
-  flex-wrap: nowrap; /* 不准換行 */
+  flex-wrap: nowrap;
   gap: 12px;
 }
 
 .dash-grid > .db-card {
-  flex: 1 1 0; /* 平均分配寬度 → 直接擠在同一列 */
-  min-width: 0; /* 允許縮到很窄（關鍵） */
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* =====================================================
- * 1-1：近期領退作業狀態（燈號按鈕排版）
+ * 7. 1-1：近期領退作業狀態（四顆燈號按鈕）
+ * - 只調「共用外觀」：高度、間距、可點擊態
+ * - 不碰字體
  * ===================================================== */
 
-/* 1-1：四顆燈號按鈕容器 */
-.dash-lights{
+.dash-lights {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 10px;
 }
 
-/* 1-1：燈號按鈕外觀（不要像大卡片那麼重） */
-.dash-light{
-  cursor: pointer;
+/* button reset（只做布局/外觀，不動字體） */
+.dash-light {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.dash-light.db-card--sm {
   display: flex;
   align-items: center;
   gap: 10px;
-
-  padding: 10px 12px;
-  border-radius: 14px;
-
-  background: rgba(255,255,255,.78);
-  border: 1px solid rgba(15,23,42,.10);
-  box-shadow: 0 8px 18px rgba(15,23,42,.06);
-
-  min-height: 48px; /* 你要的「燈號高度」在這裡 */
+  min-height: 56px; /* 你說燈條高度太小：只動高度 */
 }
 
-/* 這顆是「按鈕」，不是第二張卡片：陰影收斂一點 */
-.dash-light.db-card{
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
+/* 燈點（你後面要做燈條/燈色可以沿用這個） */
+.dash-light__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.22);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+  flex: 0 0 auto;
 }
 
 /* =====================================================
- * 1-1：近期領退作業狀態（燈號按鈕排版）---結束
+ * 8. 1-4：你已調好的一段 — 完全保留不動
  * ===================================================== */
 
-/* =====================================================
- * 1-4卡片排版
- * ===================================================== */
 /* 1-4：領料 / 退料 左右排（只排版） */
 .dash-tx2 {
   display: grid;
@@ -272,15 +284,10 @@
   margin-top: 0;
 }
 
-/* 1-4：數字欄、標籤文字 */
+/* 1-4：數字欄、標籤文字（你已定案，保留） */
 .dash-tx2 .db-h3,
 .dash-tx2 .db-sub,
 .dash-tx2 .db-row-v{
-  font-size: 14px;       
+  font-size: 14px;
   font-weight: 700;
 }
-
-/* =====================================================
- * 1-4卡片排版----結束
- * ===================================================== */
-/* 1-4：領料 / 退料 左右排（只排版） */
