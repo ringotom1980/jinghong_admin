@@ -222,7 +222,7 @@
   padding-top: 18px;        /* 預留燈條空間（不壓到內容） */
 }
 
-/* 上方燈條（預設中性淡灰） */
+/* 上方燈條（預設中性淡紅） */
 .dash-light.db-card--sm::before {
   content: "";
   position: absolute;
@@ -239,7 +239,7 @@
   display: none;
 }
 
-/* 燈條顏色：只有兩種、不要搶眼（淡綠 / 淡紅）
+/* 燈條顏色：給有資料時顯示
  * 你在 JS 或 HTML 上加 class：is-green / is-red
  */
 .dash-light.is-green.db-card--sm::before {
@@ -248,8 +248,8 @@
 
 /* 1-1：四顆卡片文字「視覺放大」但沿用頁面預設字體 */
 .dash-lights .dash-light__label {
-  line-height: 1.5;          /* 呼吸感，字看起來會大 */
-  letter-spacing: 0.05em;     /* 微拉字距，穩、不擠 */
+  line-height: 1.7;          /* 呼吸感，字看起來會大 */
+  letter-spacing: 0.08em;     /* 微拉字距，穩、不擠 */
 }
 
 /* =====================================================
