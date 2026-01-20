@@ -84,7 +84,7 @@
       return (
         '<div class="db-row">' +
           '<div class="db-row-k">' + esc(r.k) + '</div>' +
-          '<div class="db-row-v">' + esc(r.v) + '</div>' +
+          '<div class="db-row-k">' + esc(r.v) + '</div>' +
         '</div>'
       );
     }).join('');
