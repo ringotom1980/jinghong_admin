@@ -70,42 +70,33 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 16px;
   padding: 14px;
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 10px 24px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
 
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
   cursor: pointer;
 }
 
 .db-card:hover {
   transform: translateY(-1px);
   border-color: rgba(15, 23, 42, 0.16);
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 14px 32px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 32px rgba(15, 23, 42, 0.12);
 }
 
 .db-card:active {
   transform: translateY(0);
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 8px 18px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 /* 小卡片（只收斂 padding/陰影，不碰字體） */
 .db-card--sm {
   padding: 10px 12px;
   border-radius: 14px;
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 8px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 .db-card--sm:hover {
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 12px 26px rgba(15, 23, 42, 0.10);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.1);
 }
 
 /* 卡片頭：只管排版 */
@@ -168,8 +159,14 @@
 }
 
 @keyframes dbFadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* =====================================================
@@ -214,13 +211,13 @@
 
 /* 小卡片本體：用 pseudo-element 畫「上方燈條」 */
 .dash-light.db-card--sm {
-  position: relative;       /* 給 ::before 定位 */
+  position: relative; /* 給 ::before 定位 */
   display: flex;
   align-items: center;
-  justify-content: center;  /* 文字/內容置中 */
+  justify-content: center; /* 文字/內容置中 */
   gap: 10px;
   min-height: 56px;
-  padding-top: 18px;        /* 預留燈條空間（不壓到內容） */
+  padding-top: 18px; /* 預留燈條空間（不壓到內容） */
 }
 
 /* 上方燈條（預設中性淡紅） */
@@ -244,7 +241,7 @@
  * 你在 JS 或 HTML 上加 class：is-green / is-red
  */
 .dash-light.is-green.db-card--sm::before {
-  background: rgba(34, 197, 94, 0.22);   /* 淡綠 */
+  background: rgba(34, 197, 94, 0.22); /* 淡綠 */
 }
 
 /* =====================================================
@@ -268,7 +265,7 @@
 }
 
 /* 左側：桿上型/亭置式/合計 → 靠近數字框 + 置中 */
-.dash-tx2__grid > .db-sub:nth-child(3n + 1){
+.dash-tx2__grid > .db-sub:nth-child(3n + 1) {
   display: flex;
   align-items: center;
   justify-content: flex-end; /* 靠右貼近數字框 */
@@ -278,7 +275,7 @@
 }
 
 /* 1-4：領料/退料 標題底下虛線（符合你示意圖的位置） */
-.dash-tx2 > div > .db-h3{
+.dash-tx2 > div > .db-h3 {
   position: relative;
   text-align: center;
   color: var(--text);
@@ -286,7 +283,7 @@
   padding-bottom: 10px;
 }
 
-.dash-tx2 > div > .db-h3::after{
+.dash-tx2 > div > .db-h3::after {
   content: "";
   position: absolute;
   left: 10%;
@@ -296,7 +293,7 @@
 }
 
 /* 1-4：小卡片更小（只影響 dash-tx2 內） */
-.dash-tx2 .db-row{
+.dash-tx2 .db-row {
   padding: 4px 6px;
   min-width: 0;
   justify-content: center;
@@ -313,3 +310,94 @@
 .dash-tx2 .db-row {
   color: var(--muted);
 }
+
+/* =====================================================
+ * 2-1/2-2：車輛檢查項目膠囊 + 更多
+ * ===================================================== */
+
+.db-row--vehicle {
+  align-items: flex-start;
+}
+
+.db-vline {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.db-vname {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 不換行、不橫向捲動：你已限定最多 4 顆 */
+.db-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.db-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.04);
+  color: rgba(15, 23, 42, 0.78);
+  white-space: nowrap;
+}
+
+/* 顏色：淡色系（跟你整體風格一致，不搶） */
+.db-pill--verify {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+.db-pill--insurance {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.22);
+}
+.db-pill--emission {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.22);
+}
+.db-pill--drive {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.22);
+}
+.db-pill--xray {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+.db-pill--insulation {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.22);
+}
+.db-pill--muted {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.db-more {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.db-pill--more {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(15, 23, 42, 0.16);
+}
+
+.db-pill--more:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+/* =====================================================
+ * 2-1/2-2：車輛檢查項目膠囊 + 更多----結束
+ * ===================================================== */

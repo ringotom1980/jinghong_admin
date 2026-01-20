@@ -17,7 +17,7 @@ require_login();
 /* ===== 共用統計邏輯（你原本就要共用） ===== */
 require_once __DIR__ . '/../mat/stats_ac.php';
 require_once __DIR__ . '/../mat/stats_d.php';
-require_once __DIR__ . '/../mat/stats_ef.php'; 
+require_once __DIR__ . '/../mat/stats_ef.php';
 require_once __DIR__ . '/../../../app/services/VehicleService.php';
 /**
  * 從日期清單中挑選「即期日期」
@@ -196,30 +196,119 @@ try {
             ],
             'd_negative_returns' => $dNeg,
         ],
+        
         'vehicle' => (function () {
-            // 直接用既有聚合：overdue_count / soon_count
-            $v = VehicleService::listVehiclesWithInspectionAgg();
-            $vehicles = (isset($v['vehicles']) && is_array($v['vehicles'])) ? $v['vehicles'] : [];
+
+            $pdo = db();
+
+            // 你已定義：到期門檻 30 天（與 VehicleService 一致）
+            $today = new DateTimeImmutable('today');
+            $soonDate = $today->modify('+30 days');
+
+            // 將 DB 的 type_name/type_key 正規化成你指定的 6 個字樣
+            $normLabel = function (?string $typeKey, ?string $typeName): string {
+                $key = strtoupper(trim((string)$typeKey));
+                $name = trim((string)$typeName);
+
+                // 優先：type_name 內含關鍵字（最不猜、最穩）
+                $targets = ['驗車', '保險', '廢氣', '行車', 'X光', '絕緣'];
+                foreach ($targets as $t) {
+                    if ($name !== '' && mb_strpos($name, $t) !== false) return $t;
+                }
+
+                // 次要：若你 DB type_key 剛好是固定鍵，可在這裡補對照（沒有就不硬猜）
+                // 例如：if ($key === 'INSURANCE') return '保險';
+
+                // fallback：完全對不上就回空（避免出現你不想要的長字）
+                return '';
+            };
+
+            // 一次撈出「每台車、每個檢查項」的 due_date + required
+            $sql = "
+      SELECT
+        v.id AS vehicle_id,
+        v.vehicle_code,
+        v.plate_no,
+        t.type_key,
+        t.type_name,
+        COALESCE(r.is_required, 1) AS is_required,
+        i.due_date
+      FROM vehicle_vehicles v
+      JOIN vehicle_inspection_types t ON t.is_enabled = 1
+      LEFT JOIN vehicle_vehicle_inspection_rules r
+        ON r.vehicle_id = v.id AND r.type_id = t.type_id
+      LEFT JOIN vehicle_vehicle_inspections i
+        ON i.vehicle_id = v.id AND i.type_id = t.type_id
+      WHERE v.is_active = 1
+      ORDER BY v.vehicle_code ASC, v.id ASC, t.sort_no ASC, t.type_id ASC
+    ";
+            $rows = $pdo->query($sql)->fetchAll();
+            if (!$rows) {
+                return ['overdue' => [], 'due_soon' => [], 'due_soon_days' => 30];
+            }
+
+            // 聚合：vehicle_id => { name, overdueItems[], soonItems[] }
+            $map = [];
+
+            foreach ($rows as $r) {
+                $vid = (int)$r['vehicle_id'];
+                if ($vid <= 0) continue;
+
+                if (!isset($map[$vid])) {
+                    $code = trim((string)($r['vehicle_code'] ?? ''));
+                    $plate = trim((string)($r['plate_no'] ?? ''));
+                    $name = $code;
+                    if ($plate !== '') $name .= '（' . $plate . '）';
+
+                    $map[$vid] = [
+                        'vehicle_id' => $vid,
+                        'name' => $name,
+                        'overdueItems' => [],
+                        'soonItems' => [],
+                    ];
+                }
+
+                // required=0 → 不納入
+                if ((int)($r['is_required'] ?? 1) !== 1) continue;
+
+                // 沒 due_date → 不納入（UNSET 不在 KPI 顯示）
+                if (empty($r['due_date'])) continue;
+
+                $due = new DateTimeImmutable((string)$r['due_date']);
+
+                $label = $normLabel($r['type_key'] ?? null, $r['type_name'] ?? null);
+                if ($label === '') continue;
+
+                // OVERDUE / DUE_SOON 判斷
+                if ($due < $today) {
+                    $map[$vid]['overdueItems'][$label] = true; // 用 key 去重
+                } elseif ($due <= $soonDate) {
+                    $map[$vid]['soonItems'][$label] = true;
+                }
+            }
 
             $overdue = [];
             $dueSoon = [];
 
-            foreach ($vehicles as $row) {
-                if (!is_array($row)) continue;
+            foreach ($map as $pack) {
+                $o = array_keys($pack['overdueItems']);
+                $s = array_keys($pack['soonItems']);
 
-                $code = trim((string)($row['vehicle_code'] ?? ''));
-                $plate = trim((string)($row['plate_no'] ?? ''));
-
-                // 顯示名稱：車輛編號 + (車牌)（車牌可空）
-                $name = $code;
-                if ($plate !== '') $name .= '（' . $plate . '）';
-                if ($name === '') continue;
-
-                $oc = (int)($row['overdue_count'] ?? 0);
-                $sc = (int)($row['soon_count'] ?? 0);
-
-                if ($oc > 0) $overdue[] = ['k' => $name, 'v' => (string)$oc];
-                if ($sc > 0) $dueSoon[] = ['k' => $name, 'v' => (string)$sc];
+                // 每台最多 4 顆膠囊
+                if ($o) {
+                    $overdue[] = [
+                        'vehicle_id' => (int)$pack['vehicle_id'],
+                        'name' => (string)$pack['name'],
+                        'items' => array_slice($o, 0, 4),
+                    ];
+                }
+                if ($s) {
+                    $dueSoon[] = [
+                        'vehicle_id' => (int)$pack['vehicle_id'],
+                        'name' => (string)$pack['name'],
+                        'items' => array_slice($s, 0, 4),
+                    ];
+                }
             }
 
             return [

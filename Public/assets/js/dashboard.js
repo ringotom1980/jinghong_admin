@@ -96,6 +96,124 @@
     }
 
     /* =====================================================
+ * 2-1/2-2：車輛清單（編號/車牌 + 檢查項目膠囊 + 更多展開）
+ * payload rows:
+ *  [{ vehicle_id, name, items: ["驗車","保險",...]}]
+ * ===================================================== */
+
+    var VehicleUI = {
+        expanded: { overdue: false, due_soon: false },
+        data: { overdue: [], due_soon: [] }
+    };
+
+    function pillClassByLabel(label) {
+        // 你已律定文字，不用猜，不做換行/橫向捲動
+        switch (label) {
+            case '驗車': return 'db-pill--verify';
+            case '保險': return 'db-pill--insurance';
+            case '廢氣': return 'db-pill--emission';
+            case '行車': return 'db-pill--drive';
+            case 'X光': return 'db-pill--xray';
+            case '絕緣': return 'db-pill--insulation';
+            default: return 'db-pill--muted';
+        }
+    }
+
+    function renderVehicleList(el, key) {
+        if (!el) return;
+
+        var rows = VehicleUI.data[key] || [];
+        if (!rows.length) {
+            el.innerHTML = '<div class="db-empty">—</div>';
+            return;
+        }
+
+        var expanded = !!VehicleUI.expanded[key];
+        var max = 5;
+        var show = expanded ? rows : rows.slice(0, max);
+        var hasMore = rows.length > max;
+
+        var html = show.map(function (r) {
+            var name = (r && r.name) ? String(r.name) : '';
+            var items = (r && Array.isArray(r.items)) ? r.items : [];
+            items = items.slice(0, 4); // 你說最多同時 4 個
+
+            var pills = items.map(function (it) {
+                var t = String(it || '');
+                if (!t) return '';
+                return '<span class="db-pill ' + pillClassByLabel(t) + '">' + esc(t) + '</span>';
+            }).join('');
+
+            return (
+                '<div class="db-row db-row--vehicle" data-vid="' + esc(r.vehicle_id || '') + '">' +
+                '<div class="db-vline">' +
+                '<div class="db-vname">' + esc(name) + '</div>' +
+                (pills ? ('<div class="db-pills" aria-label="逾期項目">' + pills + '</div>') : '') +
+                '</div>' +
+                '</div>'
+            );
+        }).join('');
+
+        if (hasMore) {
+            html += (
+                '<div class="db-more">' +
+                '<button type="button" class="db-pill db-pill--more" data-more="' + esc(key) + '">' +
+                (expanded ? '收合' : ('更多（' + rows.length + '）')) +
+                '</button>' +
+                '</div>'
+            );
+        }
+
+        el.innerHTML = html;
+    }
+
+    function setVehicleExpanded(key, on) {
+        var other = (key === 'overdue') ? 'due_soon' : 'overdue';
+
+        // 互斥：展開這張就收另一張
+        VehicleUI.expanded[key] = !!on;
+        if (on) VehicleUI.expanded[other] = false;
+
+        renderVehicleList(qs('#carOverdueList'), 'overdue');
+        renderVehicleList(qs('#carDueSoonList'), 'due_soon');
+    }
+
+    function bindVehicleMoreButtons() {
+        // 用事件委派：清單內的更多/收合
+        document.addEventListener('click', function (e) {
+            var btn = e.target && e.target.closest ? e.target.closest('.db-pill--more') : null;
+            if (!btn) return;
+
+            e.preventDefault();
+            e.stopPropagation(); // 不要觸發整張卡片導頁
+
+            var key = btn.getAttribute('data-more') || '';
+            if (key !== 'overdue' && key !== 'due_soon') return;
+
+            setVehicleExpanded(key, !VehicleUI.expanded[key]);
+        }, true);
+
+        // 點卡片外自動收合（只管 2-1/2-2）
+        document.addEventListener('click', function (e) {
+            if (!VehicleUI.expanded.overdue && !VehicleUI.expanded.due_soon) return;
+
+            var overCard = qs('#carOverdueList') ? qs('#carOverdueList').closest('article.db-card') : null;
+            var soonCard = qs('#carDueSoonList') ? qs('#carDueSoonList').closest('article.db-card') : null;
+
+            var inOver = overCard && overCard.contains(e.target);
+            var inSoon = soonCard && soonCard.contains(e.target);
+
+            // 只要點在 2-1/2-2 任何一張卡片外 → 全收
+            if (!inOver && !inSoon) {
+                VehicleUI.expanded.overdue = false;
+                VehicleUI.expanded.due_soon = false;
+                renderVehicleList(qs('#carOverdueList'), 'overdue');
+                renderVehicleList(qs('#carDueSoonList'), 'due_soon');
+            }
+        });
+    }
+
+    /* =====================================================
      * 1-2：近期 A 班領料（依你原本 buildMatACard 規則）
      * - 你要共用統計邏輯，所以這裡只做「挑重點顯示」
      * ===================================================== */
@@ -246,8 +364,11 @@
         var overdue = Array.isArray(vpack.overdue) ? vpack.overdue : [];
         var dueSoon = Array.isArray(vpack.due_soon) ? vpack.due_soon : [];
 
-        renderList(qs('#carOverdueList'), overdue);
-        renderList(qs('#carDueSoonList'), dueSoon);
+        VehicleUI.data.overdue = overdue;
+        VehicleUI.data.due_soon = dueSoon;
+
+        renderVehicleList(qs('#carOverdueList'), 'overdue');
+        renderVehicleList(qs('#carDueSoonList'), 'due_soon');
 
     }
 
@@ -281,6 +402,9 @@
 
                 var action = btn.getAttribute('data-action') || '';
                 var asof = Current.asof_date || '';
+                // 點到「更多/收合」不要跳頁
+                var moreBtn = e.target && e.target.closest ? e.target.closest('.db-pill--more') : null;
+                if (moreBtn) return;
 
                 if (action === 'go_issue') {
                     var t = btn.getAttribute('data-type') || '';
@@ -311,6 +435,7 @@
 
     function init() {
         bindClicks();
+        bindVehicleMoreButtons();
         loadKpi();
     }
 
