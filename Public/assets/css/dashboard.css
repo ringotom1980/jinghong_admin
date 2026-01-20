@@ -228,10 +228,10 @@
   position: absolute;
   left: 12px;
   right: 12px;
-  top: 10px;
+  top: 8px;
   height: 12px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.14);
+  background: rgba(239, 68, 68, 0.22);
 }
 
 /* 你不要點：在 1-1 區塊隱藏原本 dot（不刪規則，避免別處用到） */
@@ -244,10 +244,6 @@
  */
 .dash-light.is-green.db-card--sm::before {
   background: rgba(34, 197, 94, 0.22);   /* 淡綠 */
-}
-
-.dash-light.is-red.db-card--sm::before {
-  background: rgba(239, 68, 68, 0.22);   /* 淡紅 */
 }
 
 /* =====================================================
