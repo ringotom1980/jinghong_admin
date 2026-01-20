@@ -241,6 +241,7 @@ try {
 
                 return [
                     'key' => $key,
+                    'label' => $svc->keyToLabel($key),
                     'start' => $start,
                     'end' => $end,
                     'company' => (float)($r['company_total'] ?? 0),

@@ -375,7 +375,7 @@
         setText('carRepairCompany', r6 ? r6.company : '—');
         setText('carRepairTeam', r6 ? r6.team : '—');
         setText('carRepairTotal', r6 ? r6.total : '—');
-
+        setText('carRepairPeriod', r6 ? r6.label : '—');
     }
 
     /* =====================================================

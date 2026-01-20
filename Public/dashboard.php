@@ -114,12 +114,20 @@ $pageJs    = ['assets/js/dashboard.js'];
                 <div class="db-sub" style="text-align:center;">舊</div>
 
                 <div class="db-sub">桿上型</div>
-                <div class="db-row"><div class="db-row-v" id="fIssuePoleNew">—</div></div>
-                <div class="db-row"><div class="db-row-v" id="fIssuePoleOld">—</div></div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fIssuePoleNew">—</div>
+                </div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fIssuePoleOld">—</div>
+                </div>
 
                 <div class="db-sub">亭置式</div>
-                <div class="db-row"><div class="db-row-v" id="fIssuePadNew">—</div></div>
-                <div class="db-row"><div class="db-row-v" id="fIssuePadOld">—</div></div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fIssuePadNew">—</div>
+                </div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fIssuePadOld">—</div>
+                </div>
 
                 <div class="db-sub">合計</div>
                 <div class="db-row" style="grid-column: 2 / span 2;">
@@ -138,12 +146,20 @@ $pageJs    = ['assets/js/dashboard.js'];
                 <div class="db-sub" style="text-align:center;">舊</div>
 
                 <div class="db-sub">桿上型</div>
-                <div class="db-row"><div class="db-row-v" id="fReturnPoleNew">—</div></div>
-                <div class="db-row"><div class="db-row-v" id="fReturnPoleOld">—</div></div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fReturnPoleNew">—</div>
+                </div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fReturnPoleOld">—</div>
+                </div>
 
                 <div class="db-sub">亭置式</div>
-                <div class="db-row"><div class="db-row-v" id="fReturnPadNew">—</div></div>
-                <div class="db-row"><div class="db-row-v" id="fReturnPadOld">—</div></div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fReturnPadNew">—</div>
+                </div>
+                <div class="db-row">
+                  <div class="db-row-v" id="fReturnPadOld">—</div>
+                </div>
 
                 <div class="db-sub">合計</div>
                 <div class="db-row" style="grid-column: 2 / span 2;">
@@ -191,8 +207,9 @@ $pageJs    = ['assets/js/dashboard.js'];
         <!-- 2-3 -->
         <article class="db-card" data-jump="car_stats" data-section="repair_6m">
           <div class="db-card-head">
-            <div class="db-card-title">近半年維修金額</div>
+            <div class="db-card-title">近半年維修金額｜<span id="carRepairPeriod">—</span></div>
             <div class="db-card-meta">點卡片→維修統計</div>
+
           </div>
 
           <div class="dash-kv">

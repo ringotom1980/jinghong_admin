@@ -384,7 +384,7 @@ final class VehicleRepairStatsService
     return $months;
   }
 
-    private function keyToLabel(string $key): string
+    public function keyToLabel(string $key): string
   {
     if (preg_match('/^\d{4}$/', $key)) return $key . '-全年';
     if (preg_match('/^(\d{4})-(H1|H2)$/', $key, $m)) {
