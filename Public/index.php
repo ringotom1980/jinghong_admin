@@ -40,6 +40,7 @@ $routes = [
   '/logout'      => 'logout.php',
   '/dashboard'   => 'dashboard.php',
   '/me/password' => 'me_password.php',
+  '/me/account'  => 'me_account.php',
   '/pole-map'    => 'pole_map.php', // 公開頁
 ];
 
