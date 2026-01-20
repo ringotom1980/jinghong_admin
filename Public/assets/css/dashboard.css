@@ -189,8 +189,9 @@
 
 /* =====================================================
  * 7. 1-1：近期領退作業狀態（四顆燈號按鈕）
- * - 只調「共用外觀」：高度、間距、可點擊態
- * - 不碰字體
+ * - 只做「燈條」+「字置中」+「高度/間距」
+ * - 不碰字體（不設定 font-*）
+ * - 不改你原本 db-card 的邊框/陰影/hover
  * ===================================================== */
 
 .dash-lights {
@@ -203,27 +204,50 @@
 /* button reset（只做布局/外觀，不動字體） */
 .dash-light {
   width: 100%;
-  text-align: left;
+  text-align: center; /* 你要卡片內文字置中 */
   border: 0;
   background: transparent;
   padding: 0;
 }
 
+/* 小卡片本體：用 pseudo-element 畫「上方燈條」 */
 .dash-light.db-card--sm {
+  position: relative;       /* 給 ::before 定位 */
   display: flex;
   align-items: center;
+  justify-content: center;  /* 文字/內容置中 */
   gap: 10px;
-  min-height: 56px; /* 你說燈條高度太小：只動高度 */
+  min-height: 56px;
+
+  padding-top: 18px;        /* 預留燈條空間（不壓到內容） */
 }
 
-/* 燈點（你後面要做燈條/燈色可以沿用這個） */
-.dash-light__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.22);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
-  flex: 0 0 auto;
+/* 上方燈條（預設中性淡灰） */
+.dash-light.db-card--sm::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 10px;
+  height: 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.14);
+}
+
+/* 你不要點：在 1-1 區塊隱藏原本 dot（不刪規則，避免別處用到） */
+.dash-lights .dash-light__dot {
+  display: none;
+}
+
+/* 燈條顏色：只有兩種、不要搶眼（淡綠 / 淡紅）
+ * 你在 JS 或 HTML 上加 class：is-green / is-red
+ */
+.dash-light.is-green.db-card--sm::before {
+  background: rgba(34, 197, 94, 0.22);   /* 淡綠 */
+}
+
+.dash-light.is-red.db-card--sm::before {
+  background: rgba(239, 68, 68, 0.22);   /* 淡紅 */
 }
 
 /* =====================================================
