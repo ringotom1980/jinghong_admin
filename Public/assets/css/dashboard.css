@@ -207,28 +207,9 @@
   min-height: 48px; /* 你要的「燈號高度」在這裡 */
 }
 
-/* hover/active 不要沿用 db-card 那套位移與重陰影 */
-.dash-light:hover{
-  transform: none;
-  border-color: rgba(15,23,42,.16);
-  box-shadow: 0 10px 22px rgba(15,23,42,.08);
-}
-.dash-light:active{
-  transform: none;
-  box-shadow: 0 6px 14px rgba(15,23,42,.06);
-}
-
 /* 這顆是「按鈕」，不是第二張卡片：陰影收斂一點 */
 .dash-light.db-card{
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
-}
-
-/* 1-1：燈號按鈕文字不要粗 */
-.dash-light .db-text{
-  font-size: 14px;
-  font-weight: 600;     /* 原本突兀通常是 700 */
-  line-height: 1.1;
-  white-space: nowrap;  /* 仍然保留：避免換行造成高度不一致 */
 }
 
 /* =====================================================
