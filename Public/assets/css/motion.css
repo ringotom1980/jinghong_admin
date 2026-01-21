@@ -50,11 +50,12 @@
 .motion-hover:active{ transform: translateY(0); }
 
 /* ===== Toast animations ===== */
+/* 注意：z-index 不在 motion.css 控制，避免蓋掉 ui_toast.css 的層級 */
 .toast-wrap{
   position: fixed;
   right: 16px;
   bottom: 16px;
-  z-index: 2000;
+  z-index: var(--toast-z, 2147483647);
   display: grid;
   gap: 10px;
   pointer-events: none;
