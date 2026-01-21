@@ -3,7 +3,7 @@
  */
 
 :root{
-  --toast-z: 3000;
+  --toast-z: 2147483647;
 }
 
 .toast-wrap{
