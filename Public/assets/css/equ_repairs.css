@@ -263,12 +263,6 @@
   display: block;
 }
 
-.equ-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.55);
-}
-
 .equ-modal__panel {
   position: absolute;
   left: 50%;

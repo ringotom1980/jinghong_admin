@@ -111,7 +111,7 @@ $pageJs = [
 
     <!-- Modal（對齊 car 維修 modal 的 crm 版型：grid + 明細 div-grid + 三卡 totals） -->
     <div class="equ-modal" id="equModal" aria-hidden="true">
-        <div class="equ-modal__backdrop" data-close="1"></div>
+        <div class="modal-backdrop" data-close="1"></div>
 
         <div class="equ-modal__panel" role="dialog" aria-modal="true" aria-labelledby="equModalTitle">
             <header class="equ-modal__head">
