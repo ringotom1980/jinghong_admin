@@ -221,13 +221,15 @@
 }
 
 /* ===============================
- * 管理中心：標題與卡片距離修正
+ * 管理中心：標題區與卡片同寬同置中
  * =============================== */
 
-.admin-center .page-head {
-  margin-bottom: 12px; /* 原本過大，縮短 */
+.admin-center .page-head{
+  /* 跟 .ac-card 同一個寬度與對齊方式 */
+  max-width: 980px;
+  margin: 12px auto 10px; /* 上/左右/下：縮短與卡片距離 */
 }
 
-.admin-center .page-head p {
-  margin-top: 4px;     /* 說明文字貼近標題 */
+.admin-center .page-sub{
+  margin-top: 4px;
 }
