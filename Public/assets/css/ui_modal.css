@@ -13,8 +13,13 @@
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(2, 6, 23, 0.34);
-  backdrop-filter: blur(10px);
+
+  /* 改成亮霧遮罩（與工具維修一致） */
+  background: rgba(248, 250, 252, 0.55);
+  backdrop-filter: blur(4px);
+
+  /* 防止某些瀏覽器過亮 */
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-panel{
