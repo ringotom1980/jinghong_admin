@@ -66,6 +66,8 @@
 
         toolDatalist: qs('#equToolDatalist'),
         vendorDatalist: qs('#equVendorDatalist'),
+        toolSuggest: qs('#equToolSuggest'),
+        vendorSuggest: qs('#equVendorSuggest'),
 
         addItemBtn: qs('#equAddItemBtn'),
         itemsWrap: qs('#equItemsWrap'),
@@ -135,6 +137,9 @@
         if (!self.isOpen()) return;
         self.close();
       });
+      // ✅ tool/vendor suggest（focus 出清單、input 即時 like）
+      self.bindSuggest(self.els.tool, self.els.toolSuggest, '/api/equ/equ_tool_suggest?q=');
+      self.bindSuggest(self.els.vendor, self.els.vendorSuggest, '/api/equ/equ_vendor_suggest?q=');
     },
 
     isOpen: function () {
@@ -198,6 +203,103 @@
     close: function () {
       if (!this.els || !this.els.modal) return;
       this.els.modal.setAttribute('aria-hidden', 'true');
+    },
+
+    _sug: {
+      timer: 0,
+      activeEl: null
+    },
+
+    bindSuggest: function (inputEl, boxEl, apiPrefix) {
+      var self = this;
+      if (!inputEl || !boxEl || !global.apiGet) return;
+
+      var closeLater = function () {
+        window.setTimeout(function () { self.hideSuggest(boxEl); }, 120);
+      };
+
+      inputEl.addEventListener('focus', function () {
+        self.fetchSuggest(boxEl, apiPrefix, ''); // ✅ 空字串：常用/最近
+      });
+
+      inputEl.addEventListener('input', function () {
+        var q = String(inputEl.value || '');
+        window.clearTimeout(self._sug.timer);
+        self._sug.timer = window.setTimeout(function () {
+          self.fetchSuggest(boxEl, apiPrefix, q);
+        }, 120);
+      });
+
+      inputEl.addEventListener('blur', closeLater);
+      boxEl.addEventListener('blur', closeLater);
+
+      // 點選（用 mousedown 避免 blur 先觸發）
+      boxEl.addEventListener('mousedown', function (e) {
+        var item = e.target && e.target.closest ? e.target.closest('[data-name]') : null;
+        if (!item) return;
+
+        e.preventDefault();
+
+        var name = item.getAttribute('data-name') || '';
+        inputEl.value = name;
+        self.hideSuggest(boxEl);
+        self.syncHeaderFromForm();
+      });
+    },
+
+    fetchSuggest: function (boxEl, apiPrefix, q) {
+      var self = this;
+      if (!boxEl || !global.apiGet) return;
+
+      var url = apiPrefix + encodeURIComponent(String(q || ''));
+      global.apiGet(url).then(function (j) {
+        if (!j || !j.success) {
+          self.hideSuggest(boxEl);
+          return;
+        }
+        var rows = (j.data && j.data.rows) ? j.data.rows : [];
+        self.renderSuggest(boxEl, rows);
+      }).catch(function () {
+        self.hideSuggest(boxEl);
+      });
+    },
+
+    renderSuggest: function (boxEl, rows) {
+      rows = rows || [];
+      if (!boxEl) return;
+
+      if (!rows.length) {
+        boxEl.hidden = true;
+        boxEl.innerHTML = '';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i] || {};
+        var name = r.name || '';
+        if (!name) continue;
+
+        var meta = '';
+        if (r.use_count !== undefined && r.use_count !== null) {
+          meta = '使用 ' + String(r.use_count);
+        }
+
+        html += ''
+          + '<div class="equ-suggest__item" data-name="' + esc(name) + '">'
+          + '  <div class="equ-suggest__name">' + esc(name) + '</div>'
+          + (meta ? '  <div class="equ-suggest__meta">' + esc(meta) + '</div>' : '')
+          + '</div>';
+      }
+
+      boxEl.innerHTML = html;
+      boxEl.hidden = false;
+    },
+
+    hideSuggest: function (boxEl) {
+      if (!boxEl) return;
+      boxEl.hidden = true;
+      boxEl.innerHTML = '';
     },
 
     fillDatalistsFromApp: function () {

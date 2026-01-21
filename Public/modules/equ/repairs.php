@@ -144,14 +144,18 @@ $pageJs = [
 
                         <div class="crm-field">
                             <label class="form-label">機具名稱</label>
-                            <input class="input" type="text" id="equToolName" placeholder="可直接輸入" list="equToolDatalist" />
-                            <datalist id="equToolDatalist"></datalist>
+                            <div class="equ-suggestWrap">
+                                <input class="input" type="text" id="equToolName" placeholder="可直接輸入" autocomplete="off" />
+                                <div class="equ-suggest" id="equToolSuggest" hidden></div>
+                            </div>
                         </div>
 
                         <div class="crm-field">
                             <label class="form-label">廠商</label>
-                            <input class="input" type="text" id="equVendorName" placeholder="可直接輸入" list="equVendorDatalist" />
-                            <datalist id="equVendorDatalist"></datalist>
+                            <div class="equ-suggestWrap">
+                                <input class="input" type="text" id="equVendorName" placeholder="可直接輸入" autocomplete="off" />
+                                <div class="equ-suggest" id="equVendorSuggest" hidden></div>
+                            </div>
                         </div>
 
                         <div class="crm-field crm-field--full">

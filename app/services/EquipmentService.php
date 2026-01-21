@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/EquipmentService.php
  * 說明: 工具管理服務（工具字典 / 廠商字典 / 維修-保養-購買-租賃）
@@ -238,7 +239,10 @@ final class EquipmentService
     if ($caps) {
       $hasDefault = false;
       foreach ($caps as $c) {
-        if (!empty($c['is_default'])) { $hasDefault = true; break; }
+        if (!empty($c['is_default'])) {
+          $hasDefault = true;
+          break;
+        }
       }
       if (!$hasDefault) $caps[0]['is_default'] = 1;
     }
@@ -461,18 +465,32 @@ final class EquipmentService
     $pdo = db();
     $q = trim($q);
 
-    if ($q === '' || preg_match('/^\d+$/', $q)) {
+    // ✅ 空字串：回常用/最近（focus 就要出清單）
+    if ($q === '') {
+      $st = $pdo->prepare("
+      SELECT id, name, use_count, last_used_at
+      FROM equ_tools
+      WHERE is_active = 1
+      ORDER BY use_count DESC, last_used_at DESC, id DESC
+      LIMIT 10
+    ");
+      $st->execute();
+      return ['rows' => $st->fetchAll()];
+    }
+
+    // 純數字：不做模糊查詢（避免用 id 查詢造成誤判）
+    if (preg_match('/^\d+$/', $q)) {
       return ['rows' => []];
     }
 
     $st = $pdo->prepare("
-      SELECT id, name, use_count, last_used_at
-      FROM equ_tools
-      WHERE is_active = 1
-        AND name LIKE ?
-      ORDER BY use_count DESC, last_used_at DESC, id DESC
-      LIMIT 10
-    ");
+    SELECT id, name, use_count, last_used_at
+    FROM equ_tools
+    WHERE is_active = 1
+      AND name LIKE ?
+    ORDER BY use_count DESC, last_used_at DESC, id DESC
+    LIMIT 10
+  ");
     $st->execute(['%' . $q . '%']);
     return ['rows' => $st->fetchAll()];
   }
@@ -482,18 +500,31 @@ final class EquipmentService
     $pdo = db();
     $q = trim($q);
 
-    if ($q === '' || preg_match('/^\d+$/', $q)) {
+    // ✅ 空字串：回常用/最近
+    if ($q === '') {
+      $st = $pdo->prepare("
+      SELECT id, name, use_count, last_used_at
+      FROM equ_vendors
+      WHERE is_active = 1
+      ORDER BY use_count DESC, last_used_at DESC, id DESC
+      LIMIT 10
+    ");
+      $st->execute();
+      return ['rows' => $st->fetchAll()];
+    }
+
+    if (preg_match('/^\d+$/', $q)) {
       return ['rows' => []];
     }
 
     $st = $pdo->prepare("
-      SELECT id, name, use_count, last_used_at
-      FROM equ_vendors
-      WHERE is_active = 1
-        AND name LIKE ?
-      ORDER BY use_count DESC, last_used_at DESC, id DESC
-      LIMIT 10
-    ");
+    SELECT id, name, use_count, last_used_at
+    FROM equ_vendors
+    WHERE is_active = 1
+      AND name LIKE ?
+    ORDER BY use_count DESC, last_used_at DESC, id DESC
+    LIMIT 10
+  ");
     $st->execute(['%' . $q . '%']);
     return ['rows' => $st->fetchAll()];
   }
