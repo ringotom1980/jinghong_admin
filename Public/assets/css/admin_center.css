@@ -219,3 +219,15 @@
   cursor: pointer;
   line-height: 1;
 }
+
+/* ===============================
+ * 管理中心：標題與卡片距離修正
+ * =============================== */
+
+.admin-center .page-head {
+  margin-bottom: 12px; /* 原本過大，縮短 */
+}
+
+.admin-center .page-head p {
+  margin-top: 4px;     /* 說明文字貼近標題 */
+}
