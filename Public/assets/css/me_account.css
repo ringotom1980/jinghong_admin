@@ -84,3 +84,16 @@
   margin-top: 12px;
   gap: 8px;
 }
+
+/* ===============================
+ * 管理帳號：標題區與卡片同寬同置中
+ * =============================== */
+
+.me-account .page-head{
+  max-width: 980px;        /* 跟 .ma-card 一樣寬 */
+  margin: 12px auto 10px;  /* 上/左右/下：縮短與卡片距離 */
+}
+
+.me-account .page-sub{
+  margin-top: 4px;
+}
