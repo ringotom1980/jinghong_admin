@@ -33,6 +33,18 @@
 
       input.addEventListener('input', this.onInput.bind(this));
       list.addEventListener('click', this.onPick.bind(this));
+      input.addEventListener('focus', this.onFocus.bind(this));
+    },
+
+    onFocus: function () {
+      if (!this.modal || !this.modal.els || !this.modal.els.vendor) return;
+
+      var q = String(this.modal.els.vendor.value || '').trim();
+      // 純數字視為 id，不彈清單（避免干擾）
+      if (/^\d+$/.test(q)) return;
+
+      // focus：不管有沒有字，都抓一次（空字=常用Top10）
+      this.fetchSuggest(q);
     },
 
     onInput: function () {
@@ -49,7 +61,7 @@
       }
 
       if (q.length < 1) {
-        list.hidden = true;
+        self.fetchSuggest(''); // 空字串 => 常用 Top10
         return;
       }
 

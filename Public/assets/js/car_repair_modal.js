@@ -120,6 +120,7 @@
         onConfirm: function () { return self.onSave(); },
         onCancel: function () { }
       });
+      self._bd = bd;
 
       // ✅ 只標記「維修紀錄 modal」用（不影響其他頁的 modal）
       if (bd && bd.classList) bd.classList.add('modal--car-repair');
@@ -237,15 +238,18 @@
         });
       }
 
-      // 點空白關閉 suggest
-      document.addEventListener('click', function (e) {
-        var v = self.els && self.els.vendor;
-        var s = self.els && self.els.suggest;
-        if (!v || !s) return;
+      // ✅ 點空白關閉 suggest（綁在本 modal 的 backdrop 上，避免 document 監聽累積）
+      var bd = self._bd;
+      if (bd && bd.addEventListener) {
+        bd.addEventListener('click', function (e) {
+          var v = self.els && self.els.vendor;
+          var s = self.els && self.els.suggest;
+          if (!v || !s) return;
 
-        var box = e.target && e.target.closest ? e.target.closest('.crm-vendorSuggest') : null;
-        if (!box) s.hidden = true;
-      }, { once: true });
+          var box = e.target && e.target.closest ? e.target.closest('.crm-vendorSuggest') : null;
+          if (!box) s.hidden = true;
+        });
+      }
     },
 
     renderVehicleOptions: function () {

@@ -1104,8 +1104,20 @@ final class VehicleService
     $pdo = db();
     $q = trim($q);
 
-    if ($q === '' || preg_match('/^\d+$/', $q)) {
+    if (preg_match('/^\d+$/', $q)) {
       return ['rows' => []];
+    }
+
+    if ($q === '') {
+      $st = $pdo->prepare("
+    SELECT id, name, use_count, last_used_at
+    FROM vehicle_repair_vendors
+    WHERE is_active = 1
+    ORDER BY use_count DESC, last_used_at DESC, id DESC
+    LIMIT 10
+  ");
+      $st->execute();
+      return ['rows' => $st->fetchAll()];
     }
 
     $st = $pdo->prepare("
