@@ -1,141 +1,221 @@
 /* Path: Public/assets/css/admin_center.css
- * 說明: 管理中心樣式
+ * 說明: 管理中心樣式（版面定版：寬度/密度/表格/Modal）
  */
 
-.admin-center .ac-card{
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(15,23,42,.10);
+.admin-center .ac-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 18px;
   padding: 14px;
+
+  /* A) 最大寬度 + 置中（避免超寬螢幕拉太長） */
+  max-width: 980px;
+  margin: 0 auto;
 }
 
-.admin-center .ac-tabs{
-  display:flex;
-  gap:8px;
-  border-bottom: 1px solid rgba(15,23,42,.10);
+.admin-center .ac-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   padding-bottom: 10px;
   margin-bottom: 12px;
 }
 
-.admin-center .ac-tab{
-  appearance:none;
-  border: 1px solid rgba(15,23,42,.12);
-  background: rgba(255,255,255,.8);
+.admin-center .ac-tab {
+  appearance: none;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 999px;
   padding: 6px 12px;
   cursor: pointer;
 }
 
-.admin-center .ac-tab.is-active{
-  border-color: rgba(37,99,235,.35);
-  box-shadow: 0 6px 18px rgba(37,99,235,.08);
+.admin-center .ac-tab.is-active {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
 }
 
-.admin-center .ac-pane{ display:none; }
-.admin-center .ac-pane.is-active{ display:block; }
+.admin-center .ac-pane {
+  display: none;
+}
+.admin-center .ac-pane.is-active {
+  display: block;
+}
 
-.admin-center .ac-grid{
-  display:grid;
+/* 表單容器：適度縮緊密度 */
+.admin-center .ac-form {
+  padding-top: 4px;
+}
+
+.admin-center .ac-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.admin-center .ac-field--full {
+  grid-column: 1 / -1;
+}
+
+.admin-center .ac-label {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+/* B) Grid：一般 2 欄；密碼區 3 欄（更整齊） */
+.admin-center .ac-grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-@media (max-width: 860px){
-  .admin-center .ac-grid{ grid-template-columns: 1fr; }
+/* 「我的帳號」改密碼：三欄排列（桌機） */
+.admin-center [data-pane="my"] .ac-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.admin-center .ac-field{ display:grid; gap: 6px; }
-.admin-center .ac-field--full{ grid-column: 1 / -1; }
-
-.admin-center .ac-label{
-  font-size: 13px;
-  color: rgba(15,23,42,.62);
+@media (max-width: 860px) {
+  .admin-center .ac-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-center [data-pane="my"] .ac-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.admin-center .ac-actions{
-  display:flex;
-  justify-content:flex-end;
+.admin-center .ac-actions {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: 12px;
 }
 
-.admin-center .ac-toolbar{
-  display:flex;
-  justify-content:flex-end;
+.admin-center .ac-toolbar {
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: 10px;
 }
 
-.admin-center .ac-tablewrap{
-  border: 1px solid rgba(15,23,42,.10);
+/* 表格外框 */
+.admin-center .ac-tablewrap {
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 14px;
-  overflow:hidden;
-  background: rgba(255,255,255,.78);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.78);
 }
 
-.admin-center .ac-table{
-  width:100%;
+.admin-center .ac-table {
+  width: 100%;
   border-collapse: collapse;
 }
 
 .admin-center .ac-table th,
-.admin-center .ac-table td{
+.admin-center .ac-table td {
   padding: 10px 12px;
-  border-bottom: 1px solid rgba(15,23,42,.08);
-  text-align:left;
-  vertical-align:middle;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  text-align: left;
+  vertical-align: middle;
 }
 
-.admin-center .ac-muted{
-  color: rgba(15,23,42,.55);
+/* 表頭：更像後台，視覺更穩 */
+.admin-center .ac-table thead th {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.03);
+  font-weight: 760;
+}
+
+/* 列 hover（不刺眼） */
+.admin-center .ac-table tbody tr:hover td {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* D) 操作欄：不擠、不換行、不撐高
+   你 JS 目前沒有包一層操作容器，所以先用 td:last-child 直接做 inline-flex。 */
+.admin-center .ac-table td:last-child {
+  white-space: nowrap;
+}
+
+.admin-center .ac-table td:last-child .btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.admin-center .ac-table td:last-child .btn + .btn {
+  margin-left: 6px;
+}
+
+.admin-center .ac-muted {
+  color: rgba(15, 23, 42, 0.55);
 }
 
 /* modal */
-.admin-center .ac-modal[hidden]{ display:none; }
-.admin-center .ac-modal{
+.admin-center .ac-modal[hidden] {
+  display: none;
+}
+
+.admin-center .ac-modal {
   position: fixed;
   inset: 0;
   z-index: 60;
 }
 
-.admin-center .ac-modal__mask{
-  position:absolute;
-  inset:0;
-  background: rgba(15,23,42,.35);
+.admin-center .ac-modal__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
 }
 
-.admin-center .ac-modal__panel{
-  position:absolute;
-  top: 60px;
+/* C) Modal：置中 + 可捲動 + 小螢幕不爆版 */
+.admin-center .ac-modal__panel {
+  position: absolute;
   left: 50%;
+  top: 56px;
   transform: translateX(-50%);
   width: min(680px, calc(100vw - 24px));
   background: #fff;
   border-radius: 18px;
-  border: 1px solid rgba(15,23,42,.12);
-  box-shadow: 0 18px 45px rgba(15,23,42,.18);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
   padding: 12px;
+
+  max-height: calc(100vh - 112px);
+  overflow: auto;
 }
 
-.admin-center .ac-modal__head{
-  display:flex;
-  align-items:center;
+@media (max-width: 720px) {
+  .admin-center .ac-modal__panel {
+    top: 18px;
+    max-height: calc(100vh - 36px);
+  }
+}
+
+.admin-center .ac-modal__head {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 4px 4px 10px;
-  border-bottom: 1px solid rgba(15,23,42,.10);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   margin-bottom: 10px;
+
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
 }
 
-.admin-center .ac-modal__title{
-  margin:0;
+.admin-center .ac-modal__title {
+  margin: 0;
   font-size: 16px;
 }
 
-.admin-center .ac-x{
-  appearance:none;
+.admin-center .ac-x {
+  appearance: none;
   border: 0;
   background: transparent;
   font-size: 22px;
-  cursor:pointer;
+  cursor: pointer;
   line-height: 1;
 }

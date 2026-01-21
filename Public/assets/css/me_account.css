@@ -1,61 +1,86 @@
 /* Path: Public/assets/css/me_account.css
- * 說明: 管理帳號頁樣式
+ * 說明: 管理帳號頁樣式（版面定版：寬度/密度/改密碼三欄）
  */
 
-.me-account .ma-card{
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(15,23,42,.10);
+.me-account .ma-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 18px;
   padding: 14px;
+
+  /* A) 最大寬度 + 置中 */
+  max-width: 980px;
+  margin: 0 auto;
 }
 
-.me-account .ma-tabs{
-  display:flex;
-  gap:8px;
-  border-bottom: 1px solid rgba(15,23,42,.10);
+.me-account .ma-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   padding-bottom: 10px;
   margin-bottom: 12px;
 }
 
-.me-account .ma-tab{
-  appearance:none;
-  border: 1px solid rgba(15,23,42,.12);
-  background: rgba(255,255,255,.8);
+.me-account .ma-tab {
+  appearance: none;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 999px;
   padding: 6px 12px;
   cursor: pointer;
 }
 
-.me-account .ma-tab.is-active{
-  border-color: rgba(37,99,235,.35);
-  box-shadow: 0 6px 18px rgba(37,99,235,.08);
+.me-account .ma-tab.is-active {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
 }
 
-.me-account .ma-pane{ display:none; }
-.me-account .ma-pane.is-active{ display:block; }
+.me-account .ma-pane {
+  display: none;
+}
+.me-account .ma-pane.is-active {
+  display: block;
+}
 
-.me-account .ma-grid{
-  display:grid;
+/* 表單密度 */
+.me-account .ma-form {
+  padding-top: 4px;
+}
+
+.me-account .ma-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.me-account .ma-label {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+/* B) Profile 2 欄；Password 3 欄（桌機） */
+.me-account .ma-grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-@media (max-width: 860px){
-  .me-account .ma-grid{ grid-template-columns: 1fr; }
+.me-account [data-pane="password"] .ma-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.me-account .ma-field{
-  display:grid;
-  gap: 6px;
+@media (max-width: 860px) {
+  .me-account .ma-grid {
+    grid-template-columns: 1fr;
+  }
+  .me-account [data-pane="password"] .ma-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.me-account .ma-label{
-  font-size: 13px;
-  color: rgba(15,23,42,.62);
-}
-
-.me-account .ma-actions{
-  display:flex;
-  justify-content:flex-end;
+.me-account .ma-actions {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 12px;
+  gap: 8px;
 }
