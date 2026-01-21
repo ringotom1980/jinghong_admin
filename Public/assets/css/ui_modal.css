@@ -2,11 +2,11 @@
  * 說明: Modal 外觀（不塞 app.css）
  */
 
-:root{
+:root {
   --modal-z: 4000;
 }
 
-.modal-backdrop{
+.modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: var(--modal-z);
@@ -14,55 +14,56 @@
   place-items: center;
   padding: 18px;
 
-  /* 改成亮霧遮罩（與工具維修一致） */
-  background: rgba(248, 250, 252, 0.55);
-  backdrop-filter: blur(4px);
-
-  /* 防止某些瀏覽器過亮 */
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(2, 6, 23, 0.34);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.modal-panel{
+.modal-panel {
   width: min(520px, calc(100vw - 36px));
-  background: rgba(255,255,255,.94);
-  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(2,6,23,.20);
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.2);
   overflow: hidden;
 }
 
-.modal__head{
+.modal__head {
   padding: 14px 16px 10px 16px;
-  border-bottom: 1px solid rgba(15,23,42,.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: linear-gradient(180deg, rgba(246,247,251,.92), rgba(255,255,255,0));
+  background: linear-gradient(
+    180deg,
+    rgba(246, 247, 251, 0.92),
+    rgba(255, 255, 255, 0)
+  );
 }
 
-.modal__title{
+.modal__title {
   margin: 0;
   font-size: 16px;
   font-weight: 900;
-  letter-spacing: .02em;
-  color: rgba(15,23,42,.92);
+  letter-spacing: 0.02em;
+  color: rgba(15, 23, 42, 0.92);
 }
 
-.modal__body{
+.modal__body {
   padding: 14px 16px 16px 16px;
-  color: rgba(15,23,42,.76);
+  color: rgba(15, 23, 42, 0.76);
   font-size: 14px;
   line-height: 1.55;
 }
 
-.modal__foot{
+.modal__foot {
   padding: 12px 16px 16px 16px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
-.modal__close{
+.modal__close {
   display: none; /* ✅ Confirm-only：不提供右上角關閉 */
 }
