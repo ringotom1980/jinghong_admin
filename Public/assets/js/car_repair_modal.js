@@ -159,7 +159,7 @@
 
         + '    <div class="crm-field crm-vendorSuggest">'
         + '      <label class="form-label">維修廠商</label>'
-        + '      <input class="input" type="text" id="crmVendor" placeholder="例：12 或 XX保養廠" autocomplete="off" />'
+        + '      <input class="input" type="text" id="crmVendor" placeholder="可直接輸入" autocomplete="off" />'
         + '      <div class="crm-suggestList" id="crmSuggest" hidden></div>'
         + '    </div>'
 
