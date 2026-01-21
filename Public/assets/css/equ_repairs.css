@@ -259,6 +259,14 @@
   z-index: 9999;
 }
 
+/* ===== Equ modal backdrop: align to ui_modal.css ===== */
+.equ-modal__backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.34);    /* 跟 ui_modal.css 一樣 */
+  backdrop-filter: blur(10px);         /* 跟 ui_modal.css 一樣 */
+}
+
 .equ-modal[aria-hidden="false"] {
   display: block;
 }
