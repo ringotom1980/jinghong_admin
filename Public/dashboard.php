@@ -91,7 +91,7 @@ $pageJs    = ['assets/js/dashboard.js'];
             <div class="db-card-meta">點卡片→統計 D 班</div>
           </div>
           <div class="dash-list" id="matDNegList">
-            <div class="db-empty">—</div>
+            <div class="db-empty">尚未輸入對帳資料</div>
           </div>
         </article>
 
