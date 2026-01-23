@@ -416,14 +416,17 @@
                 var section = card.getAttribute('data-section') || '';
                 if (!jump || !ROUTES[jump]) return;
 
-                // ✅ 只針對「近期 D 班退料」→ 跳資料編輯頁，並帶即期日期
-                if (jump === 'mat_stats' && section === 'D' && ROUTES.mat_edit_b) {
+                // mat_edit_b：要帶領退時間（Current.asof_date）
+                // 其他頁：維持原本 #section 的行為
+                if (jump === 'mat_edit_b') {
                     var asof = Current.asof_date || '';
-                    var url = ROUTES.mat_edit_b;
-                    if (asof) {
-                        url += '#date=' + encodeURIComponent(asof);
-                    }
-                    global.location.href = url;
+                    if (!asof) return; // 沒有日期就不跳（避免帶空值）
+                    var url2 = ROUTES.mat_edit_b + '#date=' + encodeURIComponent(asof);
+
+                    // 若你 edit.php 之後要用 section（例如 D），先保留傳遞格式
+                    if (section) url2 += '&section=' + encodeURIComponent(section);
+
+                    global.location.href = url2;
                     return;
                 }
 
