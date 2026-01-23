@@ -22,6 +22,8 @@
   html,
   body {
     background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* 先把整頁都隱藏 */
@@ -36,15 +38,13 @@
   }
 
   /* 列印區定位到頁面左上 */
-  #msPrintArea {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    width: auto;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
+  /* 列印區：改用正常流排版 + 置中，避免 absolute/100% 造成偏移 */
+#msPrintArea {
+  position: static !important;
+  width: auto !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
 
   /* ===== 列印：取消圓角 + 取消陰影 + 取消非表格框線 ===== */
   #msPrintArea .card,
