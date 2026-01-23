@@ -14,7 +14,8 @@
         state: {
             withdraw_date: '',
             shift: 'ALL',
-            payload: null
+            payload: null,
+            jumpHash: ''
         },
 
         init: function () {
@@ -28,8 +29,14 @@
             if (global.MatStatsFilter) global.MatStatsFilter.init(this);
             if (global.MatStatsPrint) global.MatStatsPrint.init(this);
 
+            // 讀 hash（#A/#D/#F...）：只做定位，不影響 shift=ALL
+            var h = (global.location && global.location.hash) ? String(global.location.hash) : '';
+            h = h.replace('#', '').trim().toUpperCase();
+            if (h && /^[A-F]$/.test(h)) this.state.jumpHash = h;
+
             // 先載入膠囊（取得可用日期，並選第一個）
             this.loadCapsules();
+
         },
 
         setLoading: function (on) {
@@ -146,6 +153,19 @@
                     global.MatStatsRender.render(self.state.payload, {
                         shift: self.state.shift || 'ALL'
                     });
+                }
+                // ✅ 若 URL 帶 #A/#D/#F...，第一次 render 後捲到對應 section
+                if (self.state.jumpHash) {
+                    var id = self.state.jumpHash;
+                    self.state.jumpHash = ''; // 只做一次
+                    setTimeout(function () {
+                        var el = document.getElementById(id);
+                        if (el && el.scrollIntoView) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // 若你的 toolbar 有 sticky，補一點上方位移避免被蓋住
+                            setTimeout(function () { global.scrollBy(0, -90); }, 50);
+                        }
+                    }, 0);
                 }
 
             }).catch(function (e) {

@@ -276,9 +276,12 @@
         return html;
     }
 
-    function sectionCard(title, subtitle, innerHtml) {
+    function sectionCard(sectionId, title, subtitle, innerHtml) {
         var html = '';
-        html += '<section class="ms-section card card--flat">';
+        sectionId = (sectionId === null || sectionId === undefined) ? '' : String(sectionId);
+        sectionId = sectionId ? esc(sectionId) : '';
+
+        html += '<section class="ms-section card card--flat"' + (sectionId ? (' id="' + sectionId + '"') : '') + '>';
         html += '  <div class="ms-section__head">';
         html += '    <div>';
         html += '      <h2 class="ms-section__title">' + esc(title) + '</h2>';
@@ -388,6 +391,7 @@
 
         // ✅ 標題比照其他班：D班－姓名
         return sectionCard(
+            'D',
             'D班' + ((personnel && personnel.D) ? ('－' + String(personnel.D)) : ''),
             '',
             tableHtml
@@ -399,7 +403,7 @@
         var rows = (groups.B && Array.isArray(groups.B.rows)) ? groups.B.rows : [];
         var name = (personnel && personnel.B) ? String(personnel.B) : '';
         var title = 'B班' + (name ? ('－' + name) : '');
-        return sectionCard(title, '', buildTableB(rows));
+        return sectionCard('B', title, '', buildTableB(rows));
     }
 
     var Mod = {
@@ -415,6 +419,7 @@
 
             if (groups.A) {
                 html += sectionCard(
+                    'A',
                     'A班' + ((personnel && personnel.A) ? ('－' + String(personnel.A)) : ''),
                     '',
                     buildTableAC(Array.isArray(groups.A.rows) ? groups.A.rows : [])
@@ -425,6 +430,7 @@
 
             if (groups.C) {
                 html += sectionCard(
+                    'C',
                     'C班' + ((personnel && personnel.C) ? ('－' + String(personnel.C)) : ''),
                     '',
                     buildTableAC(Array.isArray(groups.C.rows) ? groups.C.rows : [])
@@ -437,6 +443,7 @@
 
             if (groups.E) {
                 html += sectionCard(
+                    'E',
                     'E班' + ((personnel && personnel.E) ? ('－' + String(personnel.E)) : ''),
                     '',
                     buildTableEF(Array.isArray(groups.E.rows) ? groups.E.rows : [])
@@ -445,6 +452,7 @@
 
             if (groups.F) {
                 html += sectionCard(
+                    'F',
                     'F班' + ((personnel && personnel.F) ? ('－' + String(personnel.F)) : ''),
                     '',
                     buildTableEF(Array.isArray(groups.F.rows) ? groups.F.rows : [])
