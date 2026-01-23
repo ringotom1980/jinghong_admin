@@ -416,8 +416,20 @@
                 var section = card.getAttribute('data-section') || '';
                 if (!jump || !ROUTES[jump]) return;
 
+                // ✅ 只針對「近期 D 班退料」→ 跳資料編輯頁，並帶即期日期
+                if (jump === 'mat_stats' && section === 'D' && ROUTES.mat_edit_b) {
+                    var asof = Current.asof_date || '';
+                    var url = ROUTES.mat_edit_b;
+                    if (asof) {
+                        url += '#date=' + encodeURIComponent(asof);
+                    }
+                    global.location.href = url;
+                    return;
+                }
+
                 var url = ROUTES[jump] + (section ? ('#' + encodeURIComponent(section)) : '');
                 global.location.href = url;
+
             });
         });
 
