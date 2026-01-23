@@ -9,7 +9,7 @@
 
 @page {
   size: A4 landscape;
-  margin: 10mm;
+  margin: 10mm 5mm;
 }
 
 @media print {
