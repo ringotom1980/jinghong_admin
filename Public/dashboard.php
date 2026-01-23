@@ -34,7 +34,7 @@ $pageJs    = ['assets/js/dashboard.js'];
     <section class="dash-section" id="dash-mat" aria-label="領退管理">
       <div class="dash-section__head">
         <h2 class="dash-section__title">領退管理</h2>
-        <div class="dash-section__meta">近期膠囊：<span id="dashAsOfDate">—</span></div>
+        <div class="dash-section__meta">近期領退日期：<span id="dashAsOfDate">—</span></div>
       </div>
 
       <div class="dash-grid dash-grid--mat">
@@ -71,6 +71,7 @@ $pageJs    = ['assets/js/dashboard.js'];
               <span class="dash-light__label">對帳資料</span>
             </button>
           </div>
+          <div class="dash-hint">點擊四張小卡片將直接導向相對應編輯頁</div>
         </article>
 
         <!-- 1-2 -->
