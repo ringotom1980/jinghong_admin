@@ -20,6 +20,17 @@ if (current_user_id()) {
   exit;
 }
 
+// 版本號（與 footer.php 同來源）
+$versionFile = dirname(__DIR__) . '/version.txt';
+
+$version = 'v0.0.0';
+if (is_file($versionFile)) {
+  $v = trim((string)@file_get_contents($versionFile));
+  if ($v !== '') {
+    $version = $v;
+  }
+}
+
 $pageTitle = '登入｜境宏工程有限公司';
 $pageCss   = ['assets/css/login.css'];
 $pageJs    = ['assets/js/login.js'];
@@ -74,7 +85,7 @@ if (isset($_GET['return'])) {
       <button type="submit" class="btn btn--primary">登入</button>
     </form>
 
-    <div class="auth-foot">v0.1.0</div>
+    <div class="auth-foot"><?= htmlspecialchars($version, ENT_QUOTES) ?></div>
   </section>
 </main>
 
