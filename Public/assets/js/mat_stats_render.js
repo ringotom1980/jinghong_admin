@@ -248,14 +248,14 @@
             html += '<td class="ms-td-name">' + esc(r.material_name || '') + '</td>';
 
             html += '<td class="ms-td-num">' + vNum(cn) + '</td>';
-            html += '<td class="ms-td-num">' + vList(cnList) + '</td>';
+            html += '<td class="ms-td-num ms-td-count">' + vList(cnList) + '</td>';
             html += '<td class="ms-td-num">' + vNum(co) + '</td>';
-            html += '<td class="ms-td-num">' + vList(coList) + '</td>';
+            html += '<td class="ms-td-num ms-td-count">' + vList(coList) + '</td>';
 
             html += '<td class="ms-td-num">' + vNum(rn) + '</td>';
-            html += '<td class="ms-td-num">' + vList(rnList) + '</td>';
+            html += '<td class="ms-td-num ms-td-count">' + vList(rnList) + '</td>';
             html += '<td class="ms-td-num">' + vNum(ro) + '</td>';
-            html += '<td class="ms-td-num">' + vList(roList) + '</td>';
+            html += '<td class="ms-td-num ms-td-count">' + vList(roList) + '</td>';
 
             html += '<td class="ms-td-num">' +
                 (tn === 0 ? '' : ('<span class="' + (tn < 0 ? 'ms-neg' : 'ms-sum-pos') + '">' + esc(fmtQty(tn)) + '</span>')) +

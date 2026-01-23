@@ -168,4 +168,9 @@
     color: #444 !important;
     margin-top: 4px !important;
   }
+
+  /* 只縮小：B班的「筆數」欄位（列印專用） */
+  #msPrintArea table.ms-table--b td.ms-td-count {
+    font-size: 12px !important; /* 你要多小再調 */
+  }
 }
