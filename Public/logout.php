@@ -31,7 +31,8 @@ $pageJs    = ['assets/js/logout.js'];      // ✅ 本頁專屬
 
     <div id="logoutMessage" class="auth-msg"></div>
 
-    <div class="auth-foot">v<?= htmlspecialchars((string)(getenv('APP_VERSION') ?: '0.1.0'), ENT_QUOTES) ?></div>
+    <div class="auth-foot"><?= htmlspecialchars($version, ENT_QUOTES) ?></div>
+
   </section>
 </main>
 
