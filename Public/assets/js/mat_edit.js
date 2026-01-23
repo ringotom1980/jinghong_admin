@@ -35,7 +35,23 @@
       this.els.cmAction = qs('#meCMAction');
       this.els.cm = qs('#meCategoryMaterials');
 
-      this.state.date = todayYmd();
+      // 預設日期：優先吃 hash(#date=YYYY-MM-DD)，否則 today
+      var hash = (global.location && global.location.hash) ? String(global.location.hash) : '';
+      var dateFromHash = '';
+      if (hash.indexOf('#') === 0) hash = hash.slice(1);
+
+      // 支援兩種：#date=YYYY-MM-DD  或  #YYYY-MM-DD（兼容你以前用 section 的寫法）
+      if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) {
+        dateFromHash = hash;
+      } else {
+        // 解析 key=value&key2=value2
+        var sp = new URLSearchParams(hash);
+        var d = sp.get('date') || '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(d)) dateFromHash = d;
+      }
+
+      this.state.date = dateFromHash || todayYmd();
+
 
       // init modules
       if (global.MatEditUI && global.MatEditUI.init) global.MatEditUI.init({ app: this });
