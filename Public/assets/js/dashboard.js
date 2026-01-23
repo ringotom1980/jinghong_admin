@@ -416,23 +416,8 @@
                 var section = card.getAttribute('data-section') || '';
                 if (!jump || !ROUTES[jump]) return;
 
-                // mat_edit_b：要帶領退時間（Current.asof_date）
-                // 其他頁：維持原本 #section 的行為
-                if (jump === 'mat_edit_b') {
-                    var asof = Current.asof_date || '';
-                    if (!asof) return; // 沒有日期就不跳（避免帶空值）
-                    var url2 = ROUTES.mat_edit_b + '#date=' + encodeURIComponent(asof);
-
-                    // 若你 edit.php 之後要用 section（例如 D），先保留傳遞格式
-                    if (section) url2 += '&section=' + encodeURIComponent(section);
-
-                    global.location.href = url2;
-                    return;
-                }
-
                 var url = ROUTES[jump] + (section ? ('#' + encodeURIComponent(section)) : '');
                 global.location.href = url;
-
             });
         });
 

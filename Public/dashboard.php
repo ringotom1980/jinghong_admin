@@ -85,10 +85,10 @@ $pageJs    = ['assets/js/dashboard.js'];
         </article>
 
         <!-- 1-3 -->
-        <article class="db-card" data-jump="mat_edit_b" data-section="D">
+        <article class="db-card" data-jump="mat_stats" data-section="D">
           <div class="db-card-head">
             <div class="db-card-title">近期 D 班退料</div>
-            <div class="db-card-meta">點卡片→輸入對帳資料</div>
+            <div class="db-card-meta">點卡片→統計 D 班</div>
           </div>
           <div class="dash-list" id="matDNegList">
             <div class="db-empty">—</div>
