@@ -51,7 +51,7 @@
 
 /* ===== Toast animations ===== */
 /* 注意：z-index 不在 motion.css 控制，避免蓋掉 ui_toast.css 的層級 */
-.toast-wrap{
+/* .toast-wrap{
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -59,7 +59,7 @@
   display: grid;
   gap: 10px;
   pointer-events: none;
-}
+} */
 
 .toast{
   pointer-events: auto;
