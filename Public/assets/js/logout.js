@@ -15,21 +15,33 @@ document.addEventListener('DOMContentLoaded', function () {
     if (type) msgEl.classList.add(type);
   }
 
-  function goLogin() {
-    // 不寫死 /jinghong_admin，使用相對路徑交給 router
-    window.location.replace('./login');
+  function baseUrl() {
+    // 若你全站已在 api.js 或 head 內提供 BASE_URL，就吃它；沒有就退回空字串（站根）
+    return (window.BASE_URL || '').replace(/\/$/, '');
   }
 
-  fetch('./api/auth/logout', {
+  function goLogin() {
+    window.location.replace(baseUrl() + '/login');
+  }
+
+  // 統一打「站根」的 API（不要用 ./ 相對路徑）
+  var url = baseUrl() + '/api/auth/logout';
+
+  fetch(url, {
     method: 'POST',
-    credentials: 'same-origin'
+    credentials: 'same-origin',
+    headers: { 'Accept': 'application/json' }
   })
-    .then(function () {
+    .then(function (res) {
+      // 不管 API 回什麼，登出頁都要把人送走（避免卡住）
+      if (!res || !res.ok) {
+        // 仍然導回登入頁（不要卡）
+        setMsg('登出完成，正在返回登入頁...', 'success');
+      }
       goLogin();
     })
     .catch(function () {
-      // 就算 API 出錯，也要把使用者帶離管理頁面
       setMsg('登出完成，正在返回登入頁...', 'success');
-      setTimeout(goLogin, 500);
+      setTimeout(goLogin, 300);
     });
 });

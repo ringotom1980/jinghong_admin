@@ -7,6 +7,13 @@
  */
 
 declare(strict_types=1);
+// 版本號（與 footer/login 同來源）
+$versionFile = dirname(__DIR__) . '/version.txt';
+$version = 'v0.0.0';
+if (is_file($versionFile)) {
+  $v = trim((string)@file_get_contents($versionFile));
+  if ($v !== '') $version = $v;
+}
 
 $pageTitle = '登出中...｜境宏工程有限公司';
 $pageCss   = ['assets/css/login.css'];     // 沿用登入頁的乾淨版面
