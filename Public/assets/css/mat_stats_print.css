@@ -22,19 +22,25 @@
   html,
   body {
     background: #fff !important;
-    margin: 0 !important;
-    padding: 0 !important;
   }
 
   /* 先把整頁都隱藏 */
-  body * {
+  /* body * {
     visibility: hidden !important;
-  }
+  } */
 
   /* 只讓列印區可見 */
-  #msPrintArea,
+  /* #msPrintArea,
   #msPrintArea * {
     visibility: visible !important;
+  } */
+  /* 只印 msPrintArea，其它一律不佔版面 */
+  body > *:not(#msPrintArea) {
+    display: none !important;
+  }
+
+  #msPrintArea {
+    display: block !important;
   }
 
   /* 列印區定位到頁面左上 */
