@@ -39,8 +39,9 @@
   #msPrintArea {
     position: absolute;
     left: 0;
+    right: 0;
     top: 0;
-    width: 100%;
+    width: auto;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -125,10 +126,10 @@
   #msPrintArea tr.ms-print-thead th.ms-print-thead-cell::before {
     content: "";
     position: absolute;
-    top: -3px;     /* 蓋住上框線 */
-    left: -3px;    /* 蓋住左框線 */
-    right: -3px;   /* 蓋住右框線 */
-    bottom: 0;     /* 不往下蓋到下一列表頭 */
+    top: -3px; /* 蓋住上框線 */
+    left: -3px; /* 蓋住左框線 */
+    right: -3px; /* 蓋住右框線 */
+    bottom: 0; /* 不往下蓋到下一列表頭 */
     background: #fff;
     z-index: 0;
   }
