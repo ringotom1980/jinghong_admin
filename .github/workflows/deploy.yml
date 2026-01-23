@@ -20,6 +20,11 @@ jobs:
           rm -f .env.production
           rm -f .env.staging
 
+      - name: Generate version.txt
+        run: |
+          echo "v$(date +'%Y%m%d.%H%M')+g$(git rev-parse --short HEAD)" > version.txt
+          cat version.txt
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
