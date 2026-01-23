@@ -10,9 +10,9 @@
  */
 
 /* ===== Timing tokens ===== */
-:root{
-  --m-ease-out: cubic-bezier(.2, .9, .2, 1);
-  --m-ease: cubic-bezier(.2, .8, .2, 1);
+:root {
+  --m-ease-out: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --m-fast: 140ms;
   --m-mid: 200ms;
   --m-slow: 260ms;
@@ -21,85 +21,115 @@
 }
 
 /* ===== Base motion utilities ===== */
-.motion-fade{
+.motion-fade {
   opacity: 0;
   transform: translateY(2px);
-  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
+  transition:
+    opacity var(--m-mid) var(--m-ease),
+    transform var(--m-mid) var(--m-ease);
 }
-.motion-fade.is-show{ opacity: 1; transform: translateY(0); }
+.motion-fade.is-show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-.motion-slide-up{
+.motion-slide-up {
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
+  transition:
+    opacity var(--m-mid) var(--m-ease),
+    transform var(--m-mid) var(--m-ease);
 }
-.motion-slide-up.is-show{ opacity: 1; transform: translateY(0); }
+.motion-slide-up.is-show {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-.motion-scale{
+.motion-scale {
   opacity: 0;
-  transform: translateY(6px) scale(.985);
-  transition: opacity var(--m-mid) var(--m-ease-out), transform var(--m-mid) var(--m-ease-out);
+  transform: translateY(6px) scale(0.985);
+  transition:
+    opacity var(--m-mid) var(--m-ease-out),
+    transform var(--m-mid) var(--m-ease-out);
 }
-.motion-scale.is-show{ opacity: 1; transform: translateY(0) scale(1); }
-
-/* ===== Subtle hover micro-interactions ===== */
-.motion-hover{
-  transition: transform var(--m-fast) var(--m-ease), filter var(--m-fast) var(--m-ease);
-}
-.motion-hover:hover{ transform: translateY(-1px); }
-.motion-hover:active{ transform: translateY(0); }
-
-/* ===== Toast animations ===== */
-/* 注意：z-index 不在 motion.css 控制，避免蓋掉 ui_toast.css 的層級 */
-/* .toast-wrap{
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: var(--toast-z, 2147483647);
-  display: grid;
-  gap: 10px;
-  pointer-events: none;
-} */
-
-.toast{
-  pointer-events: auto;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity var(--m-mid) var(--m-ease), transform var(--m-mid) var(--m-ease);
-}
-
-.toast.is-show{ opacity: 1; transform: translateY(0); }
-.toast.is-leave{ opacity: 0; transform: translateY(6px); }
-
-/* ===== Modal animations ===== */
-.modal-backdrop{
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--m-mid) var(--m-ease), visibility var(--m-mid) var(--m-ease);
-}
-.modal-backdrop.is-open{ opacity: 1; visibility: visible; }
-
-.modal-panel{
-  opacity: 0;
-  transform: translateY(14px) scale(.985);
-  transition: opacity var(--m-mid) var(--m-ease-out), transform var(--m-mid) var(--m-ease-out);
-}
-
-.modal-backdrop.is-open .modal-panel{
+.motion-scale.is-show {
   opacity: 1;
   transform: translateY(0) scale(1);
 }
 
-.modal-backdrop.is-leave{ opacity: 0; }
+/* ===== Subtle hover micro-interactions ===== */
+.motion-hover {
+  transition:
+    transform var(--m-fast) var(--m-ease),
+    filter var(--m-fast) var(--m-ease);
+}
+.motion-hover:hover {
+  transform: translateY(-1px);
+}
+.motion-hover:active {
+  transform: translateY(0);
+}
+
+/* ===== Toast animations ===== */
+.toast {
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity var(--m-mid) var(--m-ease),
+    transform var(--m-mid) var(--m-ease);
+}
+
+.toast.is-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast.is-leave {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* ===== Modal animations ===== */
+.modal-backdrop {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--m-mid) var(--m-ease),
+    visibility var(--m-mid) var(--m-ease);
+}
+.modal-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-panel {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition:
+    opacity var(--m-mid) var(--m-ease-out),
+    transform var(--m-mid) var(--m-ease-out);
+}
+
+.modal-backdrop.is-open .modal-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-backdrop.is-leave {
+  opacity: 0;
+}
 
 /* ===== Dropdown/Menu animations ===== */
-.dropdown-menu{
+.dropdown-menu {
   opacity: 0;
   transform: translateY(-6px);
   visibility: hidden;
-  transition: opacity var(--m-fast) var(--m-ease), transform var(--m-fast) var(--m-ease), visibility var(--m-fast) var(--m-ease);
+  transition:
+    opacity var(--m-fast) var(--m-ease),
+    transform var(--m-fast) var(--m-ease),
+    visibility var(--m-fast) var(--m-ease);
 }
-.dropdown.is-open .dropdown-menu{
+.dropdown.is-open .dropdown-menu {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
@@ -107,31 +137,41 @@
 
 /* ===== Page enter ===== */
 /* ✅ 若 page-enter 掛在 body：只淡入（避免 body transform 破壞 fixed） */
-body.page-enter{
+body.page-enter {
   opacity: 0;
   animation: pageEnterFade var(--m-slow) var(--m-ease-out) forwards;
 }
 
 /* ✅ 若 page-enter 掛在其他容器：保留位移進場 */
-.page-enter:not(body){
+.page-enter:not(body) {
   opacity: 0;
   transform: translateY(6px);
   animation: pageEnterMove var(--m-slow) var(--m-ease-out) forwards;
 }
 
-@keyframes pageEnterFade{
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes pageEnterFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-@keyframes pageEnterMove{
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes pageEnterMove {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== Reduced motion ===== */
-@media (prefers-reduced-motion: reduce){
-  :root{
+@media (prefers-reduced-motion: reduce) {
+  :root {
     --m-fast: 1ms;
     --m-mid: 1ms;
     --m-slow: 1ms;
@@ -139,15 +179,64 @@ body.page-enter{
 
   /* ✅ 無動態：body / 非 body 都不要動畫與 transform */
   body.page-enter,
-  .page-enter:not(body){
+  .page-enter:not(body) {
     animation: none;
     opacity: 1;
     transform: none;
   }
 
-  .motion-fade, .motion-slide-up, .motion-scale,
-  .toast, .modal-panel, .dropdown-menu{
+  .motion-fade,
+  .motion-slide-up,
+  .motion-scale,
+  .toast,
+  .modal-panel,
+  .dropdown-menu {
     transition: none !important;
     transform: none !important;
   }
 }
+
+/* =====================================================
+ * 讀取資料時轉圈圈動畫（Loading Spinner）
+ * - 用途：API 請求中、載入列表、按鈕送出中
+ * - JS：UI.motion.loading.on/off 會插入 .motion-spin
+ * ===================================================== */
+
+/* spinner 基礎樣式（不管定位、不管 z-index） */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.motion-spin{
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 23, 42, 0.18);
+  border-top-color: rgba(15, 23, 42, 0.62);
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+/* JS 插入用包裹容器：確保 spinner + 原內容排版一致 */
+.ui-motion__wrap{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* loading 狀態：避免重複操作（需要時也可改成只對 button 生效） */
+.is-loading{ pointer-events: none; }
+
+/* 無動態偏好 */
+@media (prefers-reduced-motion: reduce){
+  .motion-spin{ animation: none; }
+}
+
+/* =====================================================
+ * 後續新增的動畫 1（預留）
+ * - 範例：錯誤輕抖 is-shake
+ * ===================================================== */
+
+/* =====================================================
+ * 後續新增的動畫 2（預留）
+ * - 範例：成功提示 is-pulse
+ * ===================================================== */

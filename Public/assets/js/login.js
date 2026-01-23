@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     disableForm(true);
     setMsg('');
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn && window.UI && UI.motion && UI.motion.loading) {
+      /* 讀取資料時轉圈圈動畫（文字後面 end） */
+      UI.motion.loading.on(submitBtn, { position: 'end' });
+    }
 
     fetch('./api/auth/login', {
       method: 'POST',
@@ -43,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(j => {
         if (!j.success) {
           setMsg(j.error || '登入失敗', 'error');
+          if (submitBtn && window.UI && UI.motion && UI.motion.loading) UI.motion.loading.off(submitBtn);
           disableForm(false);
           return;
         }
@@ -50,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(() => {
         setMsg('伺服器錯誤，請稍後再試', 'error');
+        if (submitBtn && window.UI && UI.motion && UI.motion.loading) UI.motion.loading.off(submitBtn);
         disableForm(false);
       });
   });
