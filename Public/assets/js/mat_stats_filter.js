@@ -41,6 +41,19 @@
       if (this.app && this.app.setShift) this.app.setShift(shift);
     },
 
+    setActive: function (shift) {
+      if (!this.el) return;
+
+      shift = String(shift || 'ALL').toUpperCase();
+
+      var btns = this.el.querySelectorAll('.ms-filter__btn');
+      for (var i = 0; i < btns.length; i++) {
+        var b = btns[i];
+        var s = String(b.getAttribute('data-shift') || '').toUpperCase();
+        b.classList.toggle('is-active', s === shift);
+      }
+    },
+
     renderBase: function () {
       // ✅ 乾淨：每次 init 都重新畫（避免重複 append）
       this.el.innerHTML = '';
@@ -48,10 +61,13 @@
       // 「全部」也是同一種膠囊樣式（同 class）
       var btnAll = document.createElement('button');
       btnAll.type = 'button';
-      btnAll.className = 'ms-filter__btn is-active';
+      btnAll.className = 'ms-filter__btn';
       btnAll.setAttribute('data-shift', 'ALL');
       btnAll.textContent = '全部';
       this.el.appendChild(btnAll);
+      // 依 app.state.shift 決定預設 active（支援 hash 進頁）
+      this.setActive((this.app && this.app.state && this.app.state.shift) ? this.app.state.shift : 'ALL');
+
     },
 
     loadPersonnelAndRender: function () {
@@ -86,6 +102,9 @@
 
           self.el.appendChild(btn);
         }
+        // A-F 都 render 完後，再依 app.state.shift 套一次 active（避免先亮到全部）
+        self.setActive((self.app && self.app.state && self.app.state.shift) ? self.app.state.shift : 'ALL');
+
       }).catch(function () {
         // 靜默失敗，不影響「全部」
       });

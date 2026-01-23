@@ -29,11 +29,13 @@
             if (global.MatStatsFilter) global.MatStatsFilter.init(this);
             if (global.MatStatsPrint) global.MatStatsPrint.init(this);
 
-            // 讀 hash（#A/#D/#F...）：只做定位，不影響 shift=ALL
+            // 讀 hash（#A~#F）：進頁就切到該班（讓班別膠囊 + API shift 一致），並保留定位
             var h = (global.location && global.location.hash) ? String(global.location.hash) : '';
             h = h.replace('#', '').trim().toUpperCase();
-            if (h && /^[A-F]$/.test(h)) this.state.jumpHash = h;
-
+            if (h && /^[A-F]$/.test(h)) {
+                this.state.jumpHash = h;
+                this.state.shift = h; // ✅ 讓第一次 reload 就用 shift=該班
+            }
             // 先載入膠囊（取得可用日期，並選第一個）
             this.loadCapsules();
 
