@@ -18,6 +18,7 @@ $globalJs = [
   'assets/js/api.js',
   'assets/js/ui_toast.js',
   'assets/js/ui_modal.js',
+  'assets/js/ui_motion.js',
   'assets/js/nav.js',
   'assets/js/auth_me.js',
 ];
