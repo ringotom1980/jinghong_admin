@@ -42,7 +42,7 @@ $pageJs    = ['assets/js/dashboard.js'];
         <article class="db-card" data-jump="mat_stats" data-section="capsule">
           <div class="db-card-head">
             <div class="db-card-title">近期領退作業狀態</div>
-            <div class="db-card-meta">點日期→統計；點燈號→對應頁</div>
+            <div class="db-card-meta">點卡片→統計頁面</div>
           </div>
 
           <div class="db-row">
