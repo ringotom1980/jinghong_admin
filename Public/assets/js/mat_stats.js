@@ -154,18 +154,33 @@
                         shift: self.state.shift || 'ALL'
                     });
                 }
-                // ✅ 若 URL 帶 #A/#D/#F...，第一次 render 後捲到對應 section
+                // ✅ 若 URL 帶 #A/#D/#F...，render 後定位（找不到就短暫重試；找到才清空）
                 if (self.state.jumpHash) {
-                    var id = self.state.jumpHash;
-                    self.state.jumpHash = ''; // 只做一次
-                    setTimeout(function () {
-                        var el = document.getElementById(id);
-                        if (el && el.scrollIntoView) {
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            // 若你的 toolbar 有 sticky，補一點上方位移避免被蓋住
-                            setTimeout(function () { global.scrollBy(0, -90); }, 50);
+                    (function () {
+                        var id = self.state.jumpHash;
+                        var tries = 0;
+
+                        function tryScroll() {
+                            tries++;
+
+                            var el = document.getElementById(id);
+                            if (!el) {
+                                // DOM 可能尚未完成更新，最多重試 10 次（約 0.8 秒）
+                                if (tries < 10) return setTimeout(tryScroll, 80);
+                                return; // 放棄，但不清空 jumpHash，下一次 reload 還會再試
+                            }
+
+                            // ✅ 找到才清空，確保真的定位成功
+                            self.state.jumpHash = '';
+
+                            if (el.scrollIntoView) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                setTimeout(function () { global.scrollBy(0, -90); }, 50);
+                            }
                         }
-                    }, 0);
+
+                        setTimeout(tryScroll, 0);
+                    })();
                 }
 
             }).catch(function (e) {
