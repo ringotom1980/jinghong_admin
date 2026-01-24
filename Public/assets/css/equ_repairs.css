@@ -78,6 +78,38 @@
   background: rgba(37, 99, 235, 0.12);
   color: rgba(30, 58, 138, 0.98);
 }
+/* ===== Capsules 類型識別：半年 vs 整年（與 car_repair 同風格：淡藍） ===== */
+/* 整年：維持現況（只加 class 不改視覺） */
+/* .equ-cap--year {} */
+
+/* 半年：非 active 就帶「淡藍辨識」 */
+.equ-cap--half {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* 半年 hover：稍偏藍（仍很淡） */
+.equ-cap--half:hover {
+  border-color: rgba(37, 99, 235, 0.32);
+  background: rgba(37, 99, 235, 0.10);
+}
+
+/* 半年 active：在原本 active 藍底上加深一點點，維持辨識 */
+.equ-cap--half.is-active {
+  border-color: rgba(37, 99, 235, 0.48);
+  background: rgba(37, 99, 235, 0.18);
+}
+
+/* 半年筆數顏色：偏藍 */
+.equ-cap--half .equ-cap__count {
+  color: rgba(30, 58, 138, 0.70);
+}
+
+/* 半年 active 筆數：更清楚 */
+.equ-cap--half.is-active .equ-cap__count {
+  color: rgba(30, 58, 138, 0.86);
+}
+/* ===== Capsules 類型識別 結束 ===== */
 
 .equ-cap__count {
   margin-left: 6px;
@@ -260,7 +292,7 @@
 }
 
 /* ===== Equ modal backdrop: match ui_modal.css (original dark fog) ===== */
-.equ-modal__backdrop{
+.equ-modal__backdrop {
   position: absolute;
   inset: 0;
   background: rgba(2, 6, 23, 0.34);

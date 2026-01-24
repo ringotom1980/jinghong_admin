@@ -93,8 +93,10 @@
         var label = esc(c.label || key);
         var count = (typeof c.count === 'number') ? c.count : Number(c.count || 0);
 
+        var kind = (/-H[12]$/.test(key)) ? ' equ-cap--half' : ' equ-cap--year';
+
         html += ''
-          + '<button type="button" class="equ-cap' + active + '" data-key="' + esc(key) + '">'
+          + '<button type="button" class="equ-cap' + kind + active + '" data-key="' + esc(key) + '">'
           + '  <span class="equ-cap__label">' + label + '</span>'
           + '  <span class="equ-cap__count">' + esc(String(count)) + ' 筆</span>'
           + '</button>';

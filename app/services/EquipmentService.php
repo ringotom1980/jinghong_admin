@@ -181,6 +181,7 @@ final class EquipmentService
 
     $cur = ['H1' => null, 'H2' => null];
     $years = []; // y => ['cnt'=>, 'min'=>, 'max'=>]
+    $prev = ['H1' => null, 'H2' => null];
 
     foreach ($rows as $r) {
       $y = (int)$r['y'];
@@ -191,6 +192,8 @@ final class EquipmentService
 
       if ($y === $yNow) {
         $cur[$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
+      } else if ($y === ($yNow - 1)) {
+        $prev[$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
       } else {
         if (!isset($years[$y])) {
           $years[$y] = ['cnt' => 0, 'min' => $min, 'max' => $max];
@@ -220,6 +223,29 @@ final class EquipmentService
         'count' => (int)$cur['H1']['cnt'],
         'start' => $yNow . '-01-01',
         'end' => $yNow . '-06-30',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    $yPrev = $yNow - 1;
+
+    if ($prev['H2'] && $prev['H2']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H2',
+        'label' => $yPrev . '下半年',
+        'count' => (int)$prev['H2']['cnt'],
+        'start' => $yPrev . '-07-01',
+        'end' => $yPrev . '-12-31',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+    if ($prev['H1'] && $prev['H1']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H1',
+        'label' => $yPrev . '上半年',
+        'count' => (int)$prev['H1']['cnt'],
+        'start' => $yPrev . '-01-01',
+        'end' => $yPrev . '-06-30',
         'is_default' => (count($caps) === 0) ? 1 : 0
       ];
     }
