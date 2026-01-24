@@ -386,10 +386,6 @@ final class MatEditService
                 throw new RuntimeException('對帳數量格式不正確（category_id=' . $cid . '）');
             }
 
-            // 允許小數
-            if (!preg_match('/^\d+(\.\d+)?$/', $s)) {
-                throw new RuntimeException('對帳數量格式不正確（category_id=' . $cid . '）');
-            }
             $norm[$cid] = $s;
         }
 
