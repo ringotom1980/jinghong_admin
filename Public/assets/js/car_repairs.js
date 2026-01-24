@@ -84,11 +84,12 @@
         var c = caps[i] || {};
         var key = String(c.key || '');
         var active = (key && key === this.state.activeKey) ? ' is-active' : '';
+        var kind = (/-H[12]$/.test(key)) ? ' cr-cap--half' : ' cr-cap--year';
         var label = esc(c.label || key);
         var count = (typeof c.count === 'number') ? c.count : Number(c.count || 0);
 
         html += ''
-          + '<button type="button" class="cr-cap' + active + '" data-key="' + esc(key) + '">'
+          + '<button type="button" class="cr-cap' + kind + active + '" data-key="' + esc(key) + '">'
           + '  <span class="cr-cap__label">' + label + '</span>'
           + '  <span class="cr-cap__count">' + esc(String(count)) + ' 筆</span>'
           + '</button>';
