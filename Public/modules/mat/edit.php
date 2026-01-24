@@ -40,7 +40,7 @@ $pageJs = [
       <header class="page-head">
         <h1>D 班管理</h1>
         <div class="page-sub">
-          對帳輸入（分類 × 日期） · 分類與材料歸屬
+          本頁做對帳資料輸入 · 分類與材料歸屬
         </div>
       </header>
 
@@ -49,7 +49,7 @@ $pageJs = [
         <!-- 左：對帳資料（分類 × 日期） -->
         <div class="card me-card">
           <div class="card__head me-head">
-            <h2>對帳資料（分類 × 日期）</h2>
+            <h2>對帳資料（若有新分類材料需輸入對帳資料，需新增分類）</h2>
 
             <div class="me-head__actions" id="meReconActions">
               <!-- JS render：新增分類 / 編輯(儲存更新) -->
@@ -70,7 +70,7 @@ $pageJs = [
         <!-- 右：分類與材料歸屬 -->
         <div class="card me-card">
           <div class="card__head me-head">
-            <h2>分類與材料歸屬</h2>
+            <h2>分類與材料歸屬(左表新增分類後在本表編輯材料組合)</h2>
 
             <div class="me-head__actions" id="meCMAction">
               <!-- JS render：編輯(儲存更新=完成) -->
