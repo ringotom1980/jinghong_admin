@@ -103,8 +103,38 @@ final class VehicleRepairStatsService
       }
     }
 
-    // 預設 activeKey：以 end_date 最新
+    // 排序規則：年(新→舊) + 同年內：H2 → H1 → 全年
     usort($capsules, function ($a, $b) {
+
+      $ka = (string)($a['key'] ?? '');
+      $kb = (string)($b['key'] ?? '');
+
+      $parse = function (string $k): array {
+        $y = 0;
+        $rank = 99; // 越小越前：H2(0) → H1(1) → YEAR(2)
+        if (preg_match('/^(\d{4})-H2$/', $k, $m)) {
+          $y = (int)$m[1];
+          $rank = 0;
+        } elseif (preg_match('/^(\d{4})-H1$/', $k, $m)) {
+          $y = (int)$m[1];
+          $rank = 1;
+        } elseif (preg_match('/^(\d{4})$/', $k, $m)) {
+          $y = (int)$m[1];
+          $rank = 2;
+        }
+        return [$y, $rank];
+      };
+
+      [$ya, $ra] = $parse($ka);
+      [$yb, $rb] = $parse($kb);
+
+      // 年：新→舊
+      if ($ya !== $yb) return $yb <=> $ya;
+
+      // 同年：H2 → H1 → 全年
+      if ($ra !== $rb) return $ra <=> $rb;
+
+      // 同 key 類型又同年：用 end_ts 當備援（通常不會用到）
       return (int)($b['end_ts'] ?? 0) <=> (int)($a['end_ts'] ?? 0);
     });
 
@@ -384,7 +414,7 @@ final class VehicleRepairStatsService
     return $months;
   }
 
-    public function keyToLabel(string $key): string
+  public function keyToLabel(string $key): string
   {
     if (preg_match('/^\d{4}$/', $key)) return $key . '-全年';
     if (preg_match('/^(\d{4})-(H1|H2)$/', $key, $m)) {
@@ -392,5 +422,4 @@ final class VehicleRepairStatsService
     }
     return $key;
   }
-
 }
