@@ -79,6 +79,39 @@
   color: rgba(30, 58, 138, 0.98);
 }
 
+/* ===== Capsules 類型識別：半年 vs 整年 ===== */
+/* 整年：維持現況（只加 class 不改視覺），避免破壞既有一致性 */
+/* .cr-cap--year {} */
+
+/* 半年：非 active 就帶「淡藍辨識」讓使用者一眼知道是半年 */
+.cr-cap--half {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* 半年 hover：沿用你 hover 風格，但稍微偏藍（仍然很淡） */
+.cr-cap--half:hover {
+  border-color: rgba(37, 99, 235, 0.32);
+  background: rgba(37, 99, 235, 0.10);
+}
+
+/* 半年 active：在你原本 active 藍底上再加深一點點，維持辨識 */
+.cr-cap--half.is-active {
+  border-color: rgba(37, 99, 235, 0.48);
+  background: rgba(37, 99, 235, 0.18);
+}
+
+/* 半年筆數顏色：跟著偏藍，避免看起來像一般白底 */
+.cr-cap--half .cr-cap__count {
+  color: rgba(30, 58, 138, 0.70);
+}
+
+/* 半年 active 筆數：沿用你 is-active 但更清楚 */
+.cr-cap--half.is-active .cr-cap__count {
+  color: rgba(30, 58, 138, 0.86);
+}
+/* ===== Capsules 類型識別 結束 ===== */
+
 /* 筆數 */
 .cr-cap__count {
   margin-left: 6px;

@@ -800,8 +800,15 @@ final class VehicleService
 
     if (!$rows) return ['capsules' => []];
 
-    $cur = ['H1' => null, 'H2' => null];
-    $years = []; // y => ['cnt'=>, 'min'=>, 'max'=>]
+    $yPrev = $yNow - 1;
+
+    // 收集：今年/去年 分半年，其它年度彙總整年
+    $half = [
+      $yNow  => ['H1' => null, 'H2' => null],
+      $yPrev => ['H1' => null, 'H2' => null],
+    ];
+
+    $years = []; // 只放 <= yNow-2 的年度整年彙總
 
     foreach ($rows as $r) {
       $y = (int)$r['y'];
@@ -810,43 +817,67 @@ final class VehicleService
       $min = (string)$r['min_d'];
       $max = (string)$r['max_d'];
 
-      if ($y === $yNow) {
-        $cur[$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
-      } else {
-        if (!isset($years[$y])) {
-          $years[$y] = ['cnt' => 0, 'min' => $min, 'max' => $max];
-        }
-        $years[$y]['cnt'] += $cnt;
-        if ($min !== '' && $years[$y]['min'] !== '' && $min < $years[$y]['min']) $years[$y]['min'] = $min;
-        if ($max !== '' && $years[$y]['max'] !== '' && $max > $years[$y]['max']) $years[$y]['max'] = $max;
+      if ($y === $yNow || $y === $yPrev) {
+        $half[$y][$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
+        continue;
       }
+
+      // 2024(含)以前：整年
+      if (!isset($years[$y])) {
+        $years[$y] = ['cnt' => 0, 'min' => $min, 'max' => $max];
+      }
+      $years[$y]['cnt'] += $cnt;
+      if ($min !== '' && $years[$y]['min'] !== '' && $min < $years[$y]['min']) $years[$y]['min'] = $min;
+      if ($max !== '' && $years[$y]['max'] !== '' && $max > $years[$y]['max']) $years[$y]['max'] = $max;
     }
 
     $caps = [];
 
-    // 今年：先下半年再上半年（符合使用者常看最近）
-    if ($cur['H2'] && $cur['H2']['cnt'] > 0) {
+    // 今年：H2 -> H1（最近優先）
+    if (!empty($half[$yNow]['H2']) && (int)$half[$yNow]['H2']['cnt'] > 0) {
       $caps[] = [
         'key' => $yNow . '-H2',
         'label' => $yNow . '下半年',
-        'count' => (int)$cur['H2']['cnt'],
+        'count' => (int)$half[$yNow]['H2']['cnt'],
         'start' => $yNow . '-07-01',
         'end' => $yNow . '-12-31',
         'is_default' => 1
       ];
     }
-    if ($cur['H1'] && $cur['H1']['cnt'] > 0) {
+    if (!empty($half[$yNow]['H1']) && (int)$half[$yNow]['H1']['cnt'] > 0) {
       $caps[] = [
         'key' => $yNow . '-H1',
         'label' => $yNow . '上半年',
-        'count' => (int)$cur['H1']['cnt'],
+        'count' => (int)$half[$yNow]['H1']['cnt'],
         'start' => $yNow . '-01-01',
         'end' => $yNow . '-06-30',
         'is_default' => (count($caps) === 0) ? 1 : 0
       ];
     }
 
-    // 歷年：y DESC
+    // 去年：H2 -> H1
+    if (!empty($half[$yPrev]['H2']) && (int)$half[$yPrev]['H2']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H2',
+        'label' => $yPrev . '下半年',
+        'count' => (int)$half[$yPrev]['H2']['cnt'],
+        'start' => $yPrev . '-07-01',
+        'end' => $yPrev . '-12-31',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+    if (!empty($half[$yPrev]['H1']) && (int)$half[$yPrev]['H1']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H1',
+        'label' => $yPrev . '上半年',
+        'count' => (int)$half[$yPrev]['H1']['cnt'],
+        'start' => $yPrev . '-01-01',
+        'end' => $yPrev . '-06-30',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 2024(含)以前：整年（由新到舊）
     krsort($years);
     foreach ($years as $y => $info) {
       $caps[] = [
@@ -859,12 +890,14 @@ final class VehicleService
       ];
     }
 
-    // 保底：萬一今年完全沒資料，default 會落在最新一年
+    // 保底：萬一沒 default
     if ($caps) {
       $hasDefault = false;
-      foreach ($caps as $c) if (!empty($c['is_default'])) {
-        $hasDefault = true;
-        break;
+      foreach ($caps as $c) {
+        if (!empty($c['is_default'])) {
+          $hasDefault = true;
+          break;
+        }
       }
       if (!$hasDefault) $caps[0]['is_default'] = 1;
     }
