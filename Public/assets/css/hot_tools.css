@@ -317,30 +317,38 @@
   display: none !important;
 }
 
-/* ===== 右表：固定表頭 + 內容獨立捲動（定版） ===== */
+/* ===== ✅ 定版：鎖 page 高度，右表只捲 tbody，不推 footer ===== */
 
-/* 右表整體高度限制，避免推 footer */
-.hot-pane--right {
-  max-height: calc(100vh - 180px);
+/* 1) 鎖住整頁高度：避免 footer 被推走 */
+.page.hot-tools{
+  height: calc(100vh - 64px); /* 64=header 高度，必要你再微調 */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* 表格外框 */
-.hot-tableWrap--fixedHead {
-  display: flex;
-  flex-direction: column;
+/* 2) 內容區撐滿 page */
+.page.hot-tools > .hot-split{
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* 表頭：不捲 */
-.hot-tableHead {
-  flex: 0 0 auto;
+/* 3) 右表：flex 佈局 */
+.hot-tools .hot-pane--right{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-/* 內容：唯一捲動區 */
-.hot-tableBody {
+.hot-tools .hot-pane--right .hot-pane__body{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4) ✅ 只有 tableWrap 捲（thead sticky 才會生效） */
+.hot-tools .hot-pane--right #hotToolsWrap{
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -349,12 +357,15 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.hot-tableBody::-webkit-scrollbar {
+.hot-tools .hot-pane--right #hotToolsWrap::-webkit-scrollbar{
   width: 0;
   height: 0;
 }
 
-/* 兩張 table 欄寬一致 */
-.hot-table--tools {
-  table-layout: fixed;
+/* 5) 表頭 sticky（必須有背景，不然捲動會透） */
+.hot-tools .hot-pane--right .hot-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(246,247,251,0.98);
 }
