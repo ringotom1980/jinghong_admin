@@ -8,7 +8,13 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* ✅ 左右各半 */
   gap: 14px;
-  align-items: start;
+  align-items: stretch; /* 由 start 改成 stretch，左右同高 */
+  min-height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px);
+  /* 說明：
+     - var(--topbar-h) 來自 nav.css
+     - 18/24 是 .page padding-top/bottom
+     - 16/14 是 .page-head 大概的 margin 區（你可視覺微調）
+  */
 }
 
 .hot-tools .hot-pane {
@@ -52,6 +58,35 @@
 
 .hot-tools .hot-pane__body {
   padding: 12px 12px 14px 12px;
+}
+
+/* B：右側 pane 改成 flex，讓 head 固定、body 吃剩餘 */
+.hot-tools .hot-pane--right{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* C：只有右側 body 可滾動 */
+.hot-tools .hot-pane--right .hot-pane__body{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ===== 右側獨立捲動但隱藏卷軸（不影響可捲動） ===== */
+.hot-tools .hot-pane--right .hot-pane__body{
+  /* IE/舊 Edge */
+  -ms-overflow-style: none;
+
+  /* Firefox */
+  scrollbar-width: none;
+}
+
+/* Chrome / Safari / 新 Edge */
+.hot-tools .hot-pane--right .hot-pane__body::-webkit-scrollbar{
+  width: 0;
+  height: 0;
 }
 
 .hot-tools .hot-tableWrap {
