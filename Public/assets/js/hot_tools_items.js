@@ -1,7 +1,7 @@
 /* Path: Public/assets/js/hot_tools_items.js
  * 說明: 左表 hot_items 渲染器 + row events
- * - VIEW：顯示文字 + 刪除按鈕
- * - EDIT：分類名稱改成 input；刪除按鈕隱藏；點擊列不切換
+ * - VIEW：顯示文字；可點列切換；不顯示刪除
+ * - EDIT：分類名稱 input；每列顯示刪除（走二次確認 modal）；點列不切換
  */
 
 (function (global) {
@@ -46,11 +46,12 @@
           nameCell = esc(it.name);
         }
 
-        var delBtn = '';
-        if (mode === 'VIEW') {
-          delBtn = '<button class="btn btn--danger btn--xs" type="button" data-act="delete" title="刪除">刪除</button>';
+        // ✅ 依你定版：EDIT 才出現刪除
+        var actCell = '';
+        if (mode === 'EDIT') {
+          actCell = '<button class="btn btn--danger btn--xs" type="button" data-act="delete" title="刪除">刪除</button>';
         } else {
-          delBtn = '<span class="hot-muted">—</span>';
+          actCell = '<span class="hot-muted">—</span>';
         }
 
         html += ''
@@ -60,16 +61,16 @@
           + '  <td style="text-align:right;">' + fmtInt(it.tool_total) + '</td>'
           + '  <td style="text-align:right;">' + fmtInt(it.assigned_cnt) + '</td>'
           + '  <td style="text-align:right;">' + fmtInt(it.available_cnt) + '</td>'
-          + '  <td>' + delBtn + '</td>'
+          + '  <td>' + actCell + '</td>'
           + '</tr>';
       });
 
       tbody.innerHTML = html;
 
-      // 綁 row click / delete
       var app = global.HotToolsApp;
 
       Array.prototype.slice.call(tbody.querySelectorAll('tr[data-item-id]')).forEach(function (tr) {
+        // 列點擊：VIEW 才能切換分類
         tr.addEventListener('click', function () {
           if (!app || !app.selectItem) return;
           if (mode === 'EDIT') return;
@@ -77,6 +78,7 @@
           if (id) app.selectItem(id);
         });
 
+        // 刪除：EDIT 才有按鈕；走你既有二次確認 modal
         var del = tr.querySelector('[data-act="delete"]');
         if (del) {
           del.addEventListener('click', function (e) {
