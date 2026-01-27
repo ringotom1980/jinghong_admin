@@ -264,7 +264,7 @@
       var seq = ++this.state.reqSeq;
 
       // items + vehicles 一次載；tools 依 activeItem 再載
-      Promise.all([
+      return Promise.all([
         self.apiGet(API_HOT_TOOLS, { action: 'items' }),
         self.apiGet(API_HOT_TOOLS, { action: 'vehicles' })
       ]).then(function (arr) {
@@ -299,13 +299,14 @@
           self.renderTools();
         }
       });
+
     },
 
     reloadItemsKeepActive: function () {
       var self = this;
       var seq = ++this.state.reqSeq;
 
-      this.apiGet(API_HOT_TOOLS, { action: 'items' })
+      return this.apiGet(API_HOT_TOOLS, { action: 'items' })
         .then(function (r) {
           if (seq !== self.state.reqSeq) return;
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入分類失敗');
@@ -331,11 +332,11 @@
     reloadTools: function () {
       var self = this;
       var itemId = self.state.activeItemId;
-      if (!itemId) return;
+      if (!itemId) return Promise.resolve(true);
 
       var seq = ++this.state.reqSeq;
 
-      this.apiGet(API_HOT_TOOLS, { action: 'tools', item_id: itemId })
+      return this.apiGet(API_HOT_TOOLS, { action: 'tools', item_id: itemId })
         .then(function (r) {
           if (seq !== self.state.reqSeq) return;
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入工具失敗');
@@ -450,11 +451,19 @@
           // 重新載入 items，並將新分類設為 active（以 code 找最末新增也可，但這裡用 reload 再取第一筆不準）
           // 方案：reload 後嘗試以回傳 item_id 設 active
           var newId = r.data && r.data.item_id ? (parseInt(r.data.item_id, 10) || 0) : 0;
-          self.reloadAll();
-          if (newId) {
-            // 等 reloadAll 完成後才 select：簡化做法延遲一點點
-            setTimeout(function () { self.selectItem(newId); }, 200);
-          }
+
+          // ✅ 確保 reload 完成後再切 active（不靠 setTimeout）
+          self.reloadAll().then(function () {
+            if (!newId) return;
+            self.state.activeItemId = newId;
+            self.syncActiveItem();
+            self.renderItems();
+
+            // 右側回到 VIEW 並載入新分類工具（通常剛建立會是空）
+            self.setToolsMode('VIEW');
+            return self.reloadTools();
+          });
+
         });
     },
 
@@ -574,7 +583,7 @@
 
     injectVehiclesSelect: function (sel, vehicles) {
       if (!sel) return;
-      var html = '<option value="">（不配賦）</option>';
+      var html = '<option value="">（尚未配賦車輛）</option>';
       (vehicles || []).forEach(function (v) {
         var tag = (String(v.is_active) === '0') ? '（停用）' : '';
         var text = (v.vehicle_code + ' / ' + v.plate_no + tag);
