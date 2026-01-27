@@ -17,11 +17,15 @@
   }
 
   function toastOk(msg) {
-    if (global.Toast && typeof global.Toast.ok === 'function') return global.Toast.ok(msg);
+    if (global.Toast && typeof global.Toast.show === 'function') {
+      return global.Toast.show({ type: 'success', title: '成功', message: msg, duration: 2200 });
+    }
     alert(msg);
   }
   function toastErr(msg) {
-    if (global.Toast && typeof global.Toast.error === 'function') return global.Toast.error(msg);
+    if (global.Toast && typeof global.Toast.show === 'function') {
+      return global.Toast.show({ type: 'error', title: '錯誤', message: msg, duration: 3200 });
+    }
     alert(msg);
   }
 
@@ -48,7 +52,7 @@
     });
   }
 
-    // ✅ API 常數（避免散落字串）
+  // ✅ API 常數（避免散落字串）
   var API_HOT_TOOLS = '/api/hot/tools';
 
   var App = {
