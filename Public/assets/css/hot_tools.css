@@ -317,43 +317,6 @@
   display: none !important;
 }
 
-/* ===== ✅ 定版：鎖 page 高度，右表只捲 tbody，不推 footer ===== */
-/* ===== 右表：定版（HTML 已拆 head/body） ===== */
-
-.hot-pane--right{
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* 表格容器 */
-.hot-tableWrap--fixed{
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-/* 表頭 table */
-.hot-table--head{
-  flex: 0 0 auto;
-}
-
-/* 表身捲動區 */
-.hot-tableScroll{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-
-  /* 隱藏卷軸 */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.hot-tableScroll::-webkit-scrollbar{
-  width: 0;
-  height: 0;
-}
-
 /* ===== ✅ 定版：hot/tools 頁腳固定在視窗底，不被內容撐走 ===== */
 .page.hot-tools + footer {
   position: sticky;
