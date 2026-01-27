@@ -114,7 +114,7 @@ $u = function (string $path) use ($base): string {
 
         <section class="drawerPanel" id="drawer-hot" aria-label="活電工具管理選單">
             <div class="drawer__head">
-                <div class="drawer__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> 活電工具管理</div>
+                <div class="drawer__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> 活電工具</div>
             </div>
             <nav class="drawer__nav" aria-label="活電工具管理導覽">
                 <a class="nav__item" data-nav="hot_tools" href="<?= htmlspecialchars($u('/hot/tools'), ENT_QUOTES) ?>">工具主檔</a>
