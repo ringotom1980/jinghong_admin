@@ -58,9 +58,9 @@
           + '<tr class="' + trCls + '" data-item-id="' + esc(id) + '">'
           + '  <td><span class="hot-badge">' + esc(it.code) + '</span></td>'
           + '  <td>' + nameCell + '</td>'
-          + '  <td style="text-align:right;">' + fmtInt(it.tool_total) + '</td>'
-          + '  <td style="text-align:right;">' + fmtInt(it.assigned_cnt) + '</td>'
-          + '  <td style="text-align:right;">' + fmtInt(it.available_cnt) + '</td>'
+          + '  <td>' + fmtInt(it.tool_total) + '</td>'
+          + '  <td>' + fmtInt(it.assigned_cnt) + '</td>'
+          + '  <td>' + fmtInt(it.available_cnt) + '</td>'
           + '  <td>' + actCell + '</td>'
           + '</tr>';
       });
