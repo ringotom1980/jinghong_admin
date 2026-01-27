@@ -319,7 +319,7 @@
 
 /* ✅ 右表本體限定高度（不影響左表、不推 footer） */
 .hot-tools .hot-pane--right{
-  max-height: calc(100vh - 180px); /* 180 可微調 */
+  max-height: calc(100vh - 160px); /* 180 可微調 */
   display: flex;
   flex-direction: column;
 }
