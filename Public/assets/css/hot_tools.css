@@ -69,11 +69,11 @@
   table-layout: fixed;
 }
 
-.hot-tools .hot-table thead th {
+/* .hot-tools .hot-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-}
+} */
 
 /* ===== 表格文字全面置中（thead + tbody） ===== */
 .hot-tools .hot-table th,
@@ -350,6 +350,67 @@
   scrollbar-width: none;
 }
 .hot-tableScroll::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+/* ===== ✅ 定版：hot/tools 頁腳固定在視窗底，不被內容撐走 ===== */
+.page.hot-tools + footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: var(--bg-2, #fff);
+  border-top: 1px solid var(--line-2);
+}
+
+/* ===== ✅ 定版：右側 pane 不再把頁面撐高（內容改由內部捲動） ===== */
+.page.hot-tools {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--topbar-h, 0px));
+}
+
+.page.hot-tools .hot-split {
+  flex: 1 1 auto;
+  min-height: 0; /* 沒這行，flex 會撐爆 */
+}
+
+/* ===== ✅ 右表：只捲 hot-tableScroll，表頭不捲 ===== */
+.hot-tools .hot-pane--right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hot-tools .hot-pane--right .hot-pane__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hot-tools .hot-tableWrap--fixed {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 表頭固定：不需要 sticky（它不在捲動容器內） */
+.hot-tools .hot-table--head thead th {
+  position: static;
+}
+
+/* 唯一捲動區：hot-tableScroll（隱藏卷軸但可捲） */
+.hot-tools .hot-tableScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hot-tools .hot-tableScroll::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
