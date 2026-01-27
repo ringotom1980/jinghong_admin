@@ -9,7 +9,6 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* ✅ 左右各半 */
   gap: 14px;
   align-items: start;
-  min-height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px); /* ✅ 鎖高度 */
 }
 
 .hot-tools .hot-pane {
@@ -318,32 +317,32 @@
   display: none !important;
 }
 
-/* ✅ 右表：只讓紅框 #hotToolsWrap 捲動（不動 head、不動 footnote） */
+/* ✅ 只鎖右表高度：不影響左表 */
 .hot-tools .hot-pane--right{
+  height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px);
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
+/* body 不捲，捲動交給紅框 */
 .hot-tools .hot-pane--right .hot-pane__body{
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden; /* ✅ body 不捲，捲動交給 wrap */
+  overflow: hidden;
 }
 
-/* ✅ 紅框：表格外層 wrap 才捲 */
+/* ✅ 紅框才捲 */
 .hot-tools #hotToolsWrap{
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-}
 
-/* ✅ 隱藏卷軸但仍可捲（只作用在紅框） */
-.hot-tools #hotToolsWrap{
-  -ms-overflow-style: none; /* IE/舊 Edge */
-  scrollbar-width: none;    /* Firefox */
+  /* 隱藏卷軸但可捲 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .hot-tools #hotToolsWrap::-webkit-scrollbar{
   width: 0;
