@@ -230,8 +230,8 @@
 
       // items + vehicles 一次載；tools 依 activeItem 再載
       Promise.all([
-        self.apiGet('/api/hot/tools.php', { action: 'items' }),
-        self.apiGet('/api/hot/tools.php', { action: 'vehicles' })
+        self.apiGet('/api/hot/tools', { action: 'items' }),
+        self.apiGet('/api/hot/tools', { action: 'vehicles' })
       ]).then(function (arr) {
         if (seq !== self.state.reqSeq) return;
 
@@ -270,7 +270,7 @@
       var self = this;
       var seq = ++this.state.reqSeq;
 
-      this.apiGet('/api/hot/tools.php', { action: 'items' })
+      this.apiGet('/api/hot/tools', { action: 'items' })
         .then(function (r) {
           if (seq !== self.state.reqSeq) return;
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入分類失敗');
@@ -300,7 +300,7 @@
 
       var seq = ++this.state.reqSeq;
 
-      this.apiGet('/api/hot/tools.php', { action: 'tools', item_id: itemId })
+      this.apiGet('/api/hot/tools', { action: 'tools', item_id: itemId })
         .then(function (r) {
           if (seq !== self.state.reqSeq) return;
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入工具失敗');
@@ -406,7 +406,7 @@
       if (!name) return toastErr('分類名稱為必填');
       if (qty < 1) return toastErr('初始數量 qty 必須 >= 1');
 
-      this.apiPost('/api/hot/tools.php', { action: 'item_create', name: name, qty: qty })
+      this.apiPost('/api/hot/tools', { action: 'item_create', name: name, qty: qty })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '建立分類失敗');
           closeModal('modalItemAdd');
@@ -429,7 +429,7 @@
       if (!itemId) return;
 
       // 先 GET delete_preview
-      this.apiGet('/api/hot/tools.php', { action: 'delete_preview', item_id: itemId })
+      this.apiGet('/api/hot/tools', { action: 'delete_preview', item_id: itemId })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入刪除預覽失敗');
 
@@ -471,7 +471,7 @@
       }
       if (!itemId) return toastErr('item_id 不可為空');
 
-      this.apiPost('/api/hot/tools.php', { action: 'item_delete', id: itemId })
+      this.apiPost('/api/hot/tools', { action: 'item_delete', id: itemId })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '刪除失敗');
           closeModal('modalItemDelete');
@@ -507,7 +507,7 @@
         if (!rows[i].name) return toastErr('分類名稱不可為空');
       }
 
-      this.apiPost('/api/hot/tools.php', { action: 'item_update', rows: rows })
+      this.apiPost('/api/hot/tools', { action: 'item_update', rows: rows })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
           toastOk('已儲存分類');
@@ -559,7 +559,7 @@
         return;
       }
 
-      this.apiGet('/api/hot/tools.php', { action: 'add_preview', item_id: itemId, qty: qty })
+      this.apiGet('/api/hot/tools', { action: 'add_preview', item_id: itemId, qty: qty })
         .then(function (r) {
           if (!r || !r.success) {
             if (self.els.mToolRangeText) self.els.mToolRangeText.textContent = '-';
@@ -595,7 +595,7 @@
         note: note || null
       };
 
-      this.apiPost('/api/hot/tools.php', payload)
+      this.apiPost('/api/hot/tools', payload)
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '新增工具失敗');
           closeModal('modalToolAdd');
@@ -631,7 +631,7 @@
         });
       });
 
-      this.apiPost('/api/hot/tools.php', {
+      this.apiPost('/api/hot/tools', {
         action: 'tool_update',
         item_id: this.state.activeItemId,
         rows: rows

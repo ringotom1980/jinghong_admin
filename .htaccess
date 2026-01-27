@@ -16,9 +16,6 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# 3.2) API：全部交給 Public router（讓 Public/index.php 去做 /api/* -> Public/api/*.php 動態映射）
-RewriteRule ^api(/.*)?$ /jinghong_admin/Public/index.php [L,NC,QSA]
-
 # 3.5) Public API（pole）直接映射到實體檔案（避免走 router 回 HTML）
 RewriteRule ^api/public/pole/suggest$ /jinghong_admin/Public/api/public/pole/suggest.php [L,NC,QSA]
 RewriteRule ^api/public/pole/get$     /jinghong_admin/Public/api/public/pole/get.php     [L,NC,QSA]
