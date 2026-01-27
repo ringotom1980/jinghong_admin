@@ -108,25 +108,23 @@ $pageJs = [
         </div>
 
         <div class="hot-pane__body">
-          <div class="hot-tableWrap hot-tableWrap--fixedHead">
+          <div class="hot-tableWrap hot-tableWrap--fixed">
 
-            <!-- 固定表頭（不捲） -->
-            <div class="hot-tableHead">
-              <table class="table hot-table hot-table--tools">
-                <thead>
-                  <tr>
-                    <th>工具編號</th>
-                    <th>檢驗日期</th>
-                    <th>已配賦車輛</th>
-                    <th>備註</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
+            <!-- 表頭（不捲） -->
+            <table class="table hot-table hot-table--tools hot-table--head">
+              <thead>
+                <tr>
+                  <th>工具編號</th>
+                  <th>檢驗日期</th>
+                  <th>已配賦車輛</th>
+                  <th>備註</th>
+                </tr>
+              </thead>
+            </table>
 
-            <!-- 只捲這裡 -->
-            <div class="hot-tableBody" id="hotToolsScroll">
-              <table class="table hot-table hot-table--tools">
+            <!-- 表身（唯一捲動區） -->
+            <div class="hot-tableScroll" id="hotToolsScroll">
+              <table class="table hot-table hot-table--tools hot-table--body">
                 <tbody id="tbHotTools">
                   <tr class="hot-empty">
                     <td colspan="4">請先選取左側分類</td>
