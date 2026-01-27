@@ -80,13 +80,22 @@ html {
 body {
   margin: 0;
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC",
-    Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans TC",
+    Arial,
+    sans-serif;
   font-size: var(--fs-base);
   line-height: var(--lh);
-
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   /* ✅ no pink: soft blue + neutral haze */
-  background: radial-gradient(
+  background:
+    radial-gradient(
       1200px circle at 10% -10%,
       rgba(37, 99, 235, 0.1),
       transparent 45%
@@ -154,11 +163,11 @@ p {
 /* 全站表單欄位標題：統一較大，其他頁可用 <label class="form-label"> */
 label,
 .form-label,
-.mi-label{
+.mi-label {
   font-size: 16px;
   font-weight: 850;
-  color: rgba(15,23,42,.82);
-  letter-spacing: .02em;
+  color: rgba(15, 23, 42, 0.82);
+  letter-spacing: 0.02em;
 }
 
 /* ===== Cards / Panels ===== */
@@ -196,8 +205,12 @@ label,
   font-weight: 500;
   letter-spacing: 0.01em;
   user-select: none;
-  transition: background-color 220ms ease, border-color 220ms ease,
-    color 220ms ease, box-shadow 260ms ease, transform 260ms ease,
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 260ms ease,
+    transform 260ms ease,
     filter 260ms ease;
 }
 
@@ -351,7 +364,7 @@ label,
 
 .btn {
   position: relative; /* 讓 spinner 定位穩定 */
-  gap: 8px;           /* 文字/圈圈間距（你要的「中間有點間距」） */
+  gap: 8px; /* 文字/圈圈間距（你要的「中間有點間距」） */
 }
 
 .btn__text {
@@ -396,7 +409,9 @@ label,
 }
 
 @keyframes uiSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== Inputs ===== */
@@ -414,7 +429,9 @@ textarea {
   font-size: var(--fs-ui);
   line-height: var(--lh);
   outline: none;
-  transition: border-color 140ms ease, box-shadow 140ms ease,
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
     background 140ms ease;
 }
 input::placeholder,
@@ -473,6 +490,13 @@ textarea:focus {
 /* Footer base (layout handled by nav.css) */
 .footer {
   background: transparent;
+  margin-top: auto;
+}
+
+/* ✅ main 占滿剩餘高度，讓 footer 自然在可視區底部 */
+main.page {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .footer__right {
