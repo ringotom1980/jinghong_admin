@@ -74,6 +74,8 @@
     app: null,
     el: null,
     _dates: [],
+    _showAllMonths: false,
+    _maxMonthsPerView: 3,
 
     init: function (app) {
       this.app = app;
@@ -132,6 +134,12 @@
         if (ai === bi) return 0;
         return ai > bi ? -1 : 1;
       });
+      // ✅ 初始只顯示最近 3 個月份群組（不是 3 個日期）
+      var allMonths = months.slice();
+      var hasMoreMonths = allMonths.length > this._maxMonthsPerView;
+      if (!this._showAllMonths) {
+        months = allMonths.slice(0, this._maxMonthsPerView);
+      }
 
       var self = this;
 
@@ -178,6 +186,25 @@
 
         self.el.appendChild(wrap);
       });
+
+      // ✅ 更多 / 收合（只在月份數超過 3 時出現）
+      if (hasMoreMonths) {
+        var moreWrap = document.createElement('div');
+        moreWrap.className = 'ms-capsules__more';
+
+        var moreBtn = document.createElement('button');
+        moreBtn.type = 'button';
+        moreBtn.className = 'ms-cap ms-capsule ms-capsule--more';
+        moreBtn.textContent = this._showAllMonths ? '收合' : '更多';
+
+        moreBtn.addEventListener('click', function () {
+          self._showAllMonths = !self._showAllMonths;
+          self.render(dates); // 重新渲染，不改 selected
+        });
+
+        moreWrap.appendChild(moreBtn);
+        this.el.appendChild(moreWrap);
+      }
 
       // 7) 若 app 尚未有日期（第一次 render），同步一次（保持你既有流程一致）
       if (selected && this.app && this.app.state && !this.app.state.withdraw_date) {

@@ -5,7 +5,7 @@
  */
 
 /* ✅ 只針對本頁：讓內容區滿版（不要動全站 .content） */
-.page.mat-stats .content{
+.page.mat-stats .content {
   max-width: none;
   width: 100%;
   margin: 0;
@@ -13,46 +13,46 @@
 }
 
 /* 讓整頁至少撐滿（視覺不會上面一小塊、下面空一大片） */
-.page.mat-stats{
+.page.mat-stats {
   min-height: calc(100vh - 20px);
 }
 
 /* ===== Toolbar card ===== */
-.ms-toolbar{
+.ms-toolbar {
   width: 100%;
 }
 
-.ms-toolbar__head{
+.ms-toolbar__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.ms-toolbar__title{
+.ms-toolbar__title {
   display: flex;
   align-items: baseline;
   gap: 8px;
   margin: 0;
 }
 
-.ms-toolbar__date{
+.ms-toolbar__date {
   font-weight: 900;
-  color: rgba(15,23,42,.9);
+  color: rgba(15, 23, 42, 0.9);
 }
 
-.ms-toolbar__actions{
+.ms-toolbar__actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 /* ===== Capsules ===== */
-.ms-capsules-wrap{
+.ms-capsules-wrap {
   margin-top: 10px;
 }
 
-.ms-capsules{
+.ms-capsules {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -60,84 +60,84 @@
 }
 
 /* ===== Shift filter ===== */
-.ms-filter{
+.ms-filter {
   margin-top: 12px;
   display: flex;
-  flex-wrap: nowrap;     /* ✅ 不換行 */
+  flex-wrap: nowrap; /* ✅ 不換行 */
   gap: 8px;
-  overflow-x: auto;      /* ✅ 超出用橫向捲動 */
+  overflow-x: auto; /* ✅ 超出用橫向捲動 */
   overflow-y: hidden;
-  padding-bottom: 2px;   /* ✅ 避免捲動條貼到按鈕 */
+  padding-bottom: 2px; /* ✅ 避免捲動條貼到按鈕 */
   -webkit-overflow-scrolling: touch;
 }
-.ms-filter::-webkit-scrollbar{
+.ms-filter::-webkit-scrollbar {
   height: 8px;
 }
-.ms-filter::-webkit-scrollbar-thumb{
-  background: rgba(15,23,42,.16);
+.ms-filter::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.16);
   border-radius: 999px;
 }
 
-.ms-filter__btn{
+.ms-filter__btn {
   height: 32px;
   padding: 0 10px;
   border-radius: 10px;
-  border: 1px solid rgba(15,23,42,.18);
-  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.72);
   cursor: pointer;
   font-size: 14px;
-  color: rgba(15,23,42,.86);
+  color: rgba(15, 23, 42, 0.86);
 }
 
 /* ===== Personnel quick buttons (A-鄭建昇) ===== */
-.ms-filter__btn--person{
-  height: 28px;          /* ✅ 比 A/B/C 更扁 */
+.ms-filter__btn--person {
+  height: 28px; /* ✅ 比 A/B/C 更扁 */
   padding: 0 10px;
-  border-radius: 999px;  /* ✅ 做成膠囊，但不影響原本 */
+  border-radius: 999px; /* ✅ 做成膠囊，但不影響原本 */
   font-size: 13px;
   font-weight: 800;
-  white-space: nowrap;   /* ✅ 不換行 */
-  max-width: 180px;      /* ✅ 避免太長把整排擠爆 */
+  white-space: nowrap; /* ✅ 不換行 */
+  max-width: 180px; /* ✅ 避免太長把整排擠爆 */
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* active 狀態：跟原本一致，不用另寫也可；你要更明顯可加這段 */
-.ms-filter__btn--person.is-active{
+.ms-filter__btn--person.is-active {
   font-weight: 900;
 }
 
-.ms-filter__btn:hover{
-  background: rgba(255,255,255,.92);
-  border-color: rgba(15,23,42,.26);
+.ms-filter__btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.26);
 }
 
-.ms-filter__btn.is-active{
-  background: rgba(37,99,235,.12);
-  border-color: rgba(37,99,235,.32);
-  color: rgba(30,58,138,.95);
+.ms-filter__btn.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.32);
+  color: rgba(30, 58, 138, 0.95);
   font-weight: 800;
 }
 
 /* ===== Status ===== */
-.ms-status{
+.ms-status {
   margin-top: 10px;
   display: grid;
   gap: 8px;
 }
 
-.ms-status__loading{
-  color: rgba(15,23,42,.66);
+.ms-status__loading {
+  color: rgba(15, 23, 42, 0.66);
   font-size: 14px;
 }
 
-.ms-status__error{
-  color: rgba(190,18,60,.86);
+.ms-status__error {
+  color: rgba(190, 18, 60, 0.86);
   font-size: 14px;
 }
 
 /* ===== Content area (tables/cards inserted by JS) ===== */
-.ms-content{
+.ms-content {
   margin-top: 14px;
   width: 100%;
   display: grid;
@@ -145,11 +145,11 @@
 }
 
 /* 小螢幕收斂 padding */
-@media (max-width: 720px){
-  .page.mat-stats .content{
+@media (max-width: 720px) {
+  .page.mat-stats .content {
     padding: 14px 12px;
   }
-  .ms-toolbar__head{
+  .ms-toolbar__head {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -157,119 +157,107 @@
 
 /* ===== Sticky toolbar (under topbar) ===== */
 /* 讓統計工具列卡片捲動到 topbar 時固定 */
-.page.mat-stats .ms-toolbar{
+.page.mat-stats .ms-toolbar {
   position: sticky;
   top: calc(var(--topbar-h));
   z-index: 45; /* < topbar(50) 但 > 內容 */
 }
 
 /* sticky 時避免背景透明造成內容穿透 */
-.page.mat-stats .ms-toolbar.card{
+.page.mat-stats .ms-toolbar.card {
   background: #fff;
 }
 
 /* 視覺：黏住時看起來像浮在內容上（可微調） */
-.page.mat-stats .ms-toolbar.card{
+.page.mat-stats .ms-toolbar.card {
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.08);
 }
 
 /* ✅ 黏住 topbar 時：上緣改直角，避免圓角透出底下內容 */
-.page.mat-stats .ms-toolbar.is-stuck.card{
+.page.mat-stats .ms-toolbar.is-stuck.card {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
 
-/* ===== Date capsules grouped by month (month title above, groups in one row) ===== */
+/* ===== Date capsules grouped by month (3 months per row, no horizontal scroll) ===== */
 
-/* 外層容器：單列水平捲動，不換行（每個「月份群組」並排） */
-.ms-capsules{
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start; /* 讓月份標題從上緣對齊 */
-  gap: 18px;
-  overflow-x: auto;
-  overflow-y: hidden;
+/* 外層：改成 Grid，每列固定 3 個「月份群組」，超過自動換列 */
+.ms-capsules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* ✅ 每列 3 個月 */
+  gap: 14px;
   padding: 6px 0;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible; /* ✅ 不要橫向卷軸 */
 }
 
-/* 每個月份群組：標題在上、日期列在下（但群組本身仍是 inline-block 並排） */
-.ms-capsules__month{
-  display: flex;
-  flex-direction: column;   /* ✅ 月份在上 */
-  align-items: flex-start;
+/* 每個月份群組：做成卡片感（標題在上、日期在下） */
+.ms-capsules__month {
+  display: grid;
   gap: 6px;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  min-width: max-content;   /* 避免內容被壓縮導致斷行 */
-  padding-right: 14px;
-  border-right: 1px solid rgba(15,23,42,.08);
+  padding: 10px 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  min-width: 0; /* ✅ 防止內容撐爆造成卷軸 */
 }
 
-/*月份中間分隔線*/
-.ms-capsules__month:last-child{
-  border-right: 0;
-}
-
-/* 月份標題：純文字（不要膠囊感） */
-.ms-capsules__month-title{
+/* 月份標題：純文字 */
+.ms-capsules__month-title {
   font-size: 13px;
   font-weight: 900;
   color: rgba(15, 23, 42, 0.65);
-  padding: 0;               /* ✅ 沒有底色/框線 */
+  padding: 0;
   margin: 0;
   background: transparent;
   border: 0;
 }
 
-/* 日期列：同一列，不換行 */
-.ms-capsules__list{
-  display: inline-flex;
-  flex-wrap: nowrap;
+/* 日期列：月份內日期多就換行（不會撐出橫向卷軸） */
+.ms-capsules__list {
+  display: flex;
+  flex-wrap: wrap; /* ✅ 日期太多就自動換行 */
   align-items: center;
   gap: 6px;
-  white-space: nowrap;
 }
 
-/* 日期膠囊：保持你要的低高度 */
-.ms-capsule{
+/* 日期膠囊：維持你原本樣式 */
+.ms-capsule {
   height: 28px;
   padding: 0 10px;
   border-radius: 8px;
   font-size: 13px;
   line-height: 28px;
-  border: 1px solid rgba(15,23,42,.18);
-  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   user-select: none;
-  flex: 0 0 auto;
 }
 
-.ms-capsule:hover{
-  background: rgba(255,255,255,1);
-  border-color: rgba(15,23,42,.3);
+.ms-capsule:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(15, 23, 42, 0.3);
 }
 
-.ms-capsule.is-active{
-  background: rgba(37,99,235,.12);
-  border-color: rgba(37,99,235,.35);
-  color: rgba(30,58,138,.95);
+.ms-capsule.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: rgba(30, 58, 138, 0.95);
   font-weight: 900;
 }
 
 /* ===== Stats section cards (A-F) ===== */
 /* 讓卡片標頭不要貼圓角邊界：標題往右內縮 */
-.page.mat-stats .ms-section__head{
+.page.mat-stats .ms-section__head {
   padding: 12px 16px;
 }
 
 /* 讓標題本身不要有預設外距干擾 */
-.page.mat-stats .ms-section__title{
+.page.mat-stats .ms-section__title {
   margin: 0;
 }
 
 /* 內容區也同步左右對齊（可選，但通常會更順） */
-.page.mat-stats .ms-section__body{
+.page.mat-stats .ms-section__body {
   padding: 0 16px 14px;
 }
 
@@ -277,13 +265,13 @@
 .ms-table-wrap .ms-table {
   border-collapse: separate;
   border-spacing: 0;
-  border: 1px solid rgba(15, 23, 42, 0.10);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .ms-table-wrap .ms-table thead th {
-  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   background: rgba(15, 23, 42, 0.02);
   /* ✅ 表頭文字置中 */
   text-align: center;
@@ -328,7 +316,7 @@
 }
 
 /* 合計列（F班用） */
-.ms-table .ms-tr-sum td{
+.ms-table .ms-tr-sum td {
   font-weight: 900;
   background: rgba(15, 23, 42, 0.03);
 }
