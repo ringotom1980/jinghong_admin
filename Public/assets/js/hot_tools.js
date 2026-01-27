@@ -30,16 +30,44 @@
   }
 
   function openModal(id) {
-    var el = qs('#' + id);
-    if (!el) return;
-    el.hidden = false;
+    var bd = qs('#' + id);
+    if (!bd) return;
+
+    // ✅ 用共用 modal CSS 的開啟規則（is-open）
+    bd.hidden = false;
+    bd.classList.remove('is-leave');
+    bd.classList.add('is-open');
+
+    var panel = bd.querySelector('.modal-panel');
+    if (panel) {
+      panel.classList.remove('is-leave');
+      panel.classList.add('is-open');
+    }
+
     document.body.classList.add('modal-open');
   }
+
   function closeModal(id) {
-    var el = qs('#' + id);
-    if (!el) return;
-    el.hidden = true;
-    document.body.classList.remove('modal-open');
+    var bd = qs('#' + id);
+    if (!bd) return;
+
+    // ✅ 用共用 modal CSS 的關閉規則（is-leave）
+    bd.classList.remove('is-open');
+    bd.classList.add('is-leave');
+
+    var panel = bd.querySelector('.modal-panel');
+    if (panel) {
+      panel.classList.remove('is-open');
+      panel.classList.add('is-leave');
+    }
+
+    window.setTimeout(function () {
+      bd.hidden = true;
+      bd.classList.remove('is-leave');
+      if (!document.querySelector('.modal-backdrop.is-open:not([hidden])')) {
+        document.body.classList.remove('modal-open');
+      }
+    }, 220);
   }
 
   function bindCloseModalButtons() {
