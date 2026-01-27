@@ -317,37 +317,44 @@
   display: none !important;
 }
 
-/* ✅ 右表本體限定高度（不影響左表、不推 footer） */
-.hot-tools .hot-pane--right{
+/* ===== 右表：固定表頭 + 內容獨立捲動（定版） ===== */
+
+/* 右表整體高度限制，避免推 footer */
+.hot-pane--right {
+  max-height: calc(100vh - 180px);
   display: flex;
   flex-direction: column;
 }
 
-/*讓右表 body 撐滿、但不自己捲*/
-.hot-tools .hot-pane--right .hot-pane__body{
+/* 表格外框 */
+.hot-tableWrap--fixedHead {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-/* ✅ 只有 td 區捲動 */
-.hot-tools .hot-pane--right .hot-tableWrap{
-  max-height: calc(100vh - 260px); /* 固定高度，footer 不會被推 */
+/* 表頭：不捲 */
+.hot-tableHead {
+  flex: 0 0 auto;
+}
+
+/* 內容：唯一捲動區 */
+.hot-tableBody {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 
   /* 隱藏卷軸但可捲 */
+  -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.hot-tools .hot-pane--right .hot-tableWrap::-webkit-scrollbar{
+.hot-tableBody::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-/* 表頭固定 */
-.hot-tools .hot-pane--right .hot-table thead th{
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(246,247,251,0.98);
+/* 兩張 table 欄寬一致 */
+.hot-table--tools {
+  table-layout: fixed;
 }
