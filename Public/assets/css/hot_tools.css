@@ -156,6 +156,13 @@
   width: 30%;
 }
 
+/* 右表目前選取分類文字 */
+.hot-tools #hotActiveItemLabel {
+  font-size: 15px;      /* 你可以調 14~16 */
+  font-weight: 700;     /* 比 hint 明顯 */
+  color: var(--text);
+}
+
 /* 刪除按鈕（行尾） */
 .hot-tools .hot-row__del {
   display: inline-flex;

@@ -38,7 +38,7 @@ $pageJs = [
   <main class="page hot-tools" role="main">
     <section class="page-head">
       <h1>活電工具管理｜工具</h1>
-      <p class="page-sub">分類可新增/編輯/刪除（刪除為硬刪且連帶刪工具，需二次確認）；工具不可刪除，只能新增/編輯/配賦/解除。</p>
+      <p class="page-sub">工具分類可新增/編輯/刪除（刪除會連同工具明細一起移除）；工具明細不可刪除，只能新增/編輯/配賦/解除。</p>
     </section>
 
     <section class="hot-split">
@@ -83,7 +83,7 @@ $pageJs = [
 
           <div class="hot-footNote">
             <span class="hot-dot hot-dot--info"></span>
-            點擊分類列會載入右側工具清單；預設選第一筆（若存在）。
+            點擊分類列會載入右側工具明細表；刪除會連同明細一起移除，須審慎確認。
           </div>
         </div>
       </aside>
