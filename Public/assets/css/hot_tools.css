@@ -9,6 +9,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* ✅ 左右各半 */
   gap: 14px;
   align-items: start;
+  min-height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px); /* ✅ 鎖高度 */
 }
 
 .hot-tools .hot-pane {
