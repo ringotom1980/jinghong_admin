@@ -238,3 +238,6 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Fix: 保證 HTML hidden 一定隱藏（避免 btn 的 display 規則覆蓋） */
+.hot-tools [hidden] { display: none !important; }
