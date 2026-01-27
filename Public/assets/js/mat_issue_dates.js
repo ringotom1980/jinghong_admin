@@ -66,7 +66,7 @@
         return;
       }
       //設定顯示6個月資料
-      var MAX_MONTHS = 6;
+      var MAX_MONTHS = 3;
 
       // 分組：YYYY-MM -> dates[]
       var groups = {};
