@@ -4,240 +4,308 @@
  * 原則：只做排版/模組視覺；共用元件（btn/table/input/card）沿用 app.css
  */
 
-.hot-tools .hot-split{
+.hot-tools .hot-split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* ✅ 左右各半 */
   gap: 14px;
   align-items: start;
 }
 
-.hot-tools .hot-pane{
+.hot-tools .hot-pane {
   border-radius: var(--radius);
   border: 1px solid var(--line-2);
-  background: rgba(255,255,255,.86);
+  background: rgba(255, 255, 255, 0.86);
   overflow: hidden;
 }
 
-.hot-tools .hot-pane__head{
+.hot-tools .hot-pane__head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px 10px 14px;
   border-bottom: 1px solid var(--line-2);
-  background: linear-gradient(180deg, rgba(246,247,251,.9), rgba(255,255,255,0));
+  background: linear-gradient(
+    180deg,
+    rgba(246, 247, 251, 0.9),
+    rgba(255, 255, 255, 0)
+  );
 }
 
-.hot-tools .hot-pane__title h2{
+.hot-tools .hot-pane__title h2 {
   margin: 0;
 }
 
-.hot-tools .hot-pane__hint{
+.hot-tools .hot-pane__hint {
   margin-top: 4px;
   font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
 }
 
-.hot-tools .hot-actions{
+.hot-tools .hot-actions {
   display: inline-flex;
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-.hot-tools .hot-pane__body{
+.hot-tools .hot-pane__body {
   padding: 12px 12px 14px 12px;
 }
 
-.hot-tools .hot-tableWrap{
-  border: 1px solid rgba(15,23,42,.08);
+.hot-tools .hot-tableWrap {
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   overflow: hidden;
-  background: rgba(255,255,255,.92);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 /* table微調：維持你 app.css table，但讓 head 更穩 */
-.hot-tools .hot-table{
+.hot-tools .hot-table {
   border-radius: 0;
   border: 0;
+  width: 100%;
+  table-layout: fixed;
 }
 
-.hot-tools .hot-table thead th{
+.hot-tools .hot-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
-.hot-tools .hot-table td[style*="text-align:right"],
-.hot-tools .hot-table th[style*="text-align:right"]{
-  text-align: right;
+/* ===== 表格文字全面置中（thead + tbody） ===== */
+.hot-tools .hot-table th,
+.hot-tools .hot-table td {
+  text-align: center;
+  vertical-align: middle;
 }
 
-.hot-tools .hot-empty td{
+.hot-tools .hot-table td{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hot-tools .hot-empty td {
   text-align: center;
-  color: rgba(15,23,42,.46);
+  color: rgba(15, 23, 42, 0.46);
   padding: 18px 12px;
 }
 
-.hot-tools .hot-row{
+.hot-tools .hot-row {
   cursor: pointer;
 }
-.hot-tools .hot-row:hover td{
-  background: rgba(37,99,235,.06);
+.hot-tools .hot-row:hover td {
+  background: rgba(37, 99, 235, 0.06);
 }
-.hot-tools .hot-row.is-active td{
-  background: rgba(47,63,122,.10);
+.hot-tools .hot-row.is-active td {
+  background: rgba(47, 63, 122, 0.1);
+}
+
+/* 左表 hot_items：15 / 30 / 15 / 15 / 15 / 10 */
+.hot-tools .hot-table--items th:nth-child(1),
+.hot-tools .hot-table--items td:nth-child(1) {
+  width: 15%;
+}
+
+.hot-tools .hot-table--items th:nth-child(2),
+.hot-tools .hot-table--items td:nth-child(2) {
+  width: 30%;
+}
+
+.hot-tools .hot-table--items th:nth-child(3),
+.hot-tools .hot-table--items td:nth-child(3) {
+  width: 15%;
+}
+
+.hot-tools .hot-table--items th:nth-child(4),
+.hot-tools .hot-table--items td:nth-child(4) {
+  width: 15%;
+}
+
+.hot-tools .hot-table--items th:nth-child(5),
+.hot-tools .hot-table--items td:nth-child(5) {
+  width: 15%;
+}
+
+.hot-tools .hot-table--items th:nth-child(6),
+.hot-tools .hot-table--items td:nth-child(6) {
+  width: 10%;
+}
+
+/* 右表 hot_tools：20 / 20 / 30 / 30 */
+.hot-tools .hot-table--tools th:nth-child(1),
+.hot-tools .hot-table--tools td:nth-child(1) {
+  width: 20%;
+}
+
+.hot-tools .hot-table--tools th:nth-child(2),
+.hot-tools .hot-table--tools td:nth-child(2) {
+  width: 20%;
+}
+
+.hot-tools .hot-table--tools th:nth-child(3),
+.hot-tools .hot-table--tools td:nth-child(3) {
+  width: 30%;
+}
+
+.hot-tools .hot-table--tools th:nth-child(4),
+.hot-tools .hot-table--tools td:nth-child(4) {
+  width: 30%;
 }
 
 /* 刪除按鈕（行尾） */
-.hot-tools .hot-row__del{
+.hot-tools .hot-row__del {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 30px;
   padding: 0 10px;
   border-radius: 10px;
-  border: 1px solid rgba(190,18,60,.26);
-  background: rgba(190,18,60,.10);
+  border: 1px solid rgba(190, 18, 60, 0.26);
+  background: rgba(190, 18, 60, 0.1);
   color: #8b1b33;
   font-size: 13px;
   cursor: pointer;
   user-select: none;
 }
-.hot-tools .hot-row__del:hover{
-  background: rgba(190,18,60,.14);
+.hot-tools .hot-row__del:hover {
+  background: rgba(190, 18, 60, 0.14);
 }
 
 /* footnote */
-.hot-tools .hot-footNote{
+.hot-tools .hot-footNote {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
   font-size: 13px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
 }
 
-.hot-tools .hot-dot{
+.hot-tools .hot-dot {
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  border: 1px solid rgba(15,23,42,.12);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   flex: 0 0 auto;
 }
-.hot-tools .hot-dot--info{
-  background: rgba(37,99,235,.22);
-  border-color: rgba(37,99,235,.16);
+.hot-tools .hot-dot--info {
+  background: rgba(37, 99, 235, 0.22);
+  border-color: rgba(37, 99, 235, 0.16);
 }
-.hot-tools .hot-dot--warn{
-  background: rgba(180,83,9,.22);
-  border-color: rgba(180,83,9,.16);
+.hot-tools .hot-dot--warn {
+  background: rgba(180, 83, 9, 0.22);
+  border-color: rgba(180, 83, 9, 0.16);
 }
 
 /* ===== Modal contents ===== */
-.hot-tools .hot-form{
+.hot-tools .hot-form {
   display: grid;
   gap: 12px;
 }
 
-.hot-tools .hot-field{
+.hot-tools .hot-field {
   display: grid;
   gap: 6px;
 }
 
-.hot-tools .hot-field--row{
+.hot-tools .hot-field--row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   align-items: end;
 }
 
-.hot-tools .hot-req{
+.hot-tools .hot-req {
   color: #9f1239;
   margin-left: 4px;
   font-weight: 900;
 }
 
-.hot-tools .hot-helpBox{
-  border: 1px dashed rgba(15,23,42,.18);
+.hot-tools .hot-helpBox {
+  border: 1px dashed rgba(15, 23, 42, 0.18);
   border-radius: 14px;
   padding: 10px 12px;
-  background: rgba(246,247,251,.8);
+  background: rgba(246, 247, 251, 0.8);
 }
 
-.hot-tools .hot-helpTitle{
+.hot-tools .hot-helpTitle {
   font-size: 13px;
   font-weight: 900;
-  color: rgba(15,23,42,.78);
+  color: rgba(15, 23, 42, 0.78);
   margin-bottom: 4px;
 }
 
-.hot-tools .hot-helpText{
+.hot-tools .hot-helpText {
   font-size: 13px;
-  color: rgba(15,23,42,.62);
+  color: rgba(15, 23, 42, 0.62);
   line-height: 1.5;
 }
 
-.hot-tools .hot-rangeHint{
-  border: 1px solid rgba(37,99,235,.18);
-  background: rgba(37,99,235,.08);
+.hot-tools .hot-rangeHint {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(37, 99, 235, 0.08);
   border-radius: 14px;
   padding: 10px 12px;
-  color: rgba(15,23,42,.78);
+  color: rgba(15, 23, 42, 0.78);
 }
 
-.hot-tools .hot-rangeSub{
+.hot-tools .hot-rangeSub {
   margin-top: 2px;
   font-size: 12px;
-  color: rgba(15,23,42,.56);
+  color: rgba(15, 23, 42, 0.56);
 }
 
-.hot-tools .hot-confirm{
+.hot-tools .hot-confirm {
   display: grid;
   gap: 10px;
 }
 
-.hot-tools .hot-confirm__row{
+.hot-tools .hot-confirm__row {
   display: grid;
   grid-template-columns: 96px 1fr;
   gap: 10px;
   align-items: baseline;
 }
 
-.hot-tools .hot-confirm__k{
-  color: rgba(15,23,42,.62);
+.hot-tools .hot-confirm__k {
+  color: rgba(15, 23, 42, 0.62);
   font-weight: 900;
   font-size: 13px;
 }
 
-.hot-tools .hot-confirm__v{
-  color: rgba(15,23,42,.82);
+.hot-tools .hot-confirm__v {
+  color: rgba(15, 23, 42, 0.82);
   font-size: 13px;
   line-height: 1.5;
   word-break: break-word;
 }
 
-.hot-tools .hot-dangerNote{
+.hot-tools .hot-dangerNote {
   margin-top: 6px;
-  border: 1px solid rgba(190,18,60,.22);
-  background: rgba(190,18,60,.10);
+  border: 1px solid rgba(190, 18, 60, 0.22);
+  background: rgba(190, 18, 60, 0.1);
   border-radius: 14px;
   padding: 10px 12px;
-  color: rgba(15,23,42,.78);
+  color: rgba(15, 23, 42, 0.78);
   font-size: 13px;
   line-height: 1.5;
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 1100px){
-  .hot-tools .hot-split{
+@media (max-width: 1100px) {
+  .hot-tools .hot-split {
     grid-template-columns: 1fr;
   }
-  .hot-tools .hot-field--row{
+  .hot-tools .hot-field--row {
     grid-template-columns: 1fr;
   }
 }
 
 /* Fix: 保證 HTML hidden 一定隱藏（避免 btn 的 display 規則覆蓋） */
-.hot-tools [hidden] { display: none !important; }
+.hot-tools [hidden] {
+  display: none !important;
+}

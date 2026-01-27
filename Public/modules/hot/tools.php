@@ -64,12 +64,12 @@ $pageJs = [
             <table class="table hot-table hot-table--items" aria-label="工具分類表">
               <thead>
                 <tr>
-                  <th style="width:86px;">分類代碼</th>
+                  <th>分類代碼</th>
                   <th>分類名稱</th>
-                  <th style="width:90px; text-align:right;">工具總數</th>
-                  <th style="width:86px; text-align:right;">已配賦</th>
-                  <th style="width:86px; text-align:right;">可配賦</th>
-                  <th style="width:72px;">功能</th>
+                  <th>工具總數</th>
+                  <th>已配賦</th>
+                  <th>可配賦</th>
+                  <th>功能</th>
                 </tr>
               </thead>
               <tbody id="tbHotItems">
@@ -112,9 +112,9 @@ $pageJs = [
             <table class="table hot-table hot-table--tools" aria-label="工具明細表">
               <thead>
                 <tr>
-                  <th style="width:96px;">工具編號</th>
-                  <th style="width:130px;">檢驗日期</th>
-                  <th style="width:240px;">已配賦車輛</th>
+                  <th>工具編號</th>
+                  <th>檢驗日期</th>
+                  <th>已配賦車輛</th>
                   <th>備註</th>
                 </tr>
               </thead>
