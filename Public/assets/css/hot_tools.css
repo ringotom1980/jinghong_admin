@@ -318,20 +318,24 @@
 }
 
 /* ✅ 只鎖右表高度：不影響左表 */
-.hot-tools .hot-pane--right{
+/* .hot-tools .hot-pane--right{
   max-height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px);
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
+} */
 
 /* body 不捲，捲動交給紅框 */
-.hot-tools .hot-pane--right .hot-pane__body{
+/* .hot-tools .hot-pane--right .hot-pane__body{
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+} */
+.hot-tools .hot-pane--right{
+  display: flex;
+  flex-direction: column;
 }
 
 /* ✅ 紅框才捲 */
