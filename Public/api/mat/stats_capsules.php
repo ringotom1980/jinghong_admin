@@ -14,7 +14,7 @@ require_login();
 try {
   $sql = "SELECT DISTINCT withdraw_date
           FROM mat_issue_batches
-          WHERE withdraw_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+          WHERE withdraw_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
           ORDER BY withdraw_date DESC";
   $rows = db()->query($sql)->fetchAll();
 
