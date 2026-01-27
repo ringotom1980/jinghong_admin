@@ -333,22 +333,45 @@
   min-height: 0;
   overflow: hidden;
 } */
+
+/* ✅ 右表：只讓表格外框捲動，sticky 才會黏住 */
 .hot-tools .hot-pane--right{
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-/* ✅ 紅框才捲 */
-.hot-tools #hotToolsWrap{
+.hot-tools .hot-pane--right .hot-pane__body{
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
+}
 
-  /* 隱藏卷軸但可捲 */
+/* ✅ 捲動容器改成 tableWrap（右表那個） */
+.hot-tools .hot-pane--right .hot-tableWrap{
+  flex: 1 1 auto;
+  min-height: 0;
+
+  overflow-y: auto;      /* ✅ 捲動在這裡 */
+  overflow-x: hidden;    /* ✅ 先鎖住水平 */
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.hot-tools #hotToolsWrap::-webkit-scrollbar{
+.hot-tools .hot-pane--right .hot-tableWrap::-webkit-scrollbar{
   width: 0;
   height: 0;
+}
+
+/* ✅ 表頭 sticky 需要背景，且要蓋過 tbody */
+.hot-tools .hot-pane--right .hot-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(246, 247, 251, 0.98);
+}
+
+/* ✅ #hotToolsWrap 不要再捲（只當包一層） */
+.hot-tools #hotToolsWrap{
+  overflow: visible;
 }
