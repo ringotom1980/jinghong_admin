@@ -2,8 +2,8 @@
  * 說明: 日期膠囊（withdraw_date 列表）
  * ✅ 追加：
  * - 依月份分組顯示（只增加小標題，不破壞原本膠囊樣式）
- * - 預設只顯示最近 3 個月份
- * - 超過 3 個月份 → 顯示「更多 / 收合」
+ * - 預設只顯示最近 6個月份
+ * - 超過 6 個月份 → 顯示「更多 / 收合」
  */
 
 (function (global) {
@@ -12,10 +12,10 @@
   function escapeHtml(s) {
     s = (s === null || s === undefined) ? '' : String(s);
     return s
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;')
-      .replace(/'/g,'&#039;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   function getMonthKey(dateStr) {
@@ -65,8 +65,8 @@
         root.innerHTML = '<div class="mi-note">尚無匯入資料</div>';
         return;
       }
-
-      var MAX_MONTHS = 3;
+      //設定顯示6個月資料
+      var MAX_MONTHS = 6;
 
       // 分組：YYYY-MM -> dates[]
       var groups = {};

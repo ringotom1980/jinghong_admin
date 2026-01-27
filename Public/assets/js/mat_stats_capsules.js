@@ -44,7 +44,7 @@
     var cur = now.getFullYear() * 12 + now.getMonth(); // current month index
     var di = ymIndex(toYm(d));
     if (di < 0) return false;
-    return (cur - di) <= 2; // 0,1,2 => 3 months
+    return (cur - di) <= 5; // 0,1,2...5 => 6 個月
   }
 
   function uniq(arr) {

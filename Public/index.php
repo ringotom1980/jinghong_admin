@@ -67,7 +67,7 @@ if (strpos($uri, '/api/') === 0) {
  * 動態映射：/mat/* /car/* /equ/* -> Public/modules/*
  * 例：/mat/issue -> Public/modules/mat/issue.php
  */
-if (preg_match('#^/(mat|car|equ)/([a-zA-Z0-9_-]+)$#', $uri, $m)) {
+if (preg_match('#^/(mat|car|equ|hot)/([a-zA-Z0-9_-]+)$#', $uri, $m)) {
   $mod = $m[1];
   $page = $m[2];
   $target = PUBLIC_PATH . '/modules/' . $mod . '/' . $page . '.php';

@@ -1,0 +1,240 @@
+/*
+ * Path: Public/assets/css/hot_tools.css
+ * 說明: 活電工具（tools）模組樣式
+ * 原則：只做排版/模組視覺；共用元件（btn/table/input/card）沿用 app.css
+ */
+
+.hot-tools .hot-split{
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.hot-tools .hot-pane{
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+  background: rgba(255,255,255,.86);
+  overflow: hidden;
+}
+
+.hot-tools .hot-pane__head{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 10px 14px;
+  border-bottom: 1px solid var(--line-2);
+  background: linear-gradient(180deg, rgba(246,247,251,.9), rgba(255,255,255,0));
+}
+
+.hot-tools .hot-pane__title h2{
+  margin: 0;
+}
+
+.hot-tools .hot-pane__hint{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.hot-tools .hot-actions{
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.hot-tools .hot-pane__body{
+  padding: 12px 12px 14px 12px;
+}
+
+.hot-tools .hot-tableWrap{
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,.92);
+}
+
+/* table微調：維持你 app.css table，但讓 head 更穩 */
+.hot-tools .hot-table{
+  border-radius: 0;
+  border: 0;
+}
+
+.hot-tools .hot-table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.hot-tools .hot-table td[style*="text-align:right"],
+.hot-tools .hot-table th[style*="text-align:right"]{
+  text-align: right;
+}
+
+.hot-tools .hot-empty td{
+  text-align: center;
+  color: rgba(15,23,42,.46);
+  padding: 18px 12px;
+}
+
+.hot-tools .hot-row{
+  cursor: pointer;
+}
+.hot-tools .hot-row:hover td{
+  background: rgba(37,99,235,.06);
+}
+.hot-tools .hot-row.is-active td{
+  background: rgba(47,63,122,.10);
+}
+
+/* 刪除按鈕（行尾） */
+.hot-tools .hot-row__del{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(190,18,60,.26);
+  background: rgba(190,18,60,.10);
+  color: #8b1b33;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+.hot-tools .hot-row__del:hover{
+  background: rgba(190,18,60,.14);
+}
+
+/* footnote */
+.hot-tools .hot-footNote{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(15,23,42,.62);
+}
+
+.hot-tools .hot-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  flex: 0 0 auto;
+}
+.hot-tools .hot-dot--info{
+  background: rgba(37,99,235,.22);
+  border-color: rgba(37,99,235,.16);
+}
+.hot-tools .hot-dot--warn{
+  background: rgba(180,83,9,.22);
+  border-color: rgba(180,83,9,.16);
+}
+
+/* ===== Modal contents ===== */
+.hot-tools .hot-form{
+  display: grid;
+  gap: 12px;
+}
+
+.hot-tools .hot-field{
+  display: grid;
+  gap: 6px;
+}
+
+.hot-tools .hot-field--row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.hot-tools .hot-req{
+  color: #9f1239;
+  margin-left: 4px;
+  font-weight: 900;
+}
+
+.hot-tools .hot-helpBox{
+  border: 1px dashed rgba(15,23,42,.18);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(246,247,251,.8);
+}
+
+.hot-tools .hot-helpTitle{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(15,23,42,.78);
+  margin-bottom: 4px;
+}
+
+.hot-tools .hot-helpText{
+  font-size: 13px;
+  color: rgba(15,23,42,.62);
+  line-height: 1.5;
+}
+
+.hot-tools .hot-rangeHint{
+  border: 1px solid rgba(37,99,235,.18);
+  background: rgba(37,99,235,.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: rgba(15,23,42,.78);
+}
+
+.hot-tools .hot-rangeSub{
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(15,23,42,.56);
+}
+
+.hot-tools .hot-confirm{
+  display: grid;
+  gap: 10px;
+}
+
+.hot-tools .hot-confirm__row{
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.hot-tools .hot-confirm__k{
+  color: rgba(15,23,42,.62);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.hot-tools .hot-confirm__v{
+  color: rgba(15,23,42,.82);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.hot-tools .hot-dangerNote{
+  margin-top: 6px;
+  border: 1px solid rgba(190,18,60,.22);
+  background: rgba(190,18,60,.10);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: rgba(15,23,42,.78);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1100px){
+  .hot-tools .hot-split{
+    grid-template-columns: 1fr;
+  }
+  .hot-tools .hot-field--row{
+    grid-template-columns: 1fr;
+  }
+}
