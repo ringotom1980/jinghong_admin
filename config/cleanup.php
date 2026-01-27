@@ -18,7 +18,7 @@ return [
     'name'      => 'mat_issue_batches_by_withdraw_date',
     'table'     => 'mat_issue_batches',
     'date_col'  => 'withdraw_date', // DATE 欄位
-    'keep_days' => 183,             // 半年約 183 天
+    'keep_days' => 365,             // 半年約 183 天
     'pk_col'    => 'batch_id',      // PK
     'batch'     => 2000,            // batches 通常不會爆量，保守即可
     'where'     => '',
@@ -29,7 +29,7 @@ return [
     'name'      => 'mat_edit_reconciliation_by_withdraw_date',
     'table'     => 'mat_edit_reconciliation',
     'date_col'  => 'withdraw_date',  // DATE 欄位
-    'keep_days' => 183,              // 半年
+    'keep_days' => 365,              // 半年
     'pk_col'    => 'withdraw_date',  // PK=withdraw_date
     'batch'     => 2000,
     'where'     => '',

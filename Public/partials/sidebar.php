@@ -49,6 +49,12 @@ $u = function (string $path) use ($base): string {
             <span class="tab__abbr">工具管理</span>
         </a>
 
+        <a class="rail__tab" data-nav="hot" data-drawer="drawer-hot"
+            href="<?= htmlspecialchars($u('/hot/tools'), ENT_QUOTES) ?>">
+            <span class="tab__icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+            <span class="tab__abbr">活電工具</span>
+        </a>
+
         <!-- 公開 URL，但登入狀態下仍走同一個 layout；不需要新分頁 -->
         <a class="rail__tab"
             data-nav="pole_map"
@@ -80,7 +86,7 @@ $u = function (string $path) use ($base): string {
                 <a class="nav__item" data-nav="mat_issue" href="<?= htmlspecialchars($u('/mat/issue'), ENT_QUOTES) ?>">提領作業</a>
                 <a class="nav__item" data-nav="mat_personnel" href="<?= htmlspecialchars($u('/mat/personnel'), ENT_QUOTES) ?>">資料編輯</a>
                 <a class="nav__item" data-nav="mat_edit_B" href="<?= htmlspecialchars($u('/mat/edit_B'), ENT_QUOTES) ?>">B班管理</a>
-                <a class="nav__item" data-nav="mat_edit" href="<?= htmlspecialchars($u('/mat/edit'), ENT_QUOTES) ?>">D班管理</a>                
+                <a class="nav__item" data-nav="mat_edit" href="<?= htmlspecialchars($u('/mat/edit'), ENT_QUOTES) ?>">D班管理</a>
                 <a class="nav__item" data-nav="mat_stats" href="<?= htmlspecialchars($u('/mat/stats'), ENT_QUOTES) ?>">領退統計</a>
             </nav>
         </section>
@@ -105,5 +111,16 @@ $u = function (string $path) use ($base): string {
                 <a class="nav__item" data-nav="equ_stats" href="<?= htmlspecialchars($u('/equ/stats'), ENT_QUOTES) ?>">維修統計</a>
             </nav>
         </section>
+
+        <section class="drawerPanel" id="drawer-hot" aria-label="活電工具管理選單">
+            <div class="drawer__head">
+                <div class="drawer__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> 活電工具管理</div>
+            </div>
+            <nav class="drawer__nav" aria-label="活電工具管理導覽">
+                <a class="nav__item" data-nav="hot_tools" href="<?= htmlspecialchars($u('/hot/tools'), ENT_QUOTES) ?>">工具主檔</a>
+                <a class="nav__item" data-nav="hot_assign" href="<?= htmlspecialchars($u('/hot/assign'), ENT_QUOTES) ?>">配賦管理</a>
+            </nav>
+        </section>
+
     </div>
 </aside>
