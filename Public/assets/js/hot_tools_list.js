@@ -15,8 +15,8 @@
   }
 
   function vehText(row) {
-    if (!row) return '（不配賦）';
-    if (!row.vehicle_id) return '（不配賦）';
+    if (!row) return '（尚未配賦車輛）';
+    if (!row.vehicle_id) return '（尚未配賦車輛）';
     var tag = (String(row.vehicle_is_active) === '0') ? '（停用）' : '';
     return (row.vehicle_code || '-') + ' / ' + (row.plate_no || '-') + tag;
   }
@@ -24,7 +24,7 @@
   function buildVehSelect(vehicles, selectedId) {
     selectedId = String(selectedId || '');
     var html = '<select class="input input--sm" data-field="vehicle_id">'
-      + '<option value="">（不配賦）</option>';
+      + '<option value="">（尚未配賦車輛）</option>';
 
     (vehicles || []).forEach(function (v) {
       var tag = (String(v.is_active) === '0') ? '（停用）' : '';
