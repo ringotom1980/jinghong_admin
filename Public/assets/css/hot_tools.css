@@ -317,61 +317,32 @@
   display: none !important;
 }
 
-/* ✅ 只鎖右表高度：不影響左表 */
-/* .hot-tools .hot-pane--right{
-  max-height: calc(100vh - var(--topbar-h) - 18px - 24px - 16px - 14px);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-} */
-
-/* body 不捲，捲動交給紅框 */
-/* .hot-tools .hot-pane--right .hot-pane__body{
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-} */
-
-/* ✅ 右表：只讓表格外框捲動，sticky 才會黏住 */
+/* ✅ 右表本體限定高度（不影響左表、不推 footer） */
 .hot-tools .hot-pane--right{
+  max-height: calc(100vh - 180px); /* 180 可微調 */
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
+/*讓右表 body 撐滿、但不自己捲*/
 .hot-tools .hot-pane--right .hot-pane__body{
-  display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* ✅ 捲動容器改成 tableWrap（右表那個） */
+/* ✅ 只有 td 區捲動 */
 .hot-tools .hot-pane--right .hot-tableWrap{
   flex: 1 1 auto;
   min-height: 0;
-
-  overflow-y: auto;      /* ✅ 捲動在這裡 */
-  overflow-x: hidden;    /* ✅ 先鎖住水平 */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.hot-tools .hot-pane--right .hot-tableWrap::-webkit-scrollbar{
-  width: 0;
-  height: 0;
+  overflow-y: auto;
 }
 
-/* ✅ 表頭 sticky 需要背景，且要蓋過 tbody */
+/* 表頭固定 */
 .hot-tools .hot-pane--right .hot-table thead th{
   position: sticky;
   top: 0;
   z-index: 5;
-  background: rgba(246, 247, 251, 0.98);
-}
-
-/* ✅ #hotToolsWrap 不要再捲（只當包一層） */
-.hot-tools #hotToolsWrap{
-  overflow: visible;
+  background: rgba(246,247,251,0.98);
 }
