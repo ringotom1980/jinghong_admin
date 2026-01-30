@@ -22,5 +22,9 @@ RewriteRule ^api/public/pole/get$     /jinghong_admin/Public/api/public/pole/get
 RewriteRule ^api/public/pole/suggest\.php$ /jinghong_admin/Public/api/public/pole/suggest.php [L,NC,QSA]
 RewriteRule ^api/public/pole/get\.php$     /jinghong_admin/Public/api/public/pole/get.php     [L,NC,QSA]
 
+# 3.6) API 全域映射（/api/xxx → /Public/api/xxx.php）
+RewriteRule ^api/(.+)\.php$ /jinghong_admin/Public/api/$1.php [L,NC,QSA]
+RewriteRule ^api/(.+)$      /jinghong_admin/Public/api/$1.php [L,NC,QSA]
+
 # 4) 其餘全部交給 router
 RewriteRule ^ /jinghong_admin/Public/index.php [L]
