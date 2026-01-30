@@ -510,41 +510,83 @@
       var self = this;
       if (!global.apiPost) return;
 
-      // 同步狀態
-      this.syncHeaderFromForm();
-      this.syncItemsFromDom();
+      // ✅ 防連點（儲存中直接忽略）
+      if (this.state && this.state._saving) return;
+      if (!this.state) this.state = {};
+      this.state._saving = true;
 
-      var err = this.validate();
-      if (err) {
-        Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
-        return;
+      // ✅ 鎖住按鈕（避免 DB 慢時連點造成多次交易/timeout）
+      var btn = this.els && this.els.saveBtn;
+      var oldTxt = btn ? btn.textContent : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = '儲存中…';
       }
 
-      var payload = {
-        id: (this.state.mode === 'EDIT') ? this.state.id : 0,
-        header: this.state.data.header,
-        items: this.state.data.items
-      };
+      try {
+        // 同步狀態
+        this.syncHeaderFromForm();
+        this.syncItemsFromDom();
 
-      // 送出
-      return global.apiPost('/api/equ/equ_repair_save', payload).then(function (j) {
-        if (!j || !j.success) {
-          Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (j && j.error) ? j.error : '未知錯誤' });
-          return false;
+        var err = this.validate();
+        if (err) {
+          Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
+          return;
         }
 
-        Toast && Toast.show({ type: 'success', title: '已存檔', message: '紀錄已更新' });
+        var payload = {
+          id: (this.state.mode === 'EDIT') ? this.state.id : 0,
+          header: this.state.data.header,
+          items: this.state.data.items
+        };
 
-        // 關閉 modal
-        self.close();
+        // 送出
+        return global.apiPost('/api/equ/equ_repair_save', payload).then(function (j) {
+          if (!j || !j.success) {
+            Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (j && j.error) ? j.error : '未知錯誤' });
+            return false;
+          }
 
-        // ✅ 存檔後重載膠囊（與 car 同步）
-        if (self.app && self.app.loadCapsules) self.app.loadCapsules();
-        else if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+          Toast && Toast.show({ type: 'success', title: '已存檔', message: '紀錄已更新' });
 
-        return true;
-      });
+          // 關閉 modal
+          self.close();
+
+          // ✅ 存檔後：膠囊要更新（你說的對，不能移除）
+          // 但「按儲存當下」最怕多次並發，所以在上面先鎖按鈕
+          if (self.app && typeof self.app.loadCapsules === 'function') {
+            self.app.loadCapsules();
+          } else if (self.app && typeof self.app.loadList === 'function') {
+            self.app.loadList(self.app.state ? self.app.state.activeKey : '');
+          }
+
+          return true;
+        }).catch(function (e) {
+          Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (e && e.message) ? e.message : '網路或伺服器忙碌' });
+          return false;
+        }).finally(function () {
+          // ✅ 還原按鈕
+          self.state._saving = false;
+          if (btn) {
+            btn.disabled = false;
+            btn.removeAttribute('aria-busy');
+            btn.textContent = oldTxt || '儲存';
+          }
+        });
+
+      } catch (e) {
+        // 同步錯誤也要還原
+        this.state._saving = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.removeAttribute('aria-busy');
+          btn.textContent = oldTxt || '儲存';
+        }
+        throw e;
+      }
     }
+
   };
 
   global.EquRepairsModal = Mod;

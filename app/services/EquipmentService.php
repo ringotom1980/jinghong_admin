@@ -351,51 +351,52 @@ final class EquipmentService
     }
     if (!$items) throw new RuntimeException('請至少新增 1 筆明細');
 
-    $toolId = self::toolUpsert($tool)['tool_id'];
-    $vendorId = self::vendorUpsert($vendor)['vendor_id'];
-
-    $normItems = [];
-    $teamTotal = 0.0;
-    $companyTotal = 0.0;
-
-    foreach ($items as $idx => $it) {
-      if (!is_array($it)) continue;
-
-      $seq = isset($it['seq']) ? (int)$it['seq'] : ($idx + 1);
-      $content = isset($it['content']) ? trim((string)$it['content']) : '';
-      if ($content === '') throw new RuntimeException('明細第 ' . ($idx + 1) . ' 筆：項目內容不可空白');
-
-      $comp = isset($it['company_amount']) ? (float)$it['company_amount'] : 0.0;
-      $team = isset($it['team_amount']) ? (float)$it['team_amount'] : 0.0;
-
-      $companyTotal += $comp;
-      $teamTotal += $team;
-
-      $normItems[] = [
-        'seq' => $seq,
-        'content' => $content,
-        'company_amount' => $comp,
-        'team_amount' => $team,
-      ];
-    }
-
-    if (!$normItems) throw new RuntimeException('明細資料不正確');
-
-    usort($normItems, static fn($a, $b) => ($a['seq'] <=> $b['seq']));
-
-    $grandTotal = $companyTotal + $teamTotal;
-
     $pdo->beginTransaction();
     try {
+      // ✅ 併入同一筆交易：避免 toolUpsert/vendorUpsert 各自開交易造成慢/卡
+      $toolId = self::toolUpsert($tool)['tool_id'];
+      $vendorId = self::vendorUpsert($vendor)['vendor_id'];
+
+      $normItems = [];
+      $teamTotal = 0.0;
+      $companyTotal = 0.0;
+
+      foreach ($items as $idx => $it) {
+        if (!is_array($it)) continue;
+
+        $seq = isset($it['seq']) ? (int)$it['seq'] : ($idx + 1);
+        $content = isset($it['content']) ? trim((string)$it['content']) : '';
+        if ($content === '') throw new RuntimeException('明細第 ' . ($idx + 1) . ' 筆：項目內容不可空白');
+
+        $comp = isset($it['company_amount']) ? (float)$it['company_amount'] : 0.0;
+        $team = isset($it['team_amount']) ? (float)$it['team_amount'] : 0.0;
+
+        $companyTotal += $comp;
+        $teamTotal += $team;
+
+        $normItems[] = [
+          'seq' => $seq,
+          'content' => $content,
+          'company_amount' => $comp,
+          'team_amount' => $team,
+        ];
+      }
+
+      if (!$normItems) throw new RuntimeException('明細資料不正確');
+
+      usort($normItems, static fn($a, $b) => ($a['seq'] <=> $b['seq']));
+
+      $grandTotal = $companyTotal + $teamTotal;
+
       if ($id <= 0) {
         $st = $pdo->prepare("
-          INSERT INTO equ_repair_headers
-            (tool_id, repair_date, vendor_id, repair_type, note,
-             team_amount_total, company_amount_total, grand_total)
-          VALUES
-            (:tool_id, :repair_date, :vendor_id, :repair_type, :note,
-             :team_total, :company_total, :grand_total)
-        ");
+        INSERT INTO equ_repair_headers
+          (tool_id, repair_date, vendor_id, repair_type, note,
+           team_amount_total, company_amount_total, grand_total)
+        VALUES
+          (:tool_id, :repair_date, :vendor_id, :repair_type, :note,
+           :team_total, :company_total, :grand_total)
+      ");
         $st->execute([
           ':tool_id' => $toolId,
           ':repair_date' => $repairDate,
@@ -409,19 +410,19 @@ final class EquipmentService
         $id = (int)$pdo->lastInsertId();
       } else {
         $st = $pdo->prepare("
-          UPDATE equ_repair_headers
-          SET
-            tool_id = :tool_id,
-            repair_date = :repair_date,
-            vendor_id = :vendor_id,
-            repair_type = :repair_type,
-            note = :note,
-            team_amount_total = :team_total,
-            company_amount_total = :company_total,
-            grand_total = :grand_total
-          WHERE id = :id
-          LIMIT 1
-        ");
+        UPDATE equ_repair_headers
+        SET
+          tool_id = :tool_id,
+          repair_date = :repair_date,
+          vendor_id = :vendor_id,
+          repair_type = :repair_type,
+          note = :note,
+          team_amount_total = :team_total,
+          company_amount_total = :company_total,
+          grand_total = :grand_total
+        WHERE id = :id
+        LIMIT 1
+      ");
         $st->execute([
           ':tool_id' => $toolId,
           ':repair_date' => $repairDate,
@@ -439,11 +440,11 @@ final class EquipmentService
       }
 
       $ins = $pdo->prepare("
-        INSERT INTO equ_repair_items
-          (repair_id, seq, content, team_amount, company_amount)
-        VALUES
-          (:repair_id, :seq, :content, :team_amount, :company_amount)
-      ");
+      INSERT INTO equ_repair_items
+        (repair_id, seq, content, team_amount, company_amount)
+      VALUES
+        (:repair_id, :seq, :content, :team_amount, :company_amount)
+    ");
       foreach ($normItems as $it) {
         $ins->execute([
           ':repair_id' => $id,
@@ -456,7 +457,7 @@ final class EquipmentService
 
       $pdo->commit();
     } catch (Throwable $e) {
-      $pdo->rollBack();
+      if ($pdo->inTransaction()) $pdo->rollBack();
       throw $e;
     }
 
@@ -570,13 +571,13 @@ final class EquipmentService
       $row = $st->fetch();
       if ($row) {
         $upd = $pdo->prepare("
-          UPDATE equ_tools
-          SET use_count = use_count + 1,
-              last_used_at = CURRENT_TIMESTAMP(),
-              is_active = 1
-          WHERE id = ?
-          LIMIT 1
-        ");
+        UPDATE equ_tools
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
         $upd->execute([(int)$row['id']]);
 
         return ['tool_id' => (int)$row['id'], 'tool_name' => (string)$row['name']];
@@ -585,7 +586,10 @@ final class EquipmentService
       $v = (string)$v; // 改當 name 建立
     }
 
-    $pdo->beginTransaction();
+    // ✅ 若外層已經有交易（equRepairSave），這裡不要自己再開/關交易
+    $ownTx = !$pdo->inTransaction();
+    if ($ownTx) $pdo->beginTransaction();
+
     try {
       $st = $pdo->prepare("SELECT id, name FROM equ_tools WHERE name = ? LIMIT 1");
       $st->execute([$v]);
@@ -594,29 +598,31 @@ final class EquipmentService
       if ($row) {
         $id = (int)$row['id'];
         $upd = $pdo->prepare("
-          UPDATE equ_tools
-          SET use_count = use_count + 1,
-              last_used_at = CURRENT_TIMESTAMP(),
-              is_active = 1
-          WHERE id = ?
-          LIMIT 1
-        ");
+        UPDATE equ_tools
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
         $upd->execute([$id]);
-        $pdo->commit();
+
+        if ($ownTx) $pdo->commit();
         return ['tool_id' => $id, 'tool_name' => (string)$row['name']];
       }
 
       $ins = $pdo->prepare("
-        INSERT INTO equ_tools (name, is_active, use_count, last_used_at)
-        VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
-      ");
+      INSERT INTO equ_tools (name, is_active, use_count, last_used_at)
+      VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
+    ");
       $ins->execute([':name' => $v]);
 
       $id = (int)$pdo->lastInsertId();
-      $pdo->commit();
+
+      if ($ownTx) $pdo->commit();
       return ['tool_id' => $id, 'tool_name' => $v];
     } catch (Throwable $e) {
-      $pdo->rollBack();
+      if ($ownTx && $pdo->inTransaction()) $pdo->rollBack();
       throw $e;
     }
   }
@@ -636,13 +642,13 @@ final class EquipmentService
       $row = $st->fetch();
       if ($row) {
         $upd = $pdo->prepare("
-          UPDATE equ_vendors
-          SET use_count = use_count + 1,
-              last_used_at = CURRENT_TIMESTAMP(),
-              is_active = 1
-          WHERE id = ?
-          LIMIT 1
-        ");
+        UPDATE equ_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
         $upd->execute([(int)$row['id']]);
 
         return ['vendor_id' => (int)$row['id'], 'vendor_name' => (string)$row['name']];
@@ -651,7 +657,10 @@ final class EquipmentService
       $v = (string)$v; // 改當 name 建立
     }
 
-    $pdo->beginTransaction();
+    // ✅ 若外層已經有交易（equRepairSave），這裡不要自己再開/關交易
+    $ownTx = !$pdo->inTransaction();
+    if ($ownTx) $pdo->beginTransaction();
+
     try {
       $st = $pdo->prepare("SELECT id, name FROM equ_vendors WHERE name = ? LIMIT 1");
       $st->execute([$v]);
@@ -660,29 +669,31 @@ final class EquipmentService
       if ($row) {
         $id = (int)$row['id'];
         $upd = $pdo->prepare("
-          UPDATE equ_vendors
-          SET use_count = use_count + 1,
-              last_used_at = CURRENT_TIMESTAMP(),
-              is_active = 1
-          WHERE id = ?
-          LIMIT 1
-        ");
+        UPDATE equ_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
         $upd->execute([$id]);
-        $pdo->commit();
+
+        if ($ownTx) $pdo->commit();
         return ['vendor_id' => $id, 'vendor_name' => (string)$row['name']];
       }
 
       $ins = $pdo->prepare("
-        INSERT INTO equ_vendors (name, is_active, use_count, last_used_at)
-        VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
-      ");
+      INSERT INTO equ_vendors (name, is_active, use_count, last_used_at)
+      VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
+    ");
       $ins->execute([':name' => $v]);
 
       $id = (int)$pdo->lastInsertId();
-      $pdo->commit();
+
+      if ($ownTx) $pdo->commit();
       return ['vendor_id' => $id, 'vendor_name' => $v];
     } catch (Throwable $e) {
-      $pdo->rollBack();
+      if ($ownTx && $pdo->inTransaction()) $pdo->rollBack();
       throw $e;
     }
   }
