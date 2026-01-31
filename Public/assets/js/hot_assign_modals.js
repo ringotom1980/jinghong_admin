@@ -319,13 +319,15 @@
         },
 
         /* ========== open ========== */
-
         openVehAdd: function () {
             var self = this;
 
             // reset
             if (this.els.mVehPick) this.els.mVehPick.innerHTML = '<option value="">請選擇車輛</option>';
             if (this.els.mVehRows) this.els.mVehRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
+
+            // ✅ 先開視窗（不等 API）
+            openModal('modalVehAdd');
 
             Promise.all([
                 apiGet('/api/hot/assign', { action: 'available_vehicles' }),
@@ -351,7 +353,6 @@
                 }
 
                 self.addVehAddRow();
-                openModal('modalVehAdd');
             });
         },
 
@@ -404,16 +405,18 @@
                 toast('warning', '尚未選取車輛', '請先選取左側車輛');
                 return;
             }
+
             var self = this;
-            var vid = Number(this.app.state.activeVehicleId || 0);
             if (this.els.mAssignAddRows) this.els.mAssignAddRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
+            if (self.els.mAssignAddVehLabel) self.els.mAssignAddVehLabel.textContent = self.app.getActiveVehicleLabel();
+
+            // ✅ 先開視窗
+            openModal('modalAssignAdd');
 
             apiGet('/api/hot/assign', { action: 'items_counts' }).then(function (j) {
                 if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
                 self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
-                if (self.els.mAssignAddVehLabel) self.els.mAssignAddVehLabel.textContent = self.app.getActiveVehicleLabel();
                 self.addAssignAddRow();
-                openModal('modalAssignAdd');
             });
         },
 
@@ -422,15 +425,18 @@
                 toast('warning', '尚未選取車輛', '請先選取左側車輛');
                 return;
             }
+
             var self = this;
             if (this.els.mAssignMoveRows) this.els.mAssignMoveRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
+            if (self.els.mAssignMoveVehLabel) self.els.mAssignMoveVehLabel.textContent = self.app.getActiveVehicleLabel();
+
+            // ✅ 先開視窗
+            openModal('modalAssignMove');
 
             apiGet('/api/hot/assign', { action: 'items_counts' }).then(function (j) {
                 if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
                 self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
-                if (self.els.mAssignMoveVehLabel) self.els.mAssignMoveVehLabel.textContent = self.app.getActiveVehicleLabel();
                 self.addAssignMoveRow();
-                openModal('modalAssignMove');
             });
         },
 
