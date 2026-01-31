@@ -20,12 +20,15 @@ $pageCss = [
   'assets/css/motion.css',
 ];
 $pageJs = [
-  // 先掛好（你下一步再貼 JS）
-  'assets/js/hot_assign.js',
+  // 先定義子模組（會掛 window.HotAssignLeft/Right/Modals）
   'assets/js/hot_assign_left.js',
   'assets/js/hot_assign_right.js',
   'assets/js/hot_assign_modals.js',
+
+  // 最後才跑主控（DOMContentLoaded 時 init）
+  'assets/js/hot_assign.js',
 ];
+
 ?>
 <!doctype html>
 <html lang="zh-Hant">
