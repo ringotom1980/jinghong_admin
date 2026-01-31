@@ -75,8 +75,6 @@
           self.syncLeftMode();
         });
       }
-      // save 不需要（解除會走 modal 確認）
-      if (this.els.btnVehSave) this.els.btnVehSave.addEventListener('click', function () { });
 
       if (this.els.btnAssignAdd) {
         this.els.btnAssignAdd.addEventListener('click', function () {
@@ -101,12 +99,19 @@
 
     syncLeftMode: function () {
       var edit = !!this.state.leftEditMode;
+
+      // VIEW：新增/編輯顯示；取消隱藏
+      // EDIT：新增/編輯隱藏；取消顯示
       if (this.els.btnVehAdd) this.els.btnVehAdd.hidden = edit;
       if (this.els.btnVehEdit) this.els.btnVehEdit.hidden = edit;
 
-      if (this.els.btnVehSave) this.els.btnVehSave.hidden = !edit;
+      // ✅ 取消：只在 EDIT 顯示
       if (this.els.btnVehCancel) this.els.btnVehCancel.hidden = !edit;
 
+      // ✅ 儲存：本流程不需要，永遠隱藏（砍廢物）
+      if (this.els.btnVehSave) this.els.btnVehSave.hidden = true;
+
+      // 左表列的「解除」按鈕由 editMode 控制
       if (global.HotAssignLeft) {
         global.HotAssignLeft.render(this.state.vehicles, this.state.activeVehicleId, edit);
       }
@@ -164,9 +169,6 @@
         if (!activeId && vehicles.length) activeId = Number(vehicles[0].id || 0);
 
         self.state.activeVehicleId = activeId || 0;
-
-        // render left first
-        if (global.HotAssignLeft) global.HotAssignLeft.render(self.state.vehicles, self.state.activeVehicleId, !!self.state.leftEditMode);
 
         // render right label + load tools
         if (!self.state.activeVehicleId) {

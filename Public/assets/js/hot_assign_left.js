@@ -24,12 +24,11 @@
 
   var Mod = {
     app: null,
-    els: { tb: null, wrap: null },
+    els: { tb: null },
 
     init: function (app) {
       this.app = app || null;
       this.els.tb = qs('#tbHotVeh');
-      this.els.wrap = qs('#hotVehWrap');
 
       var self = this;
 
@@ -85,7 +84,7 @@
             ? ('<span class="hot-row__act">'
               + '<button type="button" class="hot-row__del" data-act="veh-unassign-all" data-vehicle-id="' + vid + '">解除</button>'
               + '</span>')
-            : ('<span class="hot-row__act"><span class="hot-actBtn" style="opacity:.65;cursor:default;">—</span></span>')
+            : ''
           )
           + '  </td>'
           + '</tr>';
