@@ -645,9 +645,8 @@
           closeModal('modalToolAdd');
           toastOk('已新增工具');
 
-          // 右表刷新、左表 counts 也要刷新
+          // 右表刷新、左表 counts 也要刷新（reloadItemsKeepActive 內部會再 reloadTools）
           self.reloadItemsKeepActive();
-          self.reloadTools();
         });
     },
 
@@ -683,8 +682,7 @@
         if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
         toastOk('已儲存工具');
         self.setToolsMode('VIEW');
-        self.reloadItemsKeepActive(); // counts 可能變
-        self.reloadTools();
+        self.reloadItemsKeepActive(); // counts 可能變（內部會再 reloadTools）
       });
     }
   };
