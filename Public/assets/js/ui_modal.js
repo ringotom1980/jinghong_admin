@@ -57,7 +57,12 @@
 
       var panel = document.createElement('div');
       panel.className = 'modal-panel';
-
+      // ✅ allow caller to append panel class (ex: modal-panel--wide)
+      if (opts.panelClass) {
+        String(opts.panelClass).split(/\s+/).forEach(function (c) {
+          if (c) panel.classList.add(c);
+        });
+      }
       panel.innerHTML = ''
         + '<div class="modal__head">'
         + '  <h3 class="modal__title">' + escapeHtml(title) + '</h3>'

@@ -252,6 +252,7 @@
             // 先開（內容之後填）
             var bd = global.Modal.open({
                 title: '新增車輛配賦',
+                panelClass: 'modal-panel--wide',
                 html: ''
                     + '<div class="hot-form">'
                     + '  <div class="hot-field">'
