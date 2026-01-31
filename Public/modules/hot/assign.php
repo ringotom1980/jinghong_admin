@@ -14,10 +14,10 @@ require_login();
 
 $pageTitle = '活電工具管理｜配賦表';
 $pageCss = [
-  'assets/css/hot_assign.css',
   'assets/css/ui_modal.css',
   'assets/css/ui_toast.css',
   'assets/css/motion.css',
+  'assets/css/hot_assign.css',
 ];
 $pageJs = [
   // 子模組
