@@ -296,17 +296,6 @@
 }
 
 /* ===== 右側 pane：只捲 tbody 區，表頭固定 ===== */
-.page.hot-tools {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - var(--topbar-h, 0px));
-}
-
-.page.hot-tools .hot-split {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
 .hot-tools .hot-pane--right {
   display: flex;
   flex-direction: column;

@@ -228,7 +228,10 @@
   transform: translateX(-6px);
   opacity: 0;
   visibility: hidden;
-  transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    visibility 160ms ease;
 }
 
 .sidenav.is-open .sidenav__drawerHost {
@@ -338,7 +341,9 @@
   border-left: 1px solid rgba(15, 23, 42, 0.06);
 
   /* 讓內容至少撐滿視窗高度（扣掉 topbar） */
-  min-height: calc(100vh - var(--topbar-h));
+  /* min-height: calc(100vh - var(--topbar-h)); */
+  height: calc(100vh - var(--topbar-h));
+  overflow-y: auto; /* ✅ 全站唯一捲動 */
 }
 
 /* footer 跟內容一起捲：不要 fixed/sticky */

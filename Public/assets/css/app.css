@@ -74,7 +74,8 @@ html {
 
 html {
   scrollbar-gutter: stable;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
+  overflow: hidden;
 }
 
 body {
@@ -90,7 +91,8 @@ body {
     sans-serif;
   font-size: var(--fs-base);
   line-height: var(--lh);
-  min-height: 100vh;
+  /* min-height: 100vh; */
+  height: 100%;
   display: flex;
   flex-direction: column;
   /* ✅ no pink: soft blue + neutral haze */
