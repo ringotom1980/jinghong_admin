@@ -1,16 +1,24 @@
 /* Path: Public/assets/js/hot_assign.js
- * 說明: 活電工具配賦｜主控（A 路線：table/DOM 為真相）
- * - DOM:
- *   左：#tbHotVeh（HotAssignLeft 渲染）
- *   右：#tbHotAssign（HotAssignRight 渲染）
- *   左按鈕：#btnVehAdd #btnVehEdit #btnVehSave #btnVehCancel
- *   右按鈕：#btnAssignAdd #btnAssignMove
+ * 說明: 活電工具配賦｜主控入口（A 路線：table/DOM 為真相）
+ * - 職責：
+ *   1) 綁定按鈕事件（新增/移轉/新增配賦）
+ *   2) 提供 HotAssignModals 需要的 app 介面：state / loadAll() / getActiveVehicleLabel()
+ *   3) 載入左表 vehicles 與右表 tools（依你後端 API 回傳結構渲染）
  */
 
 (function (global) {
   'use strict';
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function esc(s) {
+    s = (s === null || s === undefined) ? '' : String(s);
+    return s.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   function toast(type, title, message) {
     if (global.Toast && typeof global.Toast.show === 'function') {
@@ -20,93 +28,176 @@
     alert((title ? title + '\n' : '') + (message || ''));
   }
 
+  function apiGet(url, params) {
+    if (typeof global.apiGet === 'function') return global.apiGet(url, params);
+    return Promise.resolve({ success: false, data: null, error: 'apiGet 不存在' });
+  }
+
+  // ===== App 主體（給 HotAssignModals 用）=====
   var App = {
     els: {},
     state: {
       vehicles: [],
       activeVehicleId: 0,
-      assignedTools: [],
-      leftEditMode: false
+      tools: []
     },
 
     init: function () {
-      this.els.leftActions = qs('#hotAssignLeftActions');
-      this.els.rightActions = qs('#hotAssignRightActions');
+      // cache DOM
+      this.els.tbVeh = qs('#tbHotVeh');
+      this.els.tbAssign = qs('#tbHotAssign');
+      this.els.activeVehLabel = qs('#hotActiveVehLabel');
 
+      // buttons
       this.els.btnVehAdd = qs('#btnVehAdd');
-      this.els.btnVehEdit = qs('#btnVehEdit');
-      this.els.btnVehSave = qs('#btnVehSave');
-      this.els.btnVehCancel = qs('#btnVehCancel');
-
       this.els.btnAssignAdd = qs('#btnAssignAdd');
       this.els.btnAssignMove = qs('#btnAssignMove');
 
-      if (global.HotAssignLeft) global.HotAssignLeft.init(this);
-      if (global.HotAssignRight) global.HotAssignRight.init(this);
-      if (global.HotAssignModals) global.HotAssignModals.init(this);
+      // ✅ 先把 Modal 模組初始化（最重要：把事件綁定起來）
+      if (global.HotAssignModals && typeof global.HotAssignModals.init === 'function') {
+        global.HotAssignModals.init(this);
+      } else {
+        toast('danger', '初始化失敗', 'HotAssignModals 未載入或缺 init()');
+        return;
+      }
 
-      this.bindEvents();
+      // ✅ 綁定按鈕 → 開 modal
+      this.bindButtons();
+
+      // 左表/右表事件（點車、解除、刪車）
+      this.bindTables();
+
+      // 首次載入
       this.loadAll(0);
     },
 
-    bindEvents: function () {
+    bindButtons: function () {
       var self = this;
 
-      if (this.els.btnVehAdd) {
-        this.els.btnVehAdd.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+      if (self.els.btnVehAdd) {
+        self.els.btnVehAdd.addEventListener('click', function () {
           global.HotAssignModals.openVehAdd();
         });
       }
 
-      // 左表：編輯模式＝顯示每列「解除」按鈕
-      if (this.els.btnVehEdit) {
-        this.els.btnVehEdit.addEventListener('click', function () {
-          self.state.leftEditMode = true;
-          self.syncLeftMode();
-        });
-      }
-      if (this.els.btnVehCancel) {
-        this.els.btnVehCancel.addEventListener('click', function () {
-          self.state.leftEditMode = false;
-          self.syncLeftMode();
-        });
-      }
-      // save 不需要（解除會走 modal 確認）
-      if (this.els.btnVehSave) this.els.btnVehSave.addEventListener('click', function () { });
-
-      if (this.els.btnAssignAdd) {
-        this.els.btnAssignAdd.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+      if (self.els.btnAssignAdd) {
+        self.els.btnAssignAdd.addEventListener('click', function () {
           global.HotAssignModals.openAssignAdd();
         });
       }
 
-      if (this.els.btnAssignMove) {
-        this.els.btnAssignMove.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+      if (self.els.btnAssignMove) {
+        self.els.btnAssignMove.addEventListener('click', function () {
           global.HotAssignModals.openAssignMove();
         });
       }
     },
 
-    syncLeftMode: function () {
-      var edit = !!this.state.leftEditMode;
-      if (this.els.btnVehAdd) this.els.btnVehAdd.hidden = edit;
-      if (this.els.btnVehEdit) this.els.btnVehEdit.hidden = edit;
+    bindTables: function () {
+      var self = this;
 
-      if (this.els.btnVehSave) this.els.btnVehSave.hidden = !edit;
-      if (this.els.btnVehCancel) this.els.btnVehCancel.hidden = !edit;
+      // 點左表某台車 → 設為 active → 右表載入
+      if (self.els.tbVeh) {
+        self.els.tbVeh.addEventListener('click', function (e) {
+          var tr = e.target && e.target.closest ? e.target.closest('tr[data-vehicle-id]') : null;
+          if (!tr) return;
 
-      if (global.HotAssignLeft) {
-        global.HotAssignLeft.render(this.state.vehicles, this.state.activeVehicleId, edit);
+          var vid = Number(tr.getAttribute('data-vehicle-id') || 0);
+          if (!vid) return;
+
+          self.state.activeVehicleId = vid;
+          self.renderActiveVehLabel();
+          self.loadTools(vid);
+        });
+
+        // 左表：解除該車全部配賦（若你左表有放按鈕 class=js-veh-del）
+        self.els.tbVeh.addEventListener('click', function (e) {
+          var btn = e.target && e.target.closest ? e.target.closest('.js-veh-del') : null;
+          if (!btn) return;
+          e.preventDefault();
+          var tr = btn.closest('tr[data-vehicle-id]');
+          var vid = tr ? Number(tr.getAttribute('data-vehicle-id') || 0) : 0;
+          if (!vid) return;
+          global.HotAssignModals.openVehDelete(vid);
+        });
       }
+
+      // 右表：解除單筆（若右表有放按鈕 class=js-tool-unassign data-tool-id data-meta）
+      if (self.els.tbAssign) {
+        self.els.tbAssign.addEventListener('click', function (e) {
+          var btn = e.target && e.target.closest ? e.target.closest('.js-tool-unassign') : null;
+          if (!btn) return;
+          e.preventDefault();
+
+          var tid = Number(btn.getAttribute('data-tool-id') || 0);
+          var meta = btn.getAttribute('data-meta') || '';
+          if (!tid) return;
+
+          global.HotAssignModals.openToolUnassign(tid, meta);
+        });
+      }
+    },
+
+    // HotAssignModals 會呼叫
+    loadAll: function (activeVehicleId) {
+      var self = this;
+      activeVehicleId = Number(activeVehicleId || 0);
+
+      apiGet('/api/hot/assign', { action: 'init' }).then(function (j) {
+        if (!j || !j.success) {
+          toast('danger', '載入失敗', (j && j.error) ? j.error : 'init');
+          return;
+        }
+
+        // 你後端回傳結構請對齊這裡：
+        self.state.vehicles = (j.data && Array.isArray(j.data.vehicles)) ? j.data.vehicles : [];
+        self.renderVehicles();
+
+        // 決定 active 車
+        if (activeVehicleId) {
+          self.state.activeVehicleId = activeVehicleId;
+        } else if (self.state.activeVehicleId) {
+          // keep
+        } else if (self.state.vehicles.length) {
+          self.state.activeVehicleId = Number(self.state.vehicles[0].id || 0);
+        } else {
+          self.state.activeVehicleId = 0;
+        }
+
+        self.renderActiveVehLabel();
+
+        if (self.state.activeVehicleId) self.loadTools(self.state.activeVehicleId);
+        else self.renderToolsEmpty('請先選取左側車輛');
+      });
+    },
+
+    loadTools: function (vehicleId) {
+      var self = this;
+      vehicleId = Number(vehicleId || 0);
+      if (!vehicleId) {
+        self.renderToolsEmpty('請先選取左側車輛');
+        return;
+      }
+
+      apiGet('/api/hot/assign', { action: 'tools', vehicle_id: vehicleId }).then(function (j) {
+        if (!j || !j.success) {
+          toast('danger', '載入失敗', (j && j.error) ? j.error : 'tools');
+          self.renderToolsEmpty('載入失敗');
+          return;
+        }
+
+        self.state.tools = (j.data && Array.isArray(j.data.tools)) ? j.data.tools : [];
+        self.renderTools();
+      });
     },
 
     getActiveVehicleLabel: function () {
       var vid = Number(this.state.activeVehicleId || 0);
-      var v = (this.state.vehicles || []).find(function (x) { return Number(x.id || 0) === vid; });
+      if (!vid) return '未選取車輛';
+
+      var v = this.state.vehicles.find(function (x) { return Number(x.id || 0) === vid; });
       if (!v) return '未選取車輛';
+
       var parts = [];
       if (v.vehicle_code) parts.push(String(v.vehicle_code));
       if (v.plate_no) parts.push(String(v.plate_no));
@@ -115,87 +206,88 @@
       return s || '未選取車輛';
     },
 
-    setActiveVehicle: function (vehicleId, loadTools) {
-      vehicleId = Number(vehicleId || 0);
-      if (!vehicleId) return;
-
-      this.state.activeVehicleId = vehicleId;
-
-      if (global.HotAssignLeft) {
-        global.HotAssignLeft.render(this.state.vehicles, vehicleId, !!this.state.leftEditMode);
-      }
-
-      if (loadTools) this.loadTools(vehicleId);
+    renderActiveVehLabel: function () {
+      if (this.els.activeVehLabel) this.els.activeVehLabel.textContent = this.getActiveVehicleLabel();
     },
 
-    /* ========== API ========== */
+    renderVehicles: function () {
+      var tb = this.els.tbVeh;
+      if (!tb) return;
 
-    loadAll: function (preferVehicleId) {
-      var self = this;
-      if (typeof global.apiGet !== 'function') {
-        toast('danger', '系統錯誤', 'apiGet 不存在');
+      var rows = this.state.vehicles || [];
+      if (!rows.length) {
+        tb.innerHTML = '<tr class="hot-empty"><td colspan="5">尚無配賦車輛</td></tr>';
         return;
       }
 
-      global.apiGet('/api/hot/assign?action=vehicles').then(function (j1) {
-        if (!j1 || !j1.success) {
-          self.state.vehicles = [];
-          self.state.activeVehicleId = 0;
-          self.state.assignedTools = [];
-          if (global.HotAssignLeft) global.HotAssignLeft.render([], 0, false);
-          if (global.HotAssignRight) global.HotAssignRight.render('未選取車輛', 0, []);
-          toast('danger', '載入失敗', (j1 && j1.error) ? j1.error : '未知錯誤');
-          return;
-        }
+      var html = '';
+      rows.forEach(function (v) {
+        v = v || {};
+        var vid = Number(v.id || 0);
+        if (!vid) return;
 
-        var vehicles = (j1.data && j1.data.vehicles) ? j1.data.vehicles : [];
-        self.state.vehicles = vehicles;
+        var status = Number(v.is_active || 0) === 0 ? '停用' : '使用中';
+        var cnt = Number(v.assigned_cnt || 0);
 
-        var activeId = Number(preferVehicleId || 0);
-        if (!activeId && vehicles.length) activeId = Number(vehicles[0].id || 0);
-
-        self.state.activeVehicleId = activeId || 0;
-
-        // render left first
-        if (global.HotAssignLeft) global.HotAssignLeft.render(self.state.vehicles, self.state.activeVehicleId, !!self.state.leftEditMode);
-
-        // render right label + load tools
-        if (!self.state.activeVehicleId) {
-          if (global.HotAssignRight) global.HotAssignRight.render('未選取車輛', 0, []);
-          self.syncLeftMode();
-          return;
-        }
-
-        self.loadTools(self.state.activeVehicleId);
-        self.syncLeftMode();
+        html += ''
+          + '<tr data-vehicle-id="' + vid + '">'
+          + '  <td>' + esc(v.vehicle_code || '-') + '</td>'
+          + '  <td>' + esc(v.plate_no || '-') + '</td>'
+          + '  <td>' + esc(status) + '</td>'
+          + '  <td>' + esc(String(cnt)) + '</td>'
+          + '  <td>'
+          + '    <button class="btn btn--ghost js-veh-del" type="button">解除</button>'
+          + '  </td>'
+          + '</tr>';
       });
+
+      tb.innerHTML = html || '<tr class="hot-empty"><td colspan="5">尚無配賦車輛</td></tr>';
     },
 
-    loadTools: function (vehicleId) {
-      var self = this;
-      if (typeof global.apiGet !== 'function') return;
+    renderToolsEmpty: function (text) {
+      var tb = this.els.tbAssign;
+      if (!tb) return;
+      tb.innerHTML = '<tr class="hot-empty"><td colspan="5">' + esc(text || '請先選取左側車輛') + '</td></tr>';
+    },
 
-      vehicleId = Number(vehicleId || 0);
-      if (!vehicleId) return;
+    renderTools: function () {
+      var tb = this.els.tbAssign;
+      if (!tb) return;
 
-      global.apiGet('/api/hot/assign?action=tools&vehicle_id=' + encodeURIComponent(String(vehicleId)))
-        .then(function (j) {
-          if (!j || !j.success) {
-            self.state.assignedTools = [];
-            if (global.HotAssignRight) global.HotAssignRight.render(self.getActiveVehicleLabel(), vehicleId, []);
-            toast('danger', '載入失敗', (j && j.error) ? j.error : '未知錯誤');
-            return;
-          }
-          self.state.assignedTools = (j.data && j.data.tools) ? j.data.tools : [];
-          if (global.HotAssignRight) global.HotAssignRight.render(self.getActiveVehicleLabel(), vehicleId, self.state.assignedTools);
-        });
+      var rows = this.state.tools || [];
+      if (!rows.length) {
+        this.renderToolsEmpty('（此車尚無配賦工具）');
+        return;
+      }
+
+      var html = '';
+      rows.forEach(function (t) {
+        t = t || {};
+        var tid = Number(t.id || 0);
+        if (!tid) return;
+
+        var meta = (t.item_code ? t.item_code + '｜' : '') + (t.tool_no || '-');
+
+        html += ''
+          + '<tr>'
+          + '  <td>' + esc(t.item_name || t.item_code || '-') + '</td>'
+          + '  <td>' + esc(t.tool_no || '-') + '</td>'
+          + '  <td>' + esc(t.inspect_date || '-') + '</td>'
+          + '  <td>' + esc(t.note || '') + '</td>'
+          + '  <td>'
+          + '    <button class="btn btn--ghost js-tool-unassign" type="button"'
+          + '      data-tool-id="' + tid + '" data-meta="' + esc(meta) + '">解除</button>'
+          + '  </td>'
+          + '</tr>';
+      });
+
+      tb.innerHTML = html || '<tr class="hot-empty"><td colspan="5">（此車尚無配賦工具）</td></tr>';
     }
   };
 
-  global.HotAssignApp = App;
-
   document.addEventListener('DOMContentLoaded', function () {
     App.init();
+    global.HotAssignApp = App; // 方便你 console 看 state
   });
 
 })(window);
