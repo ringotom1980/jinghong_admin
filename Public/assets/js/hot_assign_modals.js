@@ -384,11 +384,14 @@
                     var toolNos = Object.keys(b.toolMap).map(function (tid) { return b.toolMap[tid]; });
                     toolNos.sort(function (x, y) { return String(x).localeCompare(String(y)); });
 
+                    var n = toolNos.length;
                     var head = (b.code ? (b.code + ' | ') : '') + (b.name || '');
+                    head = head + '(' + n + ')：';
+
                     html += ''
                         + '<div class="hot-vehAdd__sumRow">'
                         + '  <div class="hot-vehAdd__sumHead">' + esc(head) + '</div>'
-                        + '  <div class="hot-vehAdd__sumBody">：' + esc(toolNos.join('、')) + '</div>'
+                        + '  <div class="hot-vehAdd__sumBody">' + esc(toolNos.join('、')) + '</div>'
                         + '</div>';
                 });
                 html += '</div>';

@@ -415,11 +415,11 @@
   gap: 8px;
 }
 .hot-vehAdd__sumRow {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
 }
+
 .hot-vehAdd__sumHead {
   font-weight: 900;
   color: rgba(15, 23, 42, 0.82);
