@@ -300,7 +300,8 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: calc(100vh - var(--topbar-h) - 150px);
+  /*這個調整px就是調整右表顯示高度*/
+  max-height: calc(100vh - var(--topbar-h) - 155px);
 }
 
 .hot-tools .hot-pane--right .hot-pane__body {
