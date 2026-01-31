@@ -82,7 +82,7 @@
           + '  <td>'
           + (editMode
             ? ('<span class="hot-row__act">'
-              + '<button type="button" class="hot-row__del" data-act="veh-unassign-all" data-vehicle-id="' + vid + '">解除</button>'
+              + '<button type="button" class="btn btn--danger" data-act="veh-unassign-all" data-vehicle-id="' + vid + '">解除所有配賦</button>'
               + '</span>')
             : ''
           )

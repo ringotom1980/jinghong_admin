@@ -279,6 +279,4 @@
 /* ===== FIX: hot_assign page hidden buttons must really hide ===== */
 .hot-assign .btn[hidden],
 .hot-assign button[hidden],
-.hot-assign [hidden] {
-  display: none !important;
-}
+.hot-assign [hidden] { display:none !important; }

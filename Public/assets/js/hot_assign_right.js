@@ -75,7 +75,7 @@
           + '  <td>' + esc(r.note || '') + '</td>'
           + '  <td>'
           + '    <span class="hot-row__act">'
-          + '      <button type="button" class="hot-actBtn" data-act="tool-unassign" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">解除</button>'
+          + '      <button type="button" class="btn btn--danger" data-act="tool-unassign" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">解除配賦</button>'
           + '    </span>'
           + '  </td>'
           + '</tr>';
