@@ -1,13 +1,15 @@
 /* Path: Public/assets/js/hot_assign_modals.js
- * 說明: 活電工具配賦｜Modal 控制
- * - 對齊 pages: Public/modules/hot/assign.php（modalVehAdd / modalVehDelete）
- * - 對齊 API : Public/api/hot/assign.php
- *   GET : action=available_vehicles / items_counts / unassigned_tools / tools
- *   POST: action=vehicle_add / vehicle_unassign_all
+ * 說明: 活電工具配賦｜Modal 控制（A 路線：table/DOM 為真相）
+ * - modals:
+ *   (1) modalVehAdd      新增車輛配賦（至少 1 工具）
+ *   (2) modalVehDelete   解除該車全部配賦（二次確認）
+ *   (3) modalAssignAdd   新增配賦（加入未配賦）
+ *   (4) modalAssignMove  移轉進來（從其他車移轉）
+ *   (5) modalToolUnassign 解除單筆
  *
- * 注意：
- * - 本檔只處理「新增車輛配賦」與「解除該車全部配賦」兩個 modal（你頁面已存在）
- * - 右表「新增配賦 / 移轉進來」你頁面尚未放對應 modal DOM，先不做
+ * - API:
+ *   GET : action=available_vehicles / items_counts / unassigned_tools / tools / transfer_tools
+ *   POST: action=vehicle_add / vehicle_unassign_all / assign_more / transfer / tool_unassign
  */
 
 (function (global) {
@@ -25,12 +27,11 @@
       .replace(/'/g, '&#039;');
   }
 
-  function showToast(type, title, message) {
+  function toast(type, title, message) {
     if (global.Toast && typeof global.Toast.show === 'function') {
       global.Toast.show({ type: type, title: title, message: message });
       return;
     }
-    // fallback
     alert((title ? title + '\n' : '') + (message || ''));
   }
 
@@ -38,7 +39,6 @@
     if (typeof global.apiGet === 'function') return global.apiGet(url);
     return Promise.resolve({ success: false, error: 'apiGet 不存在' });
   }
-
   function apiPost(url, body) {
     if (typeof global.apiPost === 'function') return global.apiPost(url, body);
     return Promise.resolve({ success: false, error: 'apiPost 不存在' });
@@ -50,17 +50,18 @@
     el.hidden = false;
     document.body.classList.add('modal-open');
   }
-
   function closeModal(id) {
     var el = qs('#' + id);
     if (!el) return;
     el.hidden = true;
-    // 若頁面有多個 modal，只有全部關閉才移除 class
     var anyOpen = qsa('.modal-backdrop').some(function (x) { return !x.hidden; });
     if (!anyOpen) document.body.classList.remove('modal-open');
   }
 
-  function bindCloseButtons() {
+  function bindCloseButtonsOnce() {
+    if (bindCloseButtonsOnce._done) return;
+    bindCloseButtonsOnce._done = true;
+
     document.addEventListener('click', function (e) {
       var btn = e.target && e.target.closest ? e.target.closest('[data-close-modal]') : null;
       if (!btn) return;
@@ -68,35 +69,45 @@
       if (mid) closeModal(mid);
     });
 
-    // 點 backdrop 空白處關閉（只對有 modal-backdrop 的）
     document.addEventListener('click', function (e) {
       var bd = e.target && e.target.classList && e.target.classList.contains('modal-backdrop') ? e.target : null;
       if (!bd) return;
       if (bd.getAttribute('id')) closeModal(bd.getAttribute('id'));
     });
 
-    // ESC 關閉最上層
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       var opens = qsa('.modal-backdrop').filter(function (x) { return !x.hidden; });
       if (!opens.length) return;
-      var top = opens[opens.length - 1];
-      closeModal(top.getAttribute('id'));
+      closeModal(opens[opens.length - 1].getAttribute('id'));
     });
   }
 
-  /* ========== 新增車 modal：動態列 ========== */
+  function vehicleLabel(v) {
+    var parts = [];
+    if (v.vehicle_code) parts.push(String(v.vehicle_code));
+    if (v.plate_no) parts.push(String(v.plate_no));
+    var s = parts.join('｜');
+    if (Number(v.is_active || 0) === 0) s += '（停用中）';
+    return s || '-';
+  }
+
+  function ensureRowsNotEmpty(host) {
+    if (!host) return;
+    var lines = qsa('.hot-rowLine', host).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
+    if (lines.length) return;
+    host.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
+  }
 
   function buildRowLine(idx, items) {
-    // items: [{id, code, name, tool_total, assigned_cnt, available_cnt}]
     var opt = '<option value="">請選擇分類</option>';
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i] || {};
+    (items || []).forEach(function (it) {
+      it = it || {};
       var iid = Number(it.id || 0);
-      if (!iid) continue;
+      if (!iid) return;
       var label = (it.code ? it.code + '｜' : '') + (it.name || '');
       opt += '<option value="' + iid + '">' + esc(label) + '</option>';
-    }
+    });
 
     return ''
       + '<div class="hot-rowLine" data-row-idx="' + idx + '">'
@@ -107,18 +118,10 @@
       + '    </div>'
       + '    <div class="hot-field">'
       + '      <label class="form-label">工具編號<span class="hot-req">*</span></label>'
-      + '      <select class="input js-tool" disabled>'
-      + '        <option value="">請先選分類</option>'
-      + '      </select>'
+      + '      <select class="input js-tool" disabled><option value="">請先選分類</option></select>'
       + '    </div>'
-      + '    <div class="hot-field">'
-      + '      <label class="form-label">檢驗日期</label>'
-      + '      <input class="input js-inspect" type="date" />'
-      + '    </div>'
-      + '    <div class="hot-field">'
-      + '      <label class="form-label">備註</label>'
-      + '      <input class="input js-note" type="text" placeholder="可空" />'
-      + '    </div>'
+      + '    <div class="hot-field js-meta1" style="display:none;"></div>'
+      + '    <div class="hot-field js-meta2" style="display:none;"></div>'
       + '  </div>'
       + '  <div class="hot-rowLine__actions">'
       + '    <button type="button" class="btn btn--ghost js-row-del">刪除列</button>'
@@ -126,129 +129,204 @@
       + '</div>';
   }
 
-  function vehicleLabel(v) {
-    // v: {vehicle_code, plate_no, is_active}
-    var parts = [];
-    if (v.vehicle_code) parts.push(String(v.vehicle_code));
-    if (v.plate_no) parts.push(String(v.plate_no));
-    var s = parts.join('｜');
-    if (Number(v.is_active || 0) === 0) s += '（停用中）';
-    return s;
+  // 專用：新增車（有檢驗日/備註）
+  function buildVehAddRowLine(idx, items) {
+    var base = buildRowLine(idx, items);
+    // 把 meta1/meta2 換成檢驗日/備註欄（保持你原本 UI）
+    return base
+      .replace('<div class="hot-field js-meta1" style="display:none;"></div>', ''
+        + '<div class="hot-field">'
+        + '  <label class="form-label">檢驗日期</label>'
+        + '  <input class="input js-inspect" type="date" />'
+        + '</div>')
+      .replace('<div class="hot-field js-meta2" style="display:none;"></div>', ''
+        + '<div class="hot-field">'
+        + '  <label class="form-label">備註</label>'
+        + '  <input class="input js-note" type="text" placeholder="可空" />'
+        + '</div>');
+  }
+
+  // 專用：移轉列（顯示來源車輛）
+  function buildMoveRowLine(idx, items) {
+    var base = buildRowLine(idx, items);
+    return base
+      .replace('<div class="hot-field js-meta1" style="display:none;"></div>', ''
+        + '<div class="hot-field">'
+        + '  <label class="form-label">來源車輛</label>'
+        + '  <input class="input js-from" type="text" disabled value="-" />'
+        + '</div>')
+      .replace('<div class="hot-field js-meta2" style="display:none;"></div>', ''
+        + '<div class="hot-field">'
+        + '  <label class="form-label">狀態</label>'
+        + '  <input class="input js-fromStatus" type="text" disabled value="-" />'
+        + '</div>');
   }
 
   var Mod = {
     app: null,
 
+    // cache DOM
     els: {
-      // add modal
+      // veh add
       mVehPick: null,
       mVehRows: null,
       btnAddRow: null,
       btnVehAddSubmit: null,
       mVehDynHintText: null,
 
-      // delete modal
+      // veh delete
       mVehDelMeta: null,
       mVehDelCount: null,
       mVehDelTools: null,
-      btnVehDeleteSubmit: null
+      btnVehDeleteSubmit: null,
+
+      // assign add
+      mAssignAddVehLabel: null,
+      mAssignAddRows: null,
+      btnAssignAddRow: null,
+      btnAssignAddSubmit: null,
+
+      // assign move
+      mAssignMoveVehLabel: null,
+      mAssignMoveRows: null,
+      btnAssignMoveRow: null,
+      btnAssignMoveSubmit: null,
+
+      // tool unassign
+      mToolUnMeta: null,
+      btnToolUnSubmit: null
     },
 
     state: {
       itemsCounts: [],
       availableVehicles: [],
-      rowSeq: 0,
-      pendingDeleteVehicleId: 0
+
+      // for submits
+      pendingDeleteVehicleId: 0,
+      pendingToolUnassignId: 0,
+      pendingToolUnassignMeta: ''
     },
 
     init: function (app) {
       this.app = app || null;
+      bindCloseButtonsOnce();
 
-      // bind close buttons once
-      bindCloseButtons();
-
-      // cache dom
+      // veh add
       this.els.mVehPick = qs('#mVehPick');
       this.els.mVehRows = qs('#mVehRows');
       this.els.btnAddRow = qs('#btnAddRow');
       this.els.btnVehAddSubmit = qs('#btnVehAddSubmit');
       this.els.mVehDynHintText = qs('#mVehDynHintText');
 
+      // veh delete
       this.els.mVehDelMeta = qs('#mVehDelMeta');
       this.els.mVehDelCount = qs('#mVehDelCount');
       this.els.mVehDelTools = qs('#mVehDelTools');
       this.els.btnVehDeleteSubmit = qs('#btnVehDeleteSubmit');
 
-      // add row button
-      var self = this;
-      if (this.els.btnAddRow) {
-        this.els.btnAddRow.addEventListener('click', function () {
-          self.addRow();
-        });
-      }
+      // assign add
+      this.els.mAssignAddVehLabel = qs('#mAssignAddVehLabel');
+      this.els.mAssignAddRows = qs('#mAssignAddRows');
+      this.els.btnAssignAddRow = qs('#btnAssignAddRow');
+      this.els.btnAssignAddSubmit = qs('#btnAssignAddSubmit');
 
-      // row events (delegate)
-      if (this.els.mVehRows) {
-        this.els.mVehRows.addEventListener('click', function (e) {
+      // assign move
+      this.els.mAssignMoveVehLabel = qs('#mAssignMoveVehLabel');
+      this.els.mAssignMoveRows = qs('#mAssignMoveRows');
+      this.els.btnAssignMoveRow = qs('#btnAssignMoveRow');
+      this.els.btnAssignMoveSubmit = qs('#btnAssignMoveSubmit');
+
+      // tool unassign
+      this.els.mToolUnMeta = qs('#mToolUnMeta');
+      this.els.btnToolUnSubmit = qs('#btnToolUnSubmit');
+
+      var self = this;
+
+      // common row delete (delegate) for all row containers
+      function bindRowContainer(container) {
+        if (!container) return;
+        container.addEventListener('click', function (e) {
           var del = e.target && e.target.closest ? e.target.closest('.js-row-del') : null;
           if (!del) return;
           var line = del.closest('.hot-rowLine');
           if (!line) return;
           line.parentNode.removeChild(line);
-          self.updateDynHint();
-          self.refreshAllToolSelects(); // 釋放被占用的工具
-          self.ensureNotEmptyPlaceholder();
+          ensureRowsNotEmpty(container);
         });
 
-        this.els.mVehRows.addEventListener('change', function (e) {
+        container.addEventListener('change', function (e) {
           var line = e.target && e.target.closest ? e.target.closest('.hot-rowLine') : null;
           if (!line) return;
 
           if (e.target.classList.contains('js-item')) {
             var itemId = Number(e.target.value || 0);
-            self.onItemChanged(line, itemId);
+            self.onItemChanged(container, line, itemId);
           }
-
           if (e.target.classList.contains('js-tool')) {
-            self.refreshAllToolSelects(); // 同分類要排除已選
+            // 移轉模式要回填來源資訊
+            if (container === self.els.mAssignMoveRows) self.fillMoveFromFields(line);
           }
         });
       }
 
-      // submit add
+      bindRowContainer(this.els.mVehRows);
+      bindRowContainer(this.els.mAssignAddRows);
+      bindRowContainer(this.els.mAssignMoveRows);
+
+      if (this.els.btnAddRow) {
+        this.els.btnAddRow.addEventListener('click', function () {
+          self.addVehAddRow();
+        });
+      }
       if (this.els.btnVehAddSubmit) {
         this.els.btnVehAddSubmit.addEventListener('click', function () {
           self.submitVehicleAdd();
         });
       }
-
-      // submit delete
       if (this.els.btnVehDeleteSubmit) {
         this.els.btnVehDeleteSubmit.addEventListener('click', function () {
           self.submitVehicleDelete();
         });
       }
 
-      // === aliases (兼容你 hot_assign.js 可能呼叫的名字) ===
-      // openCreateAssignModal() → 其實是「新增車輛配賦」
-      this.openCreateAssignModal = this.openVehAdd.bind(this);
-      // openClearConfirm(vehicleId) → 其實是左表刪除（解除全部配賦）
-      this.openClearConfirm = this.openVehDelete.bind(this);
+      if (this.els.btnAssignAddRow) {
+        this.els.btnAssignAddRow.addEventListener('click', function () {
+          self.addAssignAddRow();
+        });
+      }
+      if (this.els.btnAssignAddSubmit) {
+        this.els.btnAssignAddSubmit.addEventListener('click', function () {
+          self.submitAssignAdd();
+        });
+      }
+
+      if (this.els.btnAssignMoveRow) {
+        this.els.btnAssignMoveRow.addEventListener('click', function () {
+          self.addAssignMoveRow();
+        });
+      }
+      if (this.els.btnAssignMoveSubmit) {
+        this.els.btnAssignMoveSubmit.addEventListener('click', function () {
+          self.submitAssignMove();
+        });
+      }
+
+      if (this.els.btnToolUnSubmit) {
+        this.els.btnToolUnSubmit.addEventListener('click', function () {
+          self.submitToolUnassign();
+        });
+      }
     },
 
-    /* ===== open modals ===== */
+    /* ========== open ========== */
 
     openVehAdd: function () {
       var self = this;
 
-      // reset ui
+      // reset
       if (this.els.mVehPick) this.els.mVehPick.innerHTML = '<option value="">請選擇車輛</option>';
-      if (this.els.mVehRows) this.els.mVehRows.innerHTML = '';
-      this.state.rowSeq = 0;
-      this.state.itemsCounts = [];
-      this.state.availableVehicles = [];
+      if (this.els.mVehRows) this.els.mVehRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
 
-      // fetch picklists
       Promise.all([
         apiGet('/api/hot/assign?action=available_vehicles'),
         apiGet('/api/hot/assign?action=items_counts')
@@ -256,19 +334,12 @@
         var jV = arr[0] || {};
         var jI = arr[1] || {};
 
-        if (!jV.success) {
-          showToast('danger', '載入失敗', jV.error || 'available_vehicles');
-          return;
-        }
-        if (!jI.success) {
-          showToast('danger', '載入失敗', jI.error || 'items_counts');
-          return;
-        }
+        if (!jV.success) { toast('danger', '載入失敗', jV.error || 'available_vehicles'); return; }
+        if (!jI.success) { toast('danger', '載入失敗', jI.error || 'items_counts'); return; }
 
         self.state.availableVehicles = (jV.data && jV.data.vehicles) ? jV.data.vehicles : [];
         self.state.itemsCounts = (jI.data && jI.data.items) ? jI.data.items : [];
 
-        // fill vehicle select
         if (self.els.mVehPick) {
           var html = '<option value="">請選擇車輛</option>';
           self.state.availableVehicles.forEach(function (v) {
@@ -279,9 +350,7 @@
           self.els.mVehPick.innerHTML = html;
         }
 
-        // default add one row
-        self.addRow();
-        self.updateDynHint();
+        self.addVehAddRow();
         openModal('modalVehAdd');
       });
     },
@@ -289,29 +358,22 @@
     openVehDelete: function (vehicleId) {
       var self = this;
       vehicleId = Number(vehicleId || 0);
-
-      if (!vehicleId) {
-        showToast('warning', '尚未選取車輛', '請先選取左側車輛');
-        return;
-      }
+      if (!vehicleId) { toast('warning', '尚未選取車輛', '請先選取左側車輛'); return; }
 
       self.state.pendingDeleteVehicleId = vehicleId;
 
-      // 顯示 meta（從 app.state.vehicles 找）
+      // meta from app state
       var meta = '-';
       var cnt = '-';
       if (self.app && self.app.state && Array.isArray(self.app.state.vehicles)) {
-        var v = self.app.state.vehicles.find(function (x) { return Number(x.vehicle_id || x.id || 0) === vehicleId; });
+        var v = self.app.state.vehicles.find(function (x) { return Number(x.id || 0) === vehicleId; });
         if (v) {
-          meta = v.vehicle_label || (String(v.vehicle_code || '') + '｜' + String(v.plate_no || ''));
-          if (Number(v.is_active || 1) === 0) meta += '（停用中）';
-          cnt = String(v.assigned_cnt || v.assigned_count || 0);
+          meta = vehicleLabel(v);
+          cnt = String(v.assigned_cnt || 0);
         }
       }
       if (self.els.mVehDelMeta) self.els.mVehDelMeta.textContent = meta;
       if (self.els.mVehDelCount) self.els.mVehDelCount.textContent = cnt;
-
-      // tools summary（抓該車 tools）
       if (self.els.mVehDelTools) self.els.mVehDelTools.textContent = '載入中…';
 
       apiGet('/api/hot/assign?action=tools&vehicle_id=' + encodeURIComponent(String(vehicleId)))
@@ -325,12 +387,10 @@
           if (!rows.length) {
             if (self.els.mVehDelTools) self.els.mVehDelTools.textContent = '（無工具）';
           } else {
-            // 摘要最多 10 筆
             var parts = [];
             for (var i = 0; i < rows.length && i < 10; i++) {
               var r = rows[i] || {};
-              var s = (r.item_code ? r.item_code + '｜' : '') + (r.tool_no || '');
-              parts.push(s);
+              parts.push((r.item_code ? r.item_code + '｜' : '') + (r.tool_no || ''));
             }
             var more = rows.length > 10 ? ' …(共 ' + rows.length + ' 筆)' : '';
             if (self.els.mVehDelTools) self.els.mVehDelTools.textContent = parts.join('，') + more;
@@ -339,170 +399,171 @@
         });
     },
 
-    /* ===== rows ===== */
+    openAssignAdd: function () {
+      if (!this.app || !this.app.state || !this.app.state.activeVehicleId) {
+        toast('warning', '尚未選取車輛', '請先選取左側車輛');
+        return;
+      }
+      var self = this;
+      var vid = Number(this.app.state.activeVehicleId || 0);
+      if (this.els.mAssignAddRows) this.els.mAssignAddRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
 
-    ensureNotEmptyPlaceholder: function () {
-      if (!this.els.mVehRows) return;
-      var lines = qsa('.hot-rowLine', this.els.mVehRows);
-      if (lines.length) return;
-      this.els.mVehRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
+      apiGet('/api/hot/assign?action=items_counts').then(function (j) {
+        if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
+        self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
+        if (self.els.mAssignAddVehLabel) self.els.mAssignAddVehLabel.textContent = self.app.getActiveVehicleLabel();
+        self.addAssignAddRow();
+        openModal('modalAssignAdd');
+      });
     },
 
-    addRow: function () {
-      if (!this.els.mVehRows) return;
+    openAssignMove: function () {
+      if (!this.app || !this.app.state || !this.app.state.activeVehicleId) {
+        toast('warning', '尚未選取車輛', '請先選取左側車輛');
+        return;
+      }
+      var self = this;
+      if (this.els.mAssignMoveRows) this.els.mAssignMoveRows.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
 
-      // remove empty placeholder
+      apiGet('/api/hot/assign?action=items_counts').then(function (j) {
+        if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
+        self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
+        if (self.els.mAssignMoveVehLabel) self.els.mAssignMoveVehLabel.textContent = self.app.getActiveVehicleLabel();
+        self.addAssignMoveRow();
+        openModal('modalAssignMove');
+      });
+    },
+
+    openToolUnassign: function (toolId, meta) {
+      this.state.pendingToolUnassignId = Number(toolId || 0);
+      this.state.pendingToolUnassignMeta = meta || '';
+      if (this.els.mToolUnMeta) this.els.mToolUnMeta.textContent = this.state.pendingToolUnassignMeta || '-';
+      openModal('modalToolUnassign');
+    },
+
+    /* ========== rows add ========== */
+
+    addVehAddRow: function () {
+      if (!this.els.mVehRows) return;
       var empty = qs('.hot-rowLine--empty', this.els.mVehRows);
       if (empty) empty.parentNode.removeChild(empty);
 
-      this.state.rowSeq += 1;
-      var html = buildRowLine(this.state.rowSeq, this.state.itemsCounts || []);
-      this.els.mVehRows.insertAdjacentHTML('beforeend', html);
-      this.updateDynHint();
+      var idx = qsa('.hot-rowLine', this.els.mVehRows).length + 1;
+      this.els.mVehRows.insertAdjacentHTML('beforeend', buildVehAddRowLine(idx, this.state.itemsCounts || []));
     },
 
-    onItemChanged: function (line, itemId) {
-      var self = this;
+    addAssignAddRow: function () {
+      if (!this.els.mAssignAddRows) return;
+      var empty = qs('.hot-rowLine--empty', this.els.mAssignAddRows);
+      if (empty) empty.parentNode.removeChild(empty);
+
+      var idx = qsa('.hot-rowLine', this.els.mAssignAddRows).length + 1;
+      this.els.mAssignAddRows.insertAdjacentHTML('beforeend', buildRowLine(idx, this.state.itemsCounts || []));
+    },
+
+    addAssignMoveRow: function () {
+      if (!this.els.mAssignMoveRows) return;
+      var empty = qs('.hot-rowLine--empty', this.els.mAssignMoveRows);
+      if (empty) empty.parentNode.removeChild(empty);
+
+      var idx = qsa('.hot-rowLine', this.els.mAssignMoveRows).length + 1;
+      this.els.mAssignMoveRows.insertAdjacentHTML('beforeend', buildMoveRowLine(idx, this.state.itemsCounts || []));
+    },
+
+    onItemChanged: function (container, line, itemId) {
+      itemId = Number(itemId || 0);
       var toolSel = qs('.js-tool', line);
       if (!toolSel) return;
 
-      itemId = Number(itemId || 0);
       if (!itemId) {
         toolSel.innerHTML = '<option value="">請先選分類</option>';
         toolSel.disabled = true;
-        self.updateDynHint();
+        if (container === this.els.mAssignMoveRows) this.fillMoveFromFields(line);
         return;
       }
 
       toolSel.disabled = true;
       toolSel.innerHTML = '<option value="">載入中…</option>';
 
-      apiGet('/api/hot/assign?action=unassigned_tools&item_id=' + encodeURIComponent(String(itemId)))
-        .then(function (j) {
-          if (!j || !j.success) {
-            toolSel.innerHTML = '<option value="">載入失敗</option>';
-            toolSel.disabled = true;
-            self.updateDynHint();
-            return;
+      // 決定清單來源
+      var url = '';
+      if (container === this.els.mAssignMoveRows) {
+        var vid = this.app ? Number(this.app.state.activeVehicleId || 0) : 0;
+        url = '/api/hot/assign?action=transfer_tools&vehicle_id=' + encodeURIComponent(String(vid)) + '&item_id=' + encodeURIComponent(String(itemId));
+      } else {
+        url = '/api/hot/assign?action=unassigned_tools&item_id=' + encodeURIComponent(String(itemId));
+      }
+
+      apiGet(url).then(function (j) {
+        if (!j || !j.success) {
+          toolSel.innerHTML = '<option value="">載入失敗</option>';
+          toolSel.disabled = true;
+          return;
+        }
+
+        var tools = (j.data && j.data.tools) ? j.data.tools : [];
+        var opt = '<option value="">請選擇工具</option>';
+
+        tools.forEach(function (t) {
+          t = t || {};
+          var tid = Number(t.id || 0);
+          if (!tid) return;
+
+          var text = t.tool_no || '';
+          // 移轉：加上來源車輛資訊（選單文字）
+          if (t.vehicle_code || t.plate_no) {
+            text += '（' + (t.vehicle_code || '-') + '｜' + (t.plate_no || '-') + '）';
           }
 
-          var tools = (j.data && j.data.tools) ? j.data.tools : [];
-          var chosen = self.collectChosenToolIds();
-
-          var opt = '<option value="">請選擇工具</option>';
-          tools.forEach(function (t) {
-            var tid = Number(t.id || 0);
-            if (!tid) return;
-            if (chosen.indexOf(tid) >= 0) return; // 排除已選
-            opt += '<option value="' + tid + '">' + esc(t.tool_no || '') + '</option>';
-          });
-
-          toolSel.innerHTML = opt;
-          toolSel.disabled = false;
-
-          self.updateDynHint();
+          opt += '<option value="' + tid + '"'
+            + ' data-from-code="' + esc(t.vehicle_code || '') + '"'
+            + ' data-from-plate="' + esc(t.plate_no || '') + '"'
+            + ' data-from-active="' + esc(String(t.is_active || 0)) + '"'
+            + '>' + esc(text) + '</option>';
         });
-    },
 
-    collectChosenToolIds: function () {
-      if (!this.els.mVehRows) return [];
-      var ids = [];
-      qsa('.hot-rowLine .js-tool', this.els.mVehRows).forEach(function (sel) {
-        var v = Number(sel.value || 0);
-        if (v) ids.push(v);
+        toolSel.innerHTML = opt;
+        toolSel.disabled = false;
+
+        if (container === Mod.els.mAssignMoveRows) Mod.fillMoveFromFields(line);
       });
-      // unique
-      ids = ids.filter(function (v, i, a) { return a.indexOf(v) === i; });
-      return ids;
     },
 
-    refreshAllToolSelects: function () {
-      // 目的：同一分類下拉要排除其他列已選工具
-      if (!this.els.mVehRows) return;
+    fillMoveFromFields: function (line) {
+      if (!line) return;
+      var toolSel = qs('.js-tool', line);
+      var from = qs('.js-from', line);
+      var st = qs('.js-fromStatus', line);
+      if (!toolSel || !from || !st) return;
 
-      var self = this;
-      var chosen = self.collectChosenToolIds();
-      var lines = qsa('.hot-rowLine', this.els.mVehRows);
-
-      lines.forEach(function (line) {
-        var itemSel = qs('.js-item', line);
-        var toolSel = qs('.js-tool', line);
-        if (!itemSel || !toolSel) return;
-
-        var itemId = Number(itemSel.value || 0);
-        if (!itemId) return; // 尚未選分類
-
-        // 如果 toolSel 目前 disabled 代表還在載入中/沒分類，不動
-        if (toolSel.disabled) return;
-
-        // 重新過濾現有 options：保留當前選中的 + 未被其他列選到的
-        var current = Number(toolSel.value || 0);
-        var opts = qsa('option', toolSel);
-
-        opts.forEach(function (op) {
-          var tid = Number(op.value || 0);
-          if (!tid) return; // placeholder
-          if (tid === current) {
-            op.hidden = false;
-            op.disabled = false;
-            return;
-          }
-          var used = chosen.indexOf(tid) >= 0;
-          op.hidden = used;
-          op.disabled = used;
-        });
-      });
-
-      self.updateDynHint();
-    },
-
-    updateDynHint: function () {
-      if (!this.els.mVehDynHintText) return;
-
-      // 顯示：A分類：總數/已配賦/可配賦（依目前第一列的分類）
-      var firstItemSel = this.els.mVehRows ? qs('.hot-rowLine .js-item', this.els.mVehRows) : null;
-      var itemId = firstItemSel ? Number(firstItemSel.value || 0) : 0;
-
-      if (!itemId) {
-        this.els.mVehDynHintText.textContent = '提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」';
+      var op = toolSel.options && toolSel.selectedIndex >= 0 ? toolSel.options[toolSel.selectedIndex] : null;
+      if (!op || !op.value) {
+        from.value = '-';
+        st.value = '-';
         return;
       }
 
-      var it = (this.state.itemsCounts || []).find(function (x) { return Number(x.id || 0) === itemId; });
-      if (!it) {
-        this.els.mVehDynHintText.textContent = '提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」';
-        return;
-      }
+      var code = op.getAttribute('data-from-code') || '-';
+      var plate = op.getAttribute('data-from-plate') || '-';
+      var isActive = Number(op.getAttribute('data-from-active') || 0) === 0 ? '停用' : '使用中';
 
-      var label = (it.code ? it.code : '分類') + '：總數 ' + Number(it.tool_total || 0)
-        + '，已配賦 ' + Number(it.assigned_cnt || 0)
-        + '，可配賦 ' + Number(it.available_cnt || 0);
-
-      this.els.mVehDynHintText.textContent = label;
+      from.value = code + '｜' + plate;
+      st.value = isActive;
     },
 
-    /* ===== submits ===== */
+    /* ========== submits ========== */
 
     submitVehicleAdd: function () {
       var self = this;
-      if (!self.els.mVehPick) return;
+      if (!self.els.mVehPick || !self.els.mVehRows) return;
 
       var vehicleId = Number(self.els.mVehPick.value || 0);
-      if (!vehicleId) {
-        showToast('warning', '資料不足', '請先選擇車輛');
-        return;
-      }
-
-      if (!self.els.mVehRows) return;
+      if (!vehicleId) { toast('warning', '資料不足', '請先選擇車輛'); return; }
 
       var lines = qsa('.hot-rowLine', self.els.mVehRows).filter(function (x) {
         return !x.classList.contains('hot-rowLine--empty');
       });
-
-      if (!lines.length) {
-        showToast('warning', '資料不足', '至少需新增 1 列工具');
-        return;
-      }
+      if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return; }
 
       var rows = [];
       for (var i = 0; i < lines.length; i++) {
@@ -515,14 +576,8 @@
         var itemId = itemSel ? Number(itemSel.value || 0) : 0;
         var toolId = toolSel ? Number(toolSel.value || 0) : 0;
 
-        if (!itemId) {
-          showToast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類');
-          return;
-        }
-        if (!toolId) {
-          showToast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號');
-          return;
-        }
+        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return; }
+        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return; }
 
         rows.push({
           tool_id: toolId,
@@ -531,26 +586,13 @@
         });
       }
 
-      // POST
-      apiPost('/api/hot/assign', {
-        action: 'vehicle_add',
-        vehicle_id: vehicleId,
-        rows: rows
-      }).then(function (j) {
-        if (!j || !j.success) {
-          showToast('danger', '儲存失敗', (j && j.error) ? j.error : '未知錯誤');
-          return;
-        }
-        showToast('success', '已儲存', '新增車輛配賦完成');
-        closeModal('modalVehAdd');
-
-        // 讓外層 app 重新載入
-        if (self.app && typeof self.app.loadInit === 'function') {
-          // 你的 hot_assign.js 若還在用 action=init 會 400（需改 API）
-          // 但這裡先照你的主控設計呼叫
-          self.app.loadInit(vehicleId);
-        }
-      });
+      apiPost('/api/hot/assign', { action: 'vehicle_add', vehicle_id: vehicleId, rows: rows })
+        .then(function (j) {
+          if (!j || !j.success) { toast('danger', '儲存失敗', (j && j.error) ? j.error : '未知錯誤'); return; }
+          toast('success', '已儲存', '新增車輛配賦完成');
+          closeModal('modalVehAdd');
+          if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
+        });
     },
 
     submitVehicleDelete: function () {
@@ -558,21 +600,89 @@
       var vehicleId = Number(self.state.pendingDeleteVehicleId || 0);
       if (!vehicleId) return;
 
-      apiPost('/api/hot/assign', {
-        action: 'vehicle_unassign_all',
-        vehicle_id: vehicleId
-      }).then(function (j) {
-        if (!j || !j.success) {
-          showToast('danger', '解除失敗', (j && j.error) ? j.error : '未知錯誤');
-          return;
-        }
-        showToast('success', '已解除', '該車全部配賦已解除');
-        closeModal('modalVehDelete');
+      apiPost('/api/hot/assign', { action: 'vehicle_unassign_all', vehicle_id: vehicleId })
+        .then(function (j) {
+          if (!j || !j.success) { toast('danger', '解除失敗', (j && j.error) ? j.error : '未知錯誤'); return; }
+          toast('success', '已解除', '該車全部配賦已解除');
+          closeModal('modalVehDelete');
+          if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(0);
+        });
+    },
 
-        if (self.app && typeof self.app.loadInit === 'function') {
-          self.app.loadInit(0);
-        }
-      });
+    submitAssignAdd: function () {
+      var self = this;
+      if (!self.app) return;
+      var vehicleId = Number(self.app.state.activeVehicleId || 0);
+      if (!vehicleId) { toast('warning', '尚未選取車輛', '請先選取左側車輛'); return; }
+      if (!self.els.mAssignAddRows) return;
+
+      var lines = qsa('.hot-rowLine', self.els.mAssignAddRows).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
+      if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return; }
+
+      var toolIds = [];
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var itemSel = qs('.js-item', line);
+        var toolSel = qs('.js-tool', line);
+        var itemId = itemSel ? Number(itemSel.value || 0) : 0;
+        var toolId = toolSel ? Number(toolSel.value || 0) : 0;
+        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return; }
+        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return; }
+        toolIds.push(toolId);
+      }
+
+      apiPost('/api/hot/assign', { action: 'assign_more', vehicle_id: vehicleId, tool_ids: toolIds })
+        .then(function (j) {
+          if (!j || !j.success) { toast('danger', '儲存失敗', (j && j.error) ? j.error : '未知錯誤'); return; }
+          toast('success', '已儲存', '新增配賦完成');
+          closeModal('modalAssignAdd');
+          if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
+        });
+    },
+
+    submitAssignMove: function () {
+      var self = this;
+      if (!self.app) return;
+      var vehicleId = Number(self.app.state.activeVehicleId || 0);
+      if (!vehicleId) { toast('warning', '尚未選取車輛', '請先選取左側車輛'); return; }
+      if (!self.els.mAssignMoveRows) return;
+
+      var lines = qsa('.hot-rowLine', self.els.mAssignMoveRows).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
+      if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return; }
+
+      var toolIds = [];
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var itemSel = qs('.js-item', line);
+        var toolSel = qs('.js-tool', line);
+        var itemId = itemSel ? Number(itemSel.value || 0) : 0;
+        var toolId = toolSel ? Number(toolSel.value || 0) : 0;
+        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return; }
+        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return; }
+        toolIds.push(toolId);
+      }
+
+      apiPost('/api/hot/assign', { action: 'transfer', vehicle_id: vehicleId, tool_ids: toolIds })
+        .then(function (j) {
+          if (!j || !j.success) { toast('danger', '移轉失敗', (j && j.error) ? j.error : '未知錯誤'); return; }
+          toast('success', '已移轉', '移轉進來完成');
+          closeModal('modalAssignMove');
+          if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
+        });
+    },
+
+    submitToolUnassign: function () {
+      var self = this;
+      var tid = Number(self.state.pendingToolUnassignId || 0);
+      if (!tid) return;
+
+      apiPost('/api/hot/assign', { action: 'tool_unassign', tool_ids: [tid] })
+        .then(function (j) {
+          if (!j || !j.success) { toast('danger', '解除失敗', (j && j.error) ? j.error : '未知錯誤'); return; }
+          toast('success', '已解除', '工具歸屬已解除');
+          closeModal('modalToolUnassign');
+          if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(Number(self.app.state.activeVehicleId || 0));
+        });
     }
   };
 

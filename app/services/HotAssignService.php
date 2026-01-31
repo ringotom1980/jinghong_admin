@@ -135,6 +135,62 @@ final class HotAssignService
   }
 
   /* =========================
+   * 移轉清單：列出「非本車」且「已配賦」的工具（可依分類）
+   * - 用於「移轉進來」modal
+   * ========================= */
+  public function listTransferableTools(int $targetVehicleId, ?int $itemId = null): array
+  {
+    if ($targetVehicleId <= 0) throw new InvalidArgumentException('vehicle_id 不可為空');
+
+    if ($itemId !== null && $itemId > 0) {
+      $sql = "
+        SELECT
+          t.id,
+          t.tool_no,
+          t.item_id,
+          i.code AS item_code,
+          i.name AS item_name,
+          t.vehicle_id,
+          v.vehicle_code,
+          v.plate_no,
+          v.is_active
+        FROM hot_tools t
+        JOIN hot_items i ON i.id = t.item_id
+        JOIN vehicle_vehicles v ON v.id = t.vehicle_id
+        WHERE t.vehicle_id IS NOT NULL
+          AND t.vehicle_id <> :vid
+          AND t.item_id = :iid
+        ORDER BY i.code ASC, t.tool_no ASC
+      ";
+      $st = $this->db->prepare($sql);
+      $st->execute([':vid' => $targetVehicleId, ':iid' => $itemId]);
+      return $st->fetchAll();
+    }
+
+    $sql = "
+      SELECT
+        t.id,
+        t.tool_no,
+        t.item_id,
+        i.code AS item_code,
+        i.name AS item_name,
+        t.vehicle_id,
+        v.vehicle_code,
+        v.plate_no,
+        v.is_active
+      FROM hot_tools t
+      JOIN hot_items i ON i.id = t.item_id
+      JOIN vehicle_vehicles v ON v.id = t.vehicle_id
+      WHERE t.vehicle_id IS NOT NULL
+        AND t.vehicle_id <> :vid
+      ORDER BY i.code ASC, t.tool_no ASC
+    ";
+    $st = $this->db->prepare($sql);
+    $st->execute([':vid' => $targetVehicleId]);
+    return $st->fetchAll();
+  }
+
+  /* =========================
    * 新增車（必須至少 1 筆工具）
    * rows: [{tool_id, inspect_date?, note?}]
    * - 批次把選取工具 vehicle_id 設成該車

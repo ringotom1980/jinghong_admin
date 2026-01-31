@@ -209,6 +209,105 @@ $pageJs = [
         </div>
       </div>
     </div>
+    <!-- (3) 右表：新增配賦（只能選未配賦工具） -->
+    <div class="modal-backdrop" id="modalAssignAdd" hidden>
+      <div class="modal-panel modal-panel--wide" role="dialog" aria-modal="true" aria-labelledby="mAssignAddTitle">
+        <div class="modal__head">
+          <div class="modal__title" id="mAssignAddTitle">新增配賦（加入未配賦工具）</div>
+          <button class="btn btn--ghost" type="button" data-close-modal="modalAssignAdd">關閉</button>
+        </div>
+
+        <div class="modal__body">
+          <div class="hot-form">
+            <div class="hot-helpText2">
+              目前車輛：<b id="mAssignAddVehLabel">-</b>（只能加入「未配賦」工具）
+            </div>
+
+            <div class="hot-assignGrid">
+              <div class="hot-assignGrid__head">
+                <div class="hot-assignGrid__title">工具明細（至少 1 列）</div>
+                <button class="btn btn--secondary" type="button" id="btnAssignAddRow">新增一列</button>
+              </div>
+
+              <div class="hot-rows" id="mAssignAddRows">
+                <div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>
+              </div>
+
+              <div class="hot-dynHint">
+                <span class="hot-dot hot-dot--info"></span>
+                <span id="mAssignAddHint">提示：選擇分類後顯示可選工具</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close-modal="modalAssignAdd">取消</button>
+          <button class="btn btn--primary" type="button" id="btnAssignAddSubmit">儲存</button>
+        </div>
+      </div>
+    </div>
+    <!-- (4) 右表：移轉進來（從其他車移轉） -->
+    <div class="modal-backdrop" id="modalAssignMove" hidden>
+      <div class="modal-panel modal-panel--wide" role="dialog" aria-modal="true" aria-labelledby="mAssignMoveTitle">
+        <div class="modal__head">
+          <div class="modal__title" id="mAssignMoveTitle">移轉進來（從其他車改配到本車）</div>
+          <button class="btn btn--ghost" type="button" data-close-modal="modalAssignMove">關閉</button>
+        </div>
+
+        <div class="modal__body">
+          <div class="hot-form">
+            <div class="hot-helpText2">
+              目前車輛：<b id="mAssignMoveVehLabel">-</b>（可移轉「其他車」已配賦工具）
+            </div>
+
+            <div class="hot-assignGrid">
+              <div class="hot-assignGrid__head">
+                <div class="hot-assignGrid__title">工具明細（至少 1 列）</div>
+                <button class="btn btn--secondary" type="button" id="btnAssignMoveRow">新增一列</button>
+              </div>
+
+              <div class="hot-rows" id="mAssignMoveRows">
+                <div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>
+              </div>
+
+              <div class="hot-dynHint">
+                <span class="hot-dot hot-dot--warn"></span>
+                <span id="mAssignMoveHint">提示：清單只列出「非本車」且「已配賦」工具</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close-modal="modalAssignMove">取消</button>
+          <button class="btn btn--info" type="button" id="btnAssignMoveSubmit">確認移轉</button>
+        </div>
+      </div>
+    </div>
+    <!-- (5) 右表：解除單筆工具配賦確認 -->
+    <div class="modal-backdrop" id="modalToolUnassign" hidden>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="mToolUnTitle">
+        <div class="modal__head">
+          <div class="modal__title" id="mToolUnTitle">解除歸屬確認</div>
+        </div>
+        <div class="modal__body">
+          <div class="hot-confirm">
+            <div class="hot-confirm__row">
+              <div class="hot-confirm__k">工具</div>
+              <div class="hot-confirm__v" id="mToolUnMeta">-</div>
+            </div>
+            <div class="hot-dangerNote">
+              確認後將執行：UPDATE hot_tools SET vehicle_id = NULL WHERE id = ?
+            </div>
+          </div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close-modal="modalToolUnassign">取消</button>
+          <button class="btn btn--danger" type="button" id="btnToolUnSubmit">確認解除</button>
+        </div>
+      </div>
+    </div>
 
   </main>
 
