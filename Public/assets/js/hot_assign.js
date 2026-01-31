@@ -203,18 +203,8 @@
 
   global.HotAssignApp = App;
 
-  function boot() {
-    if (App.__booted) return; // 防止重複 init
-    App.__booted = true;
+  document.addEventListener('DOMContentLoaded', function () {
     App.init();
-  }
-
-  // ✅ 不管 DOMContentLoaded 有沒有過，都能啟動
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-
+  });
 
 })(window);
