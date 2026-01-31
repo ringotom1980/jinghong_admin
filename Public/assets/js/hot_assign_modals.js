@@ -460,7 +460,6 @@
                     + '  <div class="hot-vehAdd__bot">'
                     + '    <div class="hot-vehAdd__botHead">'
                     + '      <div class="hot-vehAdd__botTitle">已選取工具（<span id="mVehSelectedCnt">0</span>）</div>'
-                    + '      <button type="button" class="btn btn--secondary" id="btnVehAddCategory">新增賦予分類</button>'
                     + '    </div>'
                     + '    <div id="mVehSelectedSummary" class="hot-vehAdd__botBody">'
                     + '      <div class="hot-vehAdd__empty">尚未選取工具</div>'
@@ -605,31 +604,6 @@
 
                         renderMiddle(bd);
                         renderBottom(bd);
-                    });
-                }
-
-                // add category button
-                var btnAddCat = qs('#btnVehAddCategory', bd);
-                if (btnAddCat) {
-                    btnAddCat.addEventListener('click', function () {
-                        var pickItem2 = qs('#mVehItemPick', bd);
-                        if (!pickItem2) return;
-
-                        // 清空分類 + 清空中區塊
-                        pickItem2.value = '';
-                        modalState.currentItemId = 0;
-                        modalState.currentTools = [];
-
-                        // 觸發 UI 回到初始狀態
-                        var hint = qs('#mVehHint', bd);
-                        if (hint) hint.textContent = '提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」';
-
-                        renderMiddle(bd);
-                        renderBottom(bd);
-
-                        // focus + 對話框
-                        pickItem2.focus();
-                        alertPickItem();
                     });
                 }
 
