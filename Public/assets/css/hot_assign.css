@@ -74,8 +74,8 @@
 .hot-assign .hot-table {
   width: 100%;
   table-layout: fixed;
-  border: 0;          /* 避免與外層 wrap 兩層框 */
-  border-radius: 0;   /* 外層 wrap 已有圓角 */
+  border: 0; /* 避免與外層 wrap 兩層框 */
+  border-radius: 0; /* 外層 wrap 已有圓角 */
 }
 
 .hot-assign .hot-table thead th {
@@ -99,35 +99,55 @@
 
 /* 左表 hot_vehicles：20 / 25 / 15 / 25 / 15 */
 .hot-assign .hot-table--veh th:nth-child(1),
-.hot-assign .hot-table--veh td:nth-child(1) { width: 20%; }
+.hot-assign .hot-table--veh td:nth-child(1) {
+  width: 20%;
+}
 
 .hot-assign .hot-table--veh th:nth-child(2),
-.hot-assign .hot-table--veh td:nth-child(2) { width: 25%; }
+.hot-assign .hot-table--veh td:nth-child(2) {
+  width: 25%;
+}
 
 .hot-assign .hot-table--veh th:nth-child(3),
-.hot-assign .hot-table--veh td:nth-child(3) { width: 15%; }
+.hot-assign .hot-table--veh td:nth-child(3) {
+  width: 15%;
+}
 
 .hot-assign .hot-table--veh th:nth-child(4),
-.hot-assign .hot-table--veh td:nth-child(4) { width: 20%; }
+.hot-assign .hot-table--veh td:nth-child(4) {
+  width: 20%;
+}
 
 .hot-assign .hot-table--veh th:nth-child(5),
-.hot-assign .hot-table--veh td:nth-child(5) { width: 20%; }
+.hot-assign .hot-table--veh td:nth-child(5) {
+  width: 20%;
+}
 
 /* 右表 hot_assign：15 / 22 / 22 / 26 / 15 */
 .hot-assign .hot-table--assign th:nth-child(1),
-.hot-assign .hot-table--assign td:nth-child(1) { width: 15%; }
+.hot-assign .hot-table--assign td:nth-child(1) {
+  width: 15%;
+}
 
 .hot-assign .hot-table--assign th:nth-child(2),
-.hot-assign .hot-table--assign td:nth-child(2) { width: 22%; }
+.hot-assign .hot-table--assign td:nth-child(2) {
+  width: 22%;
+}
 
 .hot-assign .hot-table--assign th:nth-child(3),
-.hot-assign .hot-table--assign td:nth-child(3) { width: 22%; }
+.hot-assign .hot-table--assign td:nth-child(3) {
+  width: 22%;
+}
 
 .hot-assign .hot-table--assign th:nth-child(4),
-.hot-assign .hot-table--assign td:nth-child(4) { width: 26%; }
+.hot-assign .hot-table--assign td:nth-child(4) {
+  width: 26%;
+}
 
 .hot-assign .hot-table--assign th:nth-child(5),
-.hot-assign .hot-table--assign td:nth-child(5) { width: 15%; }
+.hot-assign .hot-table--assign td:nth-child(5) {
+  width: 15%;
+}
 
 /* 空資料列（你 HTML 有 .hot-empty） */
 .hot-assign .hot-empty td {
@@ -185,8 +205,14 @@
 }
 
 /* ===== Modal content blocks（只保留 layout，按鈕/輸入框吃全站） ===== */
-.hot-assign .hot-form { display: grid; gap: 12px; }
-.hot-assign .hot-field { display: grid; gap: 6px; }
+.hot-assign .hot-form {
+  display: grid;
+  gap: 12px;
+}
+.hot-assign .hot-field {
+  display: grid;
+  gap: 6px;
+}
 
 .hot-assign .hot-req {
   color: var(--danger);
@@ -220,7 +246,10 @@
   color: rgba(15, 23, 42, 0.82);
 }
 
-.hot-assign .hot-rows { display: grid; gap: 10px; }
+.hot-assign .hot-rows {
+  display: grid;
+  gap: 10px;
+}
 
 .hot-assign .hot-rowLine--empty {
   text-align: center;
@@ -241,7 +270,10 @@
 }
 
 /* confirm */
-.hot-assign .hot-confirm { display: grid; gap: 10px; }
+.hot-assign .hot-confirm {
+  display: grid;
+  gap: 10px;
+}
 
 .hot-assign .hot-confirm__row {
   display: grid;
@@ -277,4 +309,123 @@
 /* ===== FIX: hot_assign page hidden buttons must really hide ===== */
 .hot-assign .btn[hidden],
 .hot-assign button[hidden],
-.hot-assign [hidden] { display:none !important; }
+.hot-assign [hidden] {
+  display: none !important;
+}
+
+/* ===== VehAdd modal (openVehAdd) : 3 blocks + dashed separators ===== */
+.hot-vehAdd {
+  display: grid;
+  gap: 12px;
+}
+
+/* top: vehicle + item in one row */
+.hot-vehAdd__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .hot-vehAdd__top {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hot-vehAdd__sep {
+  border-top: 1px dashed rgba(15, 23, 42, 0.18);
+  margin: 2px 0;
+}
+
+/* middle */
+.hot-vehAdd__midHead,
+.hot-vehAdd__botHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hot-vehAdd__midTitle,
+.hot-vehAdd__botTitle {
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.hot-vehAdd__selAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  user-select: none;
+}
+
+.hot-vehAdd__midBody,
+.hot-vehAdd__botBody {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(246, 247, 251, 0.45);
+}
+
+/* checkbox list */
+.hot-vehAdd__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+@media (max-width: 720px) {
+  .hot-vehAdd__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .hot-vehAdd__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hot-vehAdd__chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* empty placeholder */
+.hot-vehAdd__empty {
+  text-align: center;
+  color: var(--muted-2);
+  padding: 10px 8px;
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* bottom summary */
+.hot-vehAdd__summary {
+  display: grid;
+  gap: 8px;
+}
+.hot-vehAdd__sumRow {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.hot-vehAdd__sumHead {
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.82);
+}
+.hot-vehAdd__sumBody {
+  color: rgba(15, 23, 42, 0.78);
+  line-height: 1.5;
+  word-break: break-word;
+}

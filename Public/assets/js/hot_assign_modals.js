@@ -50,9 +50,9 @@
         itemId = Number(itemId || 0);
         var row = (itemsCounts || []).find(function (x) { return Number(x.id || 0) === itemId; });
         if (!row) return '提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」';
-        var total = Number(row.total_cnt || 0);
+        var total = Number(row.tool_total || 0);
         var used = Number(row.assigned_cnt || 0);
-        var free = Number(row.unassigned_cnt || (total - used));
+        var free = Number(row.available_cnt || (total - used));
         var label = (row.code ? row.code + '｜' : '') + (row.name || '');
         return '分類：' + label + '　總數 ' + total + '／已配賦 ' + used + '／可配賦 ' + free;
     }
@@ -75,19 +75,6 @@
 
         var meta1 = '<div class="hot-field js-meta1" style="display:none;"></div>';
         var meta2 = '<div class="hot-field js-meta2" style="display:none;"></div>';
-
-        if (mode === 'veh_add') {
-            meta1 = ''
-                + '<div class="hot-field">'
-                + '  <label class="form-label">檢驗日期</label>'
-                + '  <input class="input js-inspect" type="date" />'
-                + '</div>';
-            meta2 = ''
-                + '<div class="hot-field">'
-                + '  <label class="form-label">備註</label>'
-                + '  <input class="input js-note" type="text" placeholder="可空" />'
-                + '</div>';
-        }
 
         if (mode === 'assign_move') {
             meta1 = ''
@@ -249,28 +236,234 @@
                 return;
             }
 
-            // 先開（內容之後填）
+            function alertPickItem() {
+                if (global.Modal && typeof global.Modal.open === 'function') {
+                    global.Modal.open({
+                        title: '提示',
+                        html: '<div style="padding:6px 2px; line-height:1.6;">請選擇工具分類</div>',
+                        confirmText: '知道了',
+                        cancelText: '關閉',
+                        allowCloseBtn: true,
+                        closeOnBackdrop: true,
+                        closeOnEsc: true,
+                        onConfirm: function () { return true; }
+                    });
+                    return;
+                }
+                alert('請選擇工具分類');
+            }
+
+            // state for this modal only
+            var modalState = {
+                vehicles: [],
+                itemsCounts: [],
+                // selectedByItemId: { [itemId]: { code, name, toolMap: { [toolId]: tool_no } } }
+                selectedByItemId: {},
+                // current list tools for middle block (selected item)
+                currentItemId: 0,
+                currentTools: [] // [{id, tool_no}]
+            };
+
+            function getItemMeta(itemId) {
+                itemId = Number(itemId || 0);
+                var row = (modalState.itemsCounts || []).find(function (x) { return Number(x.id || 0) === itemId; });
+                if (!row) return { code: '', name: '' };
+                return { code: String(row.code || ''), name: String(row.name || '') };
+            }
+
+            function ensureBucket(itemId) {
+                itemId = Number(itemId || 0);
+                if (!itemId) return null;
+                if (!modalState.selectedByItemId[itemId]) {
+                    var m = getItemMeta(itemId);
+                    modalState.selectedByItemId[itemId] = { code: m.code, name: m.name, toolMap: {} };
+                }
+                return modalState.selectedByItemId[itemId];
+            }
+
+            function totalSelectedCount() {
+                var n = 0;
+                Object.keys(modalState.selectedByItemId).forEach(function (k) {
+                    var b = modalState.selectedByItemId[k];
+                    if (!b || !b.toolMap) return;
+                    n += Object.keys(b.toolMap).length;
+                });
+                return n;
+            }
+
+            function renderMiddle(bd) {
+                var host = qs('#mVehAvail', bd);
+                var selAll = qs('#mVehSelectAll', bd);
+                var selAllWrap = qs('#mVehSelectAllWrap', bd);
+
+                if (!host) return;
+
+                if (!modalState.currentItemId) {
+                    host.innerHTML = '<div class="hot-vehAdd__empty">請先選擇工具分類</div>';
+                    if (selAll) selAll.checked = false;
+                    if (selAllWrap) selAllWrap.style.display = 'none';
+                    return;
+                }
+
+                var tools = modalState.currentTools || [];
+                if (!tools.length) {
+                    host.innerHTML = '<div class="hot-vehAdd__empty">此分類沒有可配賦工具</div>';
+                    if (selAll) selAll.checked = false;
+                    if (selAllWrap) selAllWrap.style.display = 'none';
+                    return;
+                }
+
+                if (selAllWrap) selAllWrap.style.display = '';
+
+                var bucket = ensureBucket(modalState.currentItemId);
+                var picked = bucket ? bucket.toolMap : {};
+
+                var html = '<div class="hot-vehAdd__list">';
+                tools.forEach(function (t) {
+                    var tid = Number(t.id || 0);
+                    if (!tid) return;
+                    var checked = (picked && picked[tid]) ? ' checked' : '';
+                    html += ''
+                        + '<label class="hot-vehAdd__chk">'
+                        + '  <input type="checkbox" class="js-midTool" value="' + tid + '"' + checked + ' />'
+                        + '  <span>' + esc(t.tool_no || '') + '</span>'
+                        + '</label>';
+                });
+                html += '</div>';
+
+                host.innerHTML = html;
+
+                // update select-all state
+                if (selAll) {
+                    var allChecked = tools.every(function (t) {
+                        var tid = Number(t.id || 0);
+                        return tid && picked && picked[tid];
+                    });
+                    selAll.checked = !!allChecked;
+                }
+            }
+
+            function renderBottom(bd) {
+                var host = qs('#mVehSelectedSummary', bd);
+                var cntEl = qs('#mVehSelectedCnt', bd);
+                if (cntEl) cntEl.textContent = String(totalSelectedCount());
+
+                if (!host) return;
+
+                var keys = Object.keys(modalState.selectedByItemId || {});
+                // remove empty buckets
+                keys.forEach(function (k) {
+                    var b = modalState.selectedByItemId[k];
+                    if (!b || !b.toolMap || Object.keys(b.toolMap).length === 0) delete modalState.selectedByItemId[k];
+                });
+
+                keys = Object.keys(modalState.selectedByItemId || {});
+                if (!keys.length) {
+                    host.innerHTML = '<div class="hot-vehAdd__empty">尚未選取工具</div>';
+                    return;
+                }
+
+                // sort by code then name
+                keys.sort(function (a, b) {
+                    var A = modalState.selectedByItemId[a] || {};
+                    var B = modalState.selectedByItemId[b] || {};
+                    var ac = String(A.code || '');
+                    var bc = String(B.code || '');
+                    if (ac === bc) return String(A.name || '').localeCompare(String(B.name || ''));
+                    if (!ac) return 1;
+                    if (!bc) return -1;
+                    return ac.localeCompare(bc);
+                });
+
+                var html = '<div class="hot-vehAdd__summary">';
+                keys.forEach(function (k) {
+                    var itemId = Number(k || 0);
+                    var b = modalState.selectedByItemId[k];
+                    if (!b) return;
+
+                    var toolNos = Object.keys(b.toolMap).map(function (tid) { return b.toolMap[tid]; });
+                    toolNos.sort(function (x, y) { return String(x).localeCompare(String(y)); });
+
+                    var head = (b.code ? (b.code + ' | ') : '') + (b.name || '');
+                    html += ''
+                        + '<div class="hot-vehAdd__sumRow">'
+                        + '  <div class="hot-vehAdd__sumHead">' + esc(head) + '</div>'
+                        + '  <div class="hot-vehAdd__sumBody">：' + esc(toolNos.join('、')) + '</div>'
+                        + '</div>';
+                });
+                html += '</div>';
+
+                host.innerHTML = html;
+            }
+
+            function loadUnassignedTools(itemId, bd) {
+                itemId = Number(itemId || 0);
+                modalState.currentItemId = itemId;
+                modalState.currentTools = [];
+
+                // middle placeholder first
+                renderMiddle(bd);
+
+                if (!itemId) return;
+
+                apiGet('/api/hot/assign', { action: 'unassigned_tools', item_id: itemId }).then(function (j) {
+                    if (!j || !j.success) {
+                        modalState.currentTools = [];
+                        renderMiddle(bd);
+                        toast('danger', '載入失敗', (j && j.error) ? j.error : 'unassigned_tools');
+                        return;
+                    }
+                    var tools = (j.data && j.data.tools) ? j.data.tools : [];
+                    modalState.currentTools = tools;
+                    renderMiddle(bd);
+                });
+            }
+
             var bd = global.Modal.open({
                 title: '新增車輛配賦',
                 panelClass: 'modal-panel--wide',
                 html: ''
-                    + '<div class="hot-form">'
-                    + '  <div class="hot-field">'
-                    + '    <label class="form-label">車輛<span class="hot-req">(必填)</span></label>'
-                    + '    <select class="input" id="mVehPick"><option value="">載入中…</option></select>'
-                    + '    <div class="hot-helpText2">停用車可選，將顯示「停用中」註記。</div>'
+                    + '<div class="hot-vehAdd">'
+                    // ===== Top block =====
+                    + '  <div class="hot-vehAdd__top">'
+                    + '    <div class="hot-field">'
+                    + '      <label class="form-label">車輛<span class="hot-req">(必填)</span></label>'
+                    + '      <select class="input" id="mVehPick"><option value="">載入中…</option></select>'
+                    + '      <div class="hot-helpText2">停用車可選，將顯示「停用中」註記。</div>'
+                    + '    </div>'
+                    + '    <div class="hot-field">'
+                    + '      <label class="form-label">工具分類<span class="hot-req">(必填)</span></label>'
+                    + '      <select class="input" id="mVehItemPick"><option value="">載入中…</option></select>'
+                    + '      <div class="hot-helpText2" id="mVehHint">提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」</div>'
+                    + '    </div>'
                     + '  </div>'
-                    + '  <div class="hot-assignGrid">'
-                    + '    <div class="hot-assignGrid__head">'
-                    + '      <div class="hot-assignGrid__title">工具明細（至少 1 列）</div>'
-                    + '      <button class="btn btn--secondary" type="button" id="btnAddRow">新增一列</button>'
+
+                    + '  <div class="hot-vehAdd__sep"></div>'
+
+                    // ===== Middle block =====
+                    + '  <div class="hot-vehAdd__mid">'
+                    + '    <div class="hot-vehAdd__midHead">'
+                    + '      <div class="hot-vehAdd__midTitle">可配賦工具（可複選）</div>'
+                    + '      <label class="hot-vehAdd__selAll" id="mVehSelectAllWrap" style="display:none;">'
+                    + '        <input type="checkbox" id="mVehSelectAll" />'
+                    + '        <span>全選</span>'
+                    + '      </label>'
                     + '    </div>'
-                    + '    <div class="hot-rows" id="mVehRows">'
-                    + '      <div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>'
+                    + '    <div id="mVehAvail" class="hot-vehAdd__midBody">'
+                    + '      <div class="hot-vehAdd__empty">請先選擇工具分類</div>'
                     + '    </div>'
-                    + '    <div class="hot-dynHint" id="mVehDynHint">'
-                    + '      <span class="hot-dot hot-dot--info"></span>'
-                    + '      <span id="mVehDynHintText">提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」</span>'
+                    + '  </div>'
+
+                    + '  <div class="hot-vehAdd__sep"></div>'
+
+                    // ===== Bottom block =====
+                    + '  <div class="hot-vehAdd__bot">'
+                    + '    <div class="hot-vehAdd__botHead">'
+                    + '      <div class="hot-vehAdd__botTitle">已選取工具（<span id="mVehSelectedCnt">0</span>）</div>'
+                    + '      <button type="button" class="btn btn--secondary" id="btnVehAddCategory">新增賦予分類</button>'
+                    + '    </div>'
+                    + '    <div id="mVehSelectedSummary" class="hot-vehAdd__botBody">'
+                    + '      <div class="hot-vehAdd__empty">尚未選取工具</div>'
                     + '    </div>'
                     + '  </div>'
                     + '</div>',
@@ -280,48 +473,33 @@
                 closeOnBackdrop: true,
                 closeOnEsc: true,
                 onConfirm: function () {
-                    var pick = qs('#mVehPick', bd);
-                    var rowsHost = qs('#mVehRows', bd);
-                    if (!pick || !rowsHost) return false;
-
-                    var vehicleId = Number(pick.value || 0);
+                    var pickVeh = qs('#mVehPick', bd);
+                    var vehicleId = pickVeh ? Number(pickVeh.value || 0) : 0;
                     if (!vehicleId) { toast('warning', '資料不足', '請先選擇車輛'); return false; }
 
-                    var lines = qsa('.hot-rowLine', rowsHost).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
-                    if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return false; }
-
                     var rows = [];
-                    for (var i = 0; i < lines.length; i++) {
-                        var line = lines[i];
-                        var itemSel = qs('.js-item', line);
-                        var toolSel = qs('.js-tool', line);
-                        var inspect = qs('.js-inspect', line);
-                        var note = qs('.js-note', line);
-
-                        var itemId = itemSel ? Number(itemSel.value || 0) : 0;
-                        var toolId = toolSel ? Number(toolSel.value || 0) : 0;
-
-                        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return false; }
-                        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return false; }
-
-                        rows.push({
-                            tool_id: toolId,
-                            inspect_date: (inspect && inspect.value) ? String(inspect.value) : '',
-                            note: (note && note.value) ? String(note.value).trim() : ''
+                    Object.keys(modalState.selectedByItemId).forEach(function (k) {
+                        var b = modalState.selectedByItemId[k];
+                        if (!b || !b.toolMap) return;
+                        Object.keys(b.toolMap).forEach(function (tid) {
+                            tid = Number(tid || 0);
+                            if (tid) rows.push({ tool_id: tid });
                         });
-                    }
+                    });
+
+                    if (!rows.length) { toast('warning', '資料不足', '至少需選取 1 筆工具'); return false; }
 
                     return apiPost('/api/hot/assign', { action: 'vehicle_add', vehicle_id: vehicleId, rows: rows })
                         .then(function (j) {
                             if (!j || !j.success) { toast('danger', '儲存失敗', (j && j.error) ? j.error : '未知錯誤'); return false; }
                             toast('success', '已儲存', '新增車輛配賦完成');
                             if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
-                            return true; // ✅ 讓 Modal 自動 close
+                            return true;
                         });
                 }
             });
 
-            // 載入資料
+            // load initial data
             Promise.all([
                 apiGet('/api/hot/assign', { action: 'available_vehicles' }),
                 apiGet('/api/hot/assign', { action: 'items_counts' })
@@ -332,51 +510,132 @@
                 if (!jV.success) { toast('danger', '載入失敗', jV.error || 'available_vehicles'); return; }
                 if (!jI.success) { toast('danger', '載入失敗', jI.error || 'items_counts'); return; }
 
-                self.state.availableVehicles = (jV.data && jV.data.vehicles) ? jV.data.vehicles : [];
-                self.state.itemsCounts = (jI.data && jI.data.items) ? jI.data.items : [];
+                modalState.vehicles = (jV.data && jV.data.vehicles) ? jV.data.vehicles : [];
+                modalState.itemsCounts = (jI.data && jI.data.items) ? jI.data.items : [];
 
-                var pick = qs('#mVehPick', bd);
-                if (pick) {
-                    var html = '<option value="">請選擇車輛</option>';
-                    self.state.availableVehicles.forEach(function (v) {
+                // fill vehicle select
+                var pickVeh = qs('#mVehPick', bd);
+                if (pickVeh) {
+                    var htmlV = '<option value="">請選擇車輛</option>';
+                    modalState.vehicles.forEach(function (v) {
                         var id = Number(v.id || 0);
                         if (!id) return;
-                        html += '<option value="' + id + '">' + esc(vehicleLabel(v)) + '</option>';
+                        htmlV += '<option value="' + id + '">' + esc(vehicleLabel(v)) + '</option>';
                     });
-                    pick.innerHTML = html;
+                    pickVeh.innerHTML = htmlV;
                 }
 
-                var rowsHost = qs('#mVehRows', bd);
-                var hintText = qs('#mVehDynHintText', bd);
+                // fill item select
+                var pickItem = qs('#mVehItemPick', bd);
+                if (pickItem) {
+                    pickItem.innerHTML = buildItemOptions(modalState.itemsCounts);
+                }
 
-                bindRowsBehavior({
-                    wrapEl: rowsHost,
-                    mode: 'veh_add',
-                    itemsCounts: self.state.itemsCounts,
-                    getActiveVehicleId: function () { return 0; },
-                    onHint: function (itemId) {
-                        if (hintText) hintText.textContent = countsHintText(itemId, self.state.itemsCounts);
-                    }
-                });
+                // bind item change
+                if (pickItem) {
+                    pickItem.addEventListener('change', function () {
+                        var itemId = Number(pickItem.value || 0);
 
-                // 新增一列
-                var btnAddRow = qs('#btnAddRow', bd);
-                if (btnAddRow) {
-                    btnAddRow.addEventListener('click', function () {
-                        if (!rowsHost) return;
-                        var empty = qs('.hot-rowLine--empty', rowsHost);
-                        if (empty) empty.parentNode.removeChild(empty);
-                        var idx = qsa('.hot-rowLine', rowsHost).length + 1;
-                        rowsHost.insertAdjacentHTML('beforeend', buildRowLine(idx, self.state.itemsCounts, 'veh_add'));
+                        // hint text
+                        var hint = qs('#mVehHint', bd);
+                        if (hint) hint.textContent = countsHintText(itemId, modalState.itemsCounts);
+
+                        loadUnassignedTools(itemId, bd);
+                        renderBottom(bd);
                     });
                 }
 
-                // 預設先塞一列
-                if (rowsHost) {
-                    var empty = qs('.hot-rowLine--empty', rowsHost);
-                    if (empty) empty.parentNode.removeChild(empty);
-                    rowsHost.insertAdjacentHTML('beforeend', buildRowLine(1, self.state.itemsCounts, 'veh_add'));
+                // middle checkbox delegate
+                var mid = qs('#mVehAvail', bd);
+                if (mid) {
+                    mid.addEventListener('change', function (e) {
+                        var cb = e.target && e.target.classList && e.target.classList.contains('js-midTool') ? e.target : null;
+                        if (!cb) return;
+
+                        var itemId = Number(modalState.currentItemId || 0);
+                        if (!itemId) return;
+
+                        var tid = Number(cb.value || 0);
+                        if (!tid) return;
+
+                        var t = (modalState.currentTools || []).find(function (x) { return Number(x.id || 0) === tid; });
+                        var toolNo = t ? String(t.tool_no || '') : '';
+
+                        var bucket = ensureBucket(itemId);
+                        if (!bucket) return;
+
+                        if (cb.checked) {
+                            bucket.toolMap[tid] = toolNo;
+                        } else {
+                            delete bucket.toolMap[tid];
+                        }
+
+                        // update select-all state
+                        renderMiddle(bd);
+                        renderBottom(bd);
+                    });
                 }
+
+                // select all
+                var selAll = qs('#mVehSelectAll', bd);
+                if (selAll) {
+                    selAll.addEventListener('change', function () {
+                        var itemId = Number(modalState.currentItemId || 0);
+                        if (!itemId) { selAll.checked = false; return; }
+
+                        var tools = modalState.currentTools || [];
+                        if (!tools.length) { selAll.checked = false; return; }
+
+                        var bucket = ensureBucket(itemId);
+                        if (!bucket) return;
+
+                        if (selAll.checked) {
+                            tools.forEach(function (t) {
+                                var tid = Number(t.id || 0);
+                                if (!tid) return;
+                                bucket.toolMap[tid] = String(t.tool_no || '');
+                            });
+                        } else {
+                            tools.forEach(function (t) {
+                                var tid = Number(t.id || 0);
+                                if (!tid) return;
+                                delete bucket.toolMap[tid];
+                            });
+                        }
+
+                        renderMiddle(bd);
+                        renderBottom(bd);
+                    });
+                }
+
+                // add category button
+                var btnAddCat = qs('#btnVehAddCategory', bd);
+                if (btnAddCat) {
+                    btnAddCat.addEventListener('click', function () {
+                        var pickItem2 = qs('#mVehItemPick', bd);
+                        if (!pickItem2) return;
+
+                        // 清空分類 + 清空中區塊
+                        pickItem2.value = '';
+                        modalState.currentItemId = 0;
+                        modalState.currentTools = [];
+
+                        // 觸發 UI 回到初始狀態
+                        var hint = qs('#mVehHint', bd);
+                        if (hint) hint.textContent = '提示：選擇分類後顯示「總數 / 已配賦 / 可配賦」';
+
+                        renderMiddle(bd);
+                        renderBottom(bd);
+
+                        // focus + 對話框
+                        pickItem2.focus();
+                        alertPickItem();
+                    });
+                }
+
+                // initial render
+                renderMiddle(bd);
+                renderBottom(bd);
             });
         },
 
