@@ -171,13 +171,15 @@
   color: var(--text);
 }
 
-/* ===== Modal width (給 ui_modal 用) ===== */
-.hot-assign .modal-panel--wide {
+/* ===== Modal width (給 ui_modal 用) =====
+ * 注意：Modal 掛在 body 底下，不在 .hot-assign scope 內，所以這裡不能加 .hot-assign 前綴
+ */
+.modal-panel--wide {
   width: min(880px, calc(100vw - 36px));
 }
 
 @media (max-width: 1100px) {
-  .hot-assign .modal-panel--wide {
+  .modal-panel--wide {
     width: min(520px, calc(100vw - 36px));
   }
 }
