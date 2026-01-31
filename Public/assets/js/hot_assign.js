@@ -54,7 +54,10 @@
 
       if (this.els.btnVehAdd) {
         this.els.btnVehAdd.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+          if (!global.HotAssignModals || typeof global.HotAssignModals.openVehAdd !== 'function') {
+            toast('danger', '系統錯誤', 'HotAssignModals 尚未就緒');
+            return;
+          }
           global.HotAssignModals.openVehAdd();
         });
       }
@@ -77,14 +80,20 @@
 
       if (this.els.btnAssignAdd) {
         this.els.btnAssignAdd.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+          if (!global.HotAssignModals || typeof global.HotAssignModals.openAssignAdd !== 'function') {
+            toast('danger', '系統錯誤', 'HotAssignModals 尚未就緒');
+            return;
+          }
           global.HotAssignModals.openAssignAdd();
         });
       }
 
       if (this.els.btnAssignMove) {
         this.els.btnAssignMove.addEventListener('click', function () {
-          if (!global.HotAssignModals) return;
+          if (!global.HotAssignModals || typeof global.HotAssignModals.openAssignMove !== 'function') {
+            toast('danger', '系統錯誤', 'HotAssignModals 尚未就緒');
+            return;
+          }
           global.HotAssignModals.openAssignMove();
         });
       }
