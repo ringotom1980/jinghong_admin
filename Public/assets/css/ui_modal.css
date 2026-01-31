@@ -67,3 +67,8 @@
 .modal__close {
   display: none; /* ✅ Confirm-only：不提供右上角關閉 */
 }
+
+/* ✅ 保證所有 hidden 的 modal-backdrop 一定不顯示（修 bug，不改外觀） */
+.modal-backdrop[hidden] {
+  display: none !important;
+}
