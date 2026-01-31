@@ -4,9 +4,10 @@
  * 原則：只做排版/模組視覺；共用元件（btn/table/input/card）沿用 app.css
  */
 
+/* ===== Split layout ===== */
 .hot-tools .hot-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); /* ✅ 左右各半 */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
@@ -15,7 +16,6 @@
   border-radius: var(--radius);
   border: 1px solid var(--line-2);
   background: rgba(255, 255, 255, 0.86);
-  /* overflow: hidden; */
 }
 
 .hot-tools .hot-pane__head {
@@ -54,6 +54,7 @@
   padding: 12px 12px 14px 12px;
 }
 
+/* ===== Table wrapper ===== */
 .hot-tools .hot-tableWrap {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
@@ -61,28 +62,21 @@
   background: rgba(255, 255, 255, 0.92);
 }
 
-/* table微調：維持你 app.css table，但讓 head 更穩 */
 .hot-tools .hot-table {
+  width: 100%;
   border-radius: 0;
   border: 0;
-  width: 100%;
   table-layout: fixed;
 }
 
-/* .hot-tools .hot-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-} */
-
-/* ===== 表格文字全面置中（thead + tbody） ===== */
+/* 文字置中（thead + tbody） */
 .hot-tools .hot-table th,
 .hot-tools .hot-table td {
   text-align: center;
   vertical-align: middle;
 }
 
-.hot-tools .hot-table td{
+.hot-tools .hot-table td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -104,62 +98,37 @@
   background: rgba(47, 63, 122, 0.1);
 }
 
-/* 左表 hot_items：15 / 30 / 15 / 15 / 15 / 10 */
+/* ===== 左表 hot_items 欄寬（左表單一 table，不會對齊問題） ===== */
+/* hot_items：15 / 30 / 15 / 15 / 15 / 10 */
 .hot-tools .hot-table--items th:nth-child(1),
 .hot-tools .hot-table--items td:nth-child(1) {
   width: 15%;
 }
-
 .hot-tools .hot-table--items th:nth-child(2),
 .hot-tools .hot-table--items td:nth-child(2) {
   width: 30%;
 }
-
 .hot-tools .hot-table--items th:nth-child(3),
 .hot-tools .hot-table--items td:nth-child(3) {
   width: 15%;
 }
-
 .hot-tools .hot-table--items th:nth-child(4),
 .hot-tools .hot-table--items td:nth-child(4) {
   width: 15%;
 }
-
 .hot-tools .hot-table--items th:nth-child(5),
 .hot-tools .hot-table--items td:nth-child(5) {
   width: 15%;
 }
-
 .hot-tools .hot-table--items th:nth-child(6),
 .hot-tools .hot-table--items td:nth-child(6) {
   width: 10%;
 }
 
-/* 右表 hot_tools：20 / 20 / 30 / 30 */
-.hot-tools .hot-table--tools th:nth-child(1),
-.hot-tools .hot-table--tools td:nth-child(1) {
-  width: 20%;
-}
-
-.hot-tools .hot-table--tools th:nth-child(2),
-.hot-tools .hot-table--tools td:nth-child(2) {
-  width: 20%;
-}
-
-.hot-tools .hot-table--tools th:nth-child(3),
-.hot-tools .hot-table--tools td:nth-child(3) {
-  width: 30%;
-}
-
-.hot-tools .hot-table--tools th:nth-child(4),
-.hot-tools .hot-table--tools td:nth-child(4) {
-  width: 30%;
-}
-
 /* 右表目前選取分類文字 */
 .hot-tools #hotActiveItemLabel {
-  font-size: 15px;      /* 你可以調 14~16 */
-  font-weight: 700;     /* 比 hint 明顯 */
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text);
 }
 
@@ -312,12 +281,12 @@
   }
 }
 
-/* Fix: 保證 HTML hidden 一定隱藏（避免 btn 的 display 規則覆蓋） */
+/* Fix: 保證 HTML hidden 一定隱藏 */
 .hot-tools [hidden] {
   display: none !important;
 }
 
-/* ===== ✅ 定版：hot/tools 頁腳固定在視窗底，不被內容撐走 ===== */
+/* ===== 頁腳固定（你的定版需求） ===== */
 .page.hot-tools + footer {
   position: sticky;
   bottom: 0;
@@ -326,7 +295,7 @@
   border-top: 1px solid var(--line-2);
 }
 
-/* ===== ✅ 定版：右側 pane 不再把頁面撐高（內容改由內部捲動） ===== */
+/* ===== 右側 pane：只捲 tbody 區，表頭固定 ===== */
 .page.hot-tools {
   display: flex;
   flex-direction: column;
@@ -335,10 +304,9 @@
 
 .page.hot-tools .hot-split {
   flex: 1 1 auto;
-  min-height: 0; /* 沒這行，flex 會撐爆 */
+  min-height: 0;
 }
 
-/* ===== ✅ 右表：只捲 hot-tableScroll，表頭不捲 ===== */
 .hot-tools .hot-pane--right {
   display: flex;
   flex-direction: column;
@@ -359,17 +327,23 @@
   flex-direction: column;
 }
 
-/* 表頭固定：不需要 sticky（它不在捲動容器內） */
-.hot-tools .hot-table--head thead th {
-  position: static;
+/* 表頭/表身同寬同算法（欄寬由 colgroup 唯一決定） */
+.hot-tools .hot-table--head,
+.hot-tools .hot-table--body {
+  width: 100%;
+  table-layout: fixed;
 }
 
-/* 唯一捲動區：hot-tableScroll（隱藏卷軸但可捲） */
+/* 唯一捲動區 */
 .hot-tools .hot-tableScroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
 
+  /* 讓捲軸出現也不會吃掉寬度造成表頭/表身錯位 */
+  scrollbar-gutter: stable;
+
+  /* 你要隱藏捲軸但可捲（保留） */
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

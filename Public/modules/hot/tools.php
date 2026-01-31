@@ -111,7 +111,13 @@ $pageJs = [
           <div class="hot-tableWrap hot-tableWrap--fixed">
 
             <!-- 表頭（不捲） -->
-            <table class="table hot-table hot-table--tools hot-table--head">
+            <table class="table hot-table hot-table--tools hot-table--head" aria-label="工具明細表頭">
+              <colgroup>
+                <col style="width:20%">
+                <col style="width:20%">
+                <col style="width:30%">
+                <col style="width:30%">
+              </colgroup>
               <thead>
                 <tr>
                   <th>工具編號</th>
@@ -123,8 +129,14 @@ $pageJs = [
             </table>
 
             <!-- 表身（唯一捲動區） -->
-            <div class="hot-tableScroll" id="hotToolsScroll">
-              <table class="table hot-table hot-table--tools hot-table--body">
+            <div class="hot-tableScroll" id="hotToolsScroll" aria-label="工具明細捲動區">
+              <table class="table hot-table hot-table--tools hot-table--body" aria-label="工具明細表身">
+                <colgroup>
+                  <col style="width:20%">
+                  <col style="width:20%">
+                  <col style="width:30%">
+                  <col style="width:30%">
+                </colgroup>
                 <tbody id="tbHotTools">
                   <tr class="hot-empty">
                     <td colspan="4">請先選取左側分類</td>
@@ -141,6 +153,7 @@ $pageJs = [
           </div>
         </div>
       </section>
+
     </section>
 
     <!-- ============== Modals ============== -->
