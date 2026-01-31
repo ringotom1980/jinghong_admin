@@ -102,20 +102,62 @@
       self.setLeftHint('載入中…', true);
       self.setRightHint('載入中…', true);
 
-      var url = '/api/hot/assign?action=init';
-      if (vehicleId) url += '&vehicle_id=' + encodeURIComponent(String(vehicleId));
-
-      global.apiGet(url).then(function (j) {
-        if (!j || !j.success) {
+      // 先抓左表 vehicles
+      global.apiGet('/api/hot/assign?action=vehicles').then(function (j1) {
+        if (!j1 || !j1.success) {
           self.setStateFromInit({ vehicles: [], active_vehicle_id: 0, assigned_tools: [], vehicle_candidates: [] });
           self.setLeftHint('載入失敗', true);
           self.setRightHint('載入失敗', true);
-          Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j && j.error) ? j.error : '未知錯誤' });
+          Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j1 && j1.error) ? j1.error : '未知錯誤' });
           return;
         }
-        self.setStateFromInit(j.data || {});
-        self.setLeftHint('', false);
-        self.setRightHint('', false);
+
+        var vehicles = (j1.data && j1.data.vehicles) ? j1.data.vehicles : [];
+
+        // 決定 activeVehicleId：優先用傳入 vehicleId，否則第一筆
+        var activeId = Number(vehicleId || 0);
+        if (!activeId && vehicles.length) {
+          // 你的 service 回傳欄位是 v.id（不是 vehicle_id）
+          activeId = Number(vehicles[0].id || 0);
+        }
+
+        // 如果沒有 activeId，就直接渲染空
+        if (!activeId) {
+          self.state.vehicles = vehicles;
+          self.state.activeVehicleId = 0;
+          self.state.assignedTools = [];
+          if (global.HotAssignLeft) global.HotAssignLeft.render(self.state.vehicles, 0);
+          if (global.HotAssignRight) global.HotAssignRight.render(0, []);
+          self.setLeftHint('', false);
+          self.setRightHint('', false);
+          return;
+        }
+
+        // 再抓右表 tools
+        global.apiGet('/api/hot/assign?action=tools&vehicle_id=' + encodeURIComponent(String(activeId)))
+          .then(function (j2) {
+            if (!j2 || !j2.success) {
+              self.state.vehicles = vehicles;
+              self.state.activeVehicleId = activeId;
+              self.state.assignedTools = [];
+              if (global.HotAssignLeft) global.HotAssignLeft.render(self.state.vehicles, activeId);
+              if (global.HotAssignRight) global.HotAssignRight.render(activeId, []);
+              self.setLeftHint('', false);
+              self.setRightHint('載入失敗', true);
+              Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j2 && j2.error) ? j2.error : '未知錯誤' });
+              return;
+            }
+
+            self.state.vehicles = vehicles;
+            self.state.activeVehicleId = activeId;
+            self.state.assignedTools = (j2.data && j2.data.tools) ? j2.data.tools : [];
+
+            if (global.HotAssignLeft) global.HotAssignLeft.render(self.state.vehicles, activeId);
+            if (global.HotAssignRight) global.HotAssignRight.render(activeId, self.state.assignedTools);
+
+            self.setLeftHint('', false);
+            self.setRightHint('', false);
+          });
       });
     },
 
@@ -128,7 +170,7 @@
 
       self.setRightHint('載入中…', true);
 
-      global.apiGet('/api/hot/assign?action=list_vehicle&vehicle_id=' + encodeURIComponent(String(vehicleId)))
+      global.apiGet('/api/hot/assign?action=tools&vehicle_id=' + encodeURIComponent(String(vehicleId)))
         .then(function (j) {
           if (!j || !j.success) {
             Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j && j.error) ? j.error : '未知錯誤' });
@@ -138,7 +180,7 @@
             return;
           }
           var d = j.data || {};
-          self.state.assignedTools = d.assigned_tools || d.rows || [];
+          self.state.assignedTools = d.tools || [];
           if (global.HotAssignRight) global.HotAssignRight.render(vehicleId, self.state.assignedTools);
           self.setRightHint('', false);
         });
@@ -151,7 +193,7 @@
       if (!global.apiPost) return Promise.resolve(false);
 
       return global.apiPost('/api/hot/assign', {
-        action: 'create',
+        action: 'assign_more',
         vehicle_id: Number(vehicleId || 0),
         tool_ids: toolIds || []
       }).then(function (j) {
@@ -159,7 +201,7 @@
           Toast && Toast.show({ type: 'danger', title: '新增失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return false;
         }
-        Toast && Toast.show({ type: 'success', title: '已新增', message: '配賦已建立' });
+        Toast && Toast.show({ type: 'success', title: '已新增', message: '已新增配賦' });
         self.loadInit(Number(vehicleId || 0));
         return true;
       });
@@ -190,7 +232,7 @@
       if (!global.apiPost) return Promise.resolve(false);
 
       return global.apiPost('/api/hot/assign', {
-        action: 'clear',
+        action: 'vehicle_unassign_all',
         vehicle_id: Number(vehicleId || 0)
       }).then(function (j) {
         if (!j || !j.success) {
@@ -198,7 +240,7 @@
           return false;
         }
         Toast && Toast.show({ type: 'success', title: '已清空', message: '該車配賦已清空' });
-        self.loadInit(0); // 清空後該車可能從左表消失，回到第一筆
+        self.loadInit(0);
         return true;
       });
     },
@@ -206,10 +248,10 @@
     // 供 modal：取分類可用工具清單
     loadAvailableByItem: function (itemId) {
       if (!global.apiGet) return Promise.resolve(null);
-      return global.apiGet('/api/hot/assign?action=picklists&item_id=' + encodeURIComponent(String(Number(itemId || 0))))
+      return global.apiGet('/api/hot/assign?action=unassigned_tools&item_id=' + encodeURIComponent(String(Number(itemId || 0))))
         .then(function (j) {
           if (!j || !j.success) return null;
-          return j.data || null;
+          return j.data || null; // {tools: [...]}
         });
     }
   };

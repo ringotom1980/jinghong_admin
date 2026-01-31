@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/HotAssignService.php
  * 說明: 活電工具配賦（assign）後端服務
@@ -270,6 +271,88 @@ final class HotAssignService
 
       $this->db->commit();
       return ['assigned' => $n];
+    } catch (Throwable $e) {
+      $this->db->rollBack();
+      throw $e;
+    }
+  }
+
+  /* =========================
+   * 右表：差分更新（同時 add/remove）
+   * - addIds：只能加入「未配賦」工具
+   * - removeIds：只能解除「目前屬於此車」的工具
+   * - 全部 transaction + FOR UPDATE 防止同時被別車搶走
+   * ========================= */
+  public function updateAssignDiff(int $vehicleId, array $addIds, array $removeIds): array
+  {
+    if ($vehicleId <= 0) throw new InvalidArgumentException('vehicle_id 不可為空');
+
+    $addIds = array_values(array_unique(array_map('intval', $addIds)));
+    $addIds = array_values(array_filter($addIds, fn($x) => $x > 0));
+
+    $removeIds = array_values(array_unique(array_map('intval', $removeIds)));
+    $removeIds = array_values(array_filter($removeIds, fn($x) => $x > 0));
+
+    if (count($addIds) < 1 && count($removeIds) < 1) {
+      throw new InvalidArgumentException('add_tool_ids / remove_tool_ids 不可同時為空');
+    }
+
+    $this->db->beginTransaction();
+    try {
+      // 鎖車（車存在即可，停用也可）
+      $stV = $this->db->prepare("SELECT id FROM vehicle_vehicles WHERE id = :id FOR UPDATE");
+      $stV->execute([':id' => $vehicleId]);
+      if (!$stV->fetch()) throw new RuntimeException('車輛不存在');
+
+      $added = 0;
+      $removed = 0;
+
+      /* ---------- remove：只能解除本車的 ---------- */
+      if (count($removeIds) > 0) {
+        $in = implode(',', array_fill(0, count($removeIds), '?'));
+
+        // 鎖欲解除工具
+        $stLock = $this->db->prepare("SELECT id, vehicle_id FROM hot_tools WHERE id IN ($in) FOR UPDATE");
+        $stLock->execute($removeIds);
+        $rows = $stLock->fetchAll();
+        if (count($rows) !== count($removeIds)) throw new RuntimeException('remove 工具資料不完整');
+
+        foreach ($rows as $r) {
+          $vid = $r['vehicle_id'];
+          if ($vid === null) throw new RuntimeException('remove 包含未配賦工具');
+          if ((int)$vid !== (int)$vehicleId) throw new RuntimeException('remove 包含非本車工具');
+        }
+
+        $stUp = $this->db->prepare("UPDATE hot_tools SET vehicle_id = NULL WHERE id = :id");
+        foreach ($removeIds as $tid) {
+          $stUp->execute([':id' => $tid]);
+          $removed += $stUp->rowCount();
+        }
+      }
+
+      /* ---------- add：只能加入未配賦 ---------- */
+      if (count($addIds) > 0) {
+        $in = implode(',', array_fill(0, count($addIds), '?'));
+
+        // 鎖欲加入工具
+        $stLock = $this->db->prepare("SELECT id, vehicle_id FROM hot_tools WHERE id IN ($in) FOR UPDATE");
+        $stLock->execute($addIds);
+        $rows = $stLock->fetchAll();
+        if (count($rows) !== count($addIds)) throw new RuntimeException('add 工具資料不完整');
+
+        foreach ($rows as $r) {
+          if ($r['vehicle_id'] !== null) throw new RuntimeException('add 包含已配賦工具');
+        }
+
+        $stUp = $this->db->prepare("UPDATE hot_tools SET vehicle_id = :vid WHERE id = :id");
+        foreach ($addIds as $tid) {
+          $stUp->execute([':vid' => $vehicleId, ':id' => $tid]);
+          $added += $stUp->rowCount();
+        }
+      }
+
+      $this->db->commit();
+      return ['added' => $added, 'removed' => $removed, 'vehicle_id' => $vehicleId];
     } catch (Throwable $e) {
       $this->db->rollBack();
       throw $e;

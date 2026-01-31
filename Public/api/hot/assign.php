@@ -105,6 +105,19 @@ try {
       json_ok($data);
     }
 
+        case 'update': {
+      $vehicleId = (int)($body['vehicle_id'] ?? 0);
+      $addIds = $body['add_tool_ids'] ?? null;
+      $removeIds = $body['remove_tool_ids'] ?? null;
+
+      if ($vehicleId <= 0) json_error('vehicle_id 不可為空', 400);
+      if (!is_array($addIds)) $addIds = [];
+      if (!is_array($removeIds)) $removeIds = [];
+
+      $data = $svc->updateAssignDiff($vehicleId, $addIds, $removeIds);
+      json_ok($data);
+    }
+
     case 'transfer': {
       $vehicleId = (int)($body['vehicle_id'] ?? 0);
       $toolIds = $body['tool_ids'] ?? null;
