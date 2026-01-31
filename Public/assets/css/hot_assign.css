@@ -108,14 +108,10 @@
 .hot-assign .hot-table--veh td:nth-child(3) { width: 15%; }
 
 .hot-assign .hot-table--veh th:nth-child(4),
-.hot-assign .hot-table--veh td:nth-child(4) { width: 25%; }
+.hot-assign .hot-table--veh td:nth-child(4) { width: 20%; }
 
 .hot-assign .hot-table--veh th:nth-child(5),
-.hot-assign .hot-table--veh td:nth-child(5) { width: 15%; }
-
-/* 已配賦件數：右對齊（只這欄） */
-.hot-assign .hot-table--veh th:nth-child(4),
-.hot-assign .hot-table--veh td:nth-child(4) { text-align: right; }
+.hot-assign .hot-table--veh td:nth-child(5) { width: 20%; }
 
 /* 右表 hot_assign：15 / 22 / 22 / 26 / 15 */
 .hot-assign .hot-table--assign th:nth-child(1),
