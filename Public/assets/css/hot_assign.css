@@ -213,7 +213,7 @@
   background: rgba(37, 99, 235, 0.06);
 }
 .hot-assign .hot-table--veh tbody tr.hot-row.is-active {
-  background: rgba(37, 99, 235, 0.1);
+  background: rgba(47, 63, 122, 0.1);
 }
 
 /* 避免按鈕區域顯示為 row 的手指（按鈕仍像按鈕） */
