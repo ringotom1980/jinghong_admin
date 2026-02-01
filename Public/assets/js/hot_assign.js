@@ -74,11 +74,31 @@
       return false;
     },
 
+    guardRightEdit: function () {
+      if (!this.state.rightEditMode) return true;
+
+      var msg = '右表仍在編輯模式，請先「儲存」或「取消」後再操作左側功能。';
+      if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
+        global.Modal.confirmChoice(
+          '尚未關閉編輯模式',
+          msg,
+          null,
+          null,
+          { confirmText: '知道了', cancelText: '' }
+        );
+      } else {
+        toast('warning', '尚未關閉編輯模式', msg);
+      }
+      return false;
+    },
+
     bindEvents: function () {
       var self = this;
 
       if (this.els.btnVehAdd) {
         this.els.btnVehAdd.addEventListener('click', function () {
+          if (!self.guardLeftEdit()) return;   // ✅ 左表EDIT不准新增車
+          if (!self.guardRightEdit()) return;  // ✅ 右表EDIT也不准新增車
           if (!global.HotAssignModals || typeof global.HotAssignModals.openVehAdd !== 'function') {
             toast('danger', '系統錯誤', 'HotAssignModals 尚未就緒');
             return;
@@ -90,6 +110,7 @@
       // 左表：編輯模式＝顯示每列「解除」按鈕
       if (this.els.btnVehEdit) {
         this.els.btnVehEdit.addEventListener('click', function () {
+          if (!self.guardRightEdit()) return;  // ✅ 右表EDIT時，不准開左表EDIT
           self.state.leftEditMode = true;
           self.syncLeftMode();
         });
