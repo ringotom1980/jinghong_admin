@@ -313,6 +313,10 @@
   display: none !important;
 }
 
+.hot-assign .hot-table--assign td:nth-child(5) .btn + .btn {
+  margin-left: 8px;
+}
+
 /* ===== VehAdd modal (openVehAdd) : 3 blocks + dashed separators ===== */
 .hot-vehAdd {
   display: grid;
