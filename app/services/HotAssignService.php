@@ -314,7 +314,7 @@ final class HotAssignService
 
       foreach ($locked as $t) {
         if ($t['vehicle_id'] === null || (int)$t['vehicle_id'] !== (int)$vehicleId) {
-          throw new RuntimeException('包含非本車工具（不可更新檢驗日期） tid=' . (int)$t['id'] . ' tool_vid=' . (string)$t['vehicle_id'] . ' req_vid=' . (int)$vehicleId);
+          throw new RuntimeException('包含非本車工具（不可更新檢驗日期）');
         }
       }
 
