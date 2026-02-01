@@ -93,6 +93,15 @@
   scrollbar-gutter: stable;
 }
 
+/* 右表：可捲但不顯示卷軸（只作用在 .hot-tableScroll） */
+.hot-assign .hot-tableScroll{
+  -ms-overflow-style: none;   /* IE/舊 Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.hot-assign .hot-tableScroll::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
 /* .hot-assign .hot-table thead th{
   position: sticky;
   top: 0;
