@@ -81,7 +81,11 @@
         },
 
         /* ========== 車輛新增（必須至少一筆工具） ========== */
-        openVehAdd: function () {
+        openVehAdd: function (opts) {
+            opts = opts || {};
+            var mode = String(opts.mode || 'vehicle_add'); // 'vehicle_add' | 'assign_more'
+            var fixedVehicleId = Number(opts.fixedVehicleId || 0);
+            var fixedVehicleLabel = String(opts.fixedVehicleLabel || '');
             var self = this;
             if (!global.Modal || typeof global.Modal.open !== 'function') {
                 toast('danger', '系統錯誤', 'Modal 不存在（ui_modal.js 未載入）');
@@ -283,9 +287,14 @@
                     + '  <div class="hot-vehAdd__top">'
                     + '    <div class="hot-field">'
                     + '      <label class="form-label">車輛<span class="hot-req">(必填)</span></label>'
-                    + '      <select class="input" id="mVehPick"><option value="">載入中…</option></select>'
-                    + '      <div class="hot-helpText2">停用車可選，將顯示「停用中」註記。</div>'
+                    + (fixedVehicleId
+                        ? ('<div class="input" style="display:flex;align-items:center;">' + esc(fixedVehicleLabel || '-') + '</div>'
+                            + '<input type="hidden" id="mVehPickFixed" value="' + fixedVehicleId + '">')
+                        : ('<select class="input" id="mVehPick"><option value="">載入中…</option></select>'
+                            + '<div class="hot-helpText2">停用車可選，將顯示「停用中」註記。</div>')
+                    )
                     + '    </div>'
+
                     + '    <div class="hot-field">'
                     + '      <label class="form-label">工具分類<span class="hot-req">(必填)</span></label>'
                     + '      <select class="input" id="mVehItemPick"><option value="">載入中…</option></select>'
@@ -327,8 +336,14 @@
                 closeOnBackdrop: true,
                 closeOnEsc: true,
                 onConfirm: function () {
-                    var pickVeh = qs('#mVehPick', bd);
-                    var vehicleId = pickVeh ? Number(pickVeh.value || 0) : 0;
+                    var vehicleId = 0;
+                    if (fixedVehicleId) {
+                        var hid = qs('#mVehPickFixed', bd);
+                        vehicleId = hid ? Number(hid.value || 0) : fixedVehicleId;
+                    } else {
+                        var pickVeh = qs('#mVehPick', bd);
+                        vehicleId = pickVeh ? Number(pickVeh.value || 0) : 0;
+                    }
                     if (!vehicleId) { toast('warning', '資料不足', '請先選擇車輛'); return false; }
 
                     var rows = [];
@@ -342,8 +357,16 @@
                     });
 
                     if (!rows.length) { toast('warning', '資料不足', '至少需選取 1 筆工具'); return false; }
+                    var addToolIds = rows
+                        .map(function (r) { return Number(r.tool_id || 0); })
+                        .filter(function (x) { return !!x; });
 
-                    return apiPost('/api/hot/assign', { action: 'vehicle_add', vehicle_id: vehicleId, rows: rows })
+                    return apiPost('/api/hot/assign', {
+                        action: 'update',
+                        vehicle_id: vehicleId,
+                        add_tool_ids: addToolIds,
+                        remove_tool_ids: []
+                    })
                         .then(function (j) {
                             if (!j || !j.success) { toast('danger', '儲存失敗', (j && j.error) ? j.error : '未知錯誤'); return false; }
                             toast('success', '已儲存', '新增車輛配賦完成');
@@ -673,33 +696,13 @@
             var prevVid = self.app && self.app.state ? self.app.state.activeVehicleId : 0;
             if (self.app && self.app.state) self.app.state.activeVehicleId = vehicleId;
 
-            self.openVehAdd();
-
-            // 等 modal DOM 出現後鎖定車輛選單（openVehAdd 的 select id = #mVehPick）
-            setTimeout(function () {
-                try {
-                    var backdrop = document.querySelector('.modal-backdrop'); // ui_modal 的容器
-                    if (!backdrop) return;
-
-                    var pickVeh = backdrop.querySelector('#mVehPick');
-                    if (!pickVeh) return;
-
-                    // 強制選到目前車
-                    pickVeh.value = String(vehicleId);
-
-                    // 禁止改車（右表新增限定本車）
-                    pickVeh.disabled = true;
-
-                    // 額外顯示提示（可選，不影響功能）
-                    var help = pickVeh.parentNode ? pickVeh.parentNode.querySelector('.hot-helpText2') : null;
-                    if (help) help.textContent = '右表新增：限定本車（不可切換車輛）';
-                } catch (e) { /* ignore */ }
-            }, 0);
-
-            // Modal 關閉後還原（保險）
-            setTimeout(function () {
-                if (self.app && self.app.state) self.app.state.activeVehicleId = prevVid;
-            }, 0);
+            self.openVehAdd({
+                mode: 'assign_more',
+                fixedVehicleId: vehicleId,
+                fixedVehicleLabel: vehicleLabel || (self.app && typeof self.app.getActiveVehicleLabel === 'function'
+                    ? self.app.getActiveVehicleLabel()
+                    : '')
+            });
         },
 
         /* ========== 右表：單筆移轉（EDIT） ========== */

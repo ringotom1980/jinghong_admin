@@ -277,8 +277,16 @@
         var vehicles = (j1.data && j1.data.vehicles) ? j1.data.vehicles : [];
         self.state.vehicles = vehicles;
 
-        var activeId = Number(preferVehicleId || 0);
-        if (!activeId && vehicles.length) activeId = Number(vehicles[0].id || 0);
+        var prefer = Number(preferVehicleId || 0);
+
+        // prefer 必須存在於 vehicles 清單才算有效
+        var preferOk = prefer && vehicles.some(function (v) {
+          return Number(v.id || 0) === prefer;
+        });
+
+        var activeId = 0;
+        if (preferOk) activeId = prefer;
+        else if (vehicles.length) activeId = Number(vehicles[0].id || 0);
 
         self.state.activeVehicleId = activeId || 0;
 
