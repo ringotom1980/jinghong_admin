@@ -110,8 +110,26 @@
       // 右表：進入 EDIT
       if (this.els.btnAssignEdit) {
         this.els.btnAssignEdit.addEventListener('click', function () {
+          // ✅ 左表編輯中：禁止開右表編輯（你要的效果）
+          if (self.state.leftEditMode) {
+            var msg = '左表仍在編輯模式，請先「取消」後再進入右表編輯。';
+            if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
+              global.Modal.confirmChoice(
+                '尚未關閉編輯模式',
+                msg,
+                null,
+                null,
+                { confirmText: '知道了', cancelText: '' }
+              );
+            } else {
+              toast('warning', '尚未關閉編輯模式', msg);
+            }
+            return;
+          }
+
           var vid = Number(self.state.activeVehicleId || 0);
           if (!vid) return toast('warning', '尚未選車', '請先選取左側車輛');
+
           self.state.rightEditMode = true;
           self.state.rightDirty = false;
           self.state.rightDraft = {};
