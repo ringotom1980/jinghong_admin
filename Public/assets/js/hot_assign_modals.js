@@ -113,11 +113,12 @@
             var modalState = {
                 vehicles: [],
                 itemsCounts: [],
-                // selectedByItemId: { [itemId]: { code, name, toolMap: { [toolId]: tool_no } } }
                 selectedByItemId: {},
-                // current list tools for middle block (selected item)
                 currentItemId: 0,
-                currentTools: [] // [{id, tool_no}]
+                currentTools: [],
+
+                existingToolIds: {},   // ✅ 這台車原本已配賦的 tool id 集合 {id:true}
+                existingLoaded: false  // ✅ 是否已載入既有配賦
             };
 
             function getItemMeta(itemId) {
@@ -359,7 +360,13 @@
                     if (!rows.length) { toast('warning', '資料不足', '至少需選取 1 筆工具'); return false; }
                     var addToolIds = rows
                         .map(function (r) { return Number(r.tool_id || 0); })
-                        .filter(function (x) { return !!x; });
+                        .filter(function (x) { return !!x; })
+                        .filter(function (x) { return !modalState.existingToolIds[x]; }); // ✅ 只送新增的
+
+                    if (!addToolIds.length) {
+                        toast('info', '無新增', '沒有新增工具，不需要儲存');
+                        return false;
+                    }
 
                     return apiPost('/api/hot/assign', {
                         action: 'update',
@@ -488,6 +495,44 @@
                 // initial render
                 renderMiddle(bd);
                 renderBottom(bd);
+                // ✅ 右表新增（fixedVehicleId）要先把「本車既有配賦」帶進已選取工具
+                if (fixedVehicleId) {
+                    apiGet('/api/hot/assign', { action: 'tools', vehicle_id: fixedVehicleId })
+                        .then(function (jT) {
+                            if (!jT || !jT.success) return;
+
+                            var list = (jT.data && Array.isArray(jT.data.tools)) ? jT.data.tools : [];
+
+                            list.forEach(function (r) {
+                                r = r || {};
+                                // tools API 常見會回 tool_id 或 id，兩個都接
+                                var tid = Number(r.tool_id || r.id || 0);
+                                var iid = Number(r.item_id || 0);
+                                if (!tid || !iid) return;
+
+                                // 1) 記錄：這些是「原本就有」的
+                                modalState.existingToolIds[tid] = true;
+
+                                // 2) 建 bucket（優先用 tools API 回的 item_code/item_name）
+                                if (!modalState.selectedByItemId[iid]) {
+                                    modalState.selectedByItemId[iid] = {
+                                        code: String(r.item_code || ''),
+                                        name: String(r.item_name || ''),
+                                        toolMap: {}
+                                    };
+                                }
+
+                                // 3) 塞 tool_no
+                                modalState.selectedByItemId[iid].toolMap[tid] = String(r.tool_no || '');
+                            });
+
+                            modalState.existingLoaded = true;
+
+                            // 4) 立刻刷新已選取工具
+                            renderBottom(bd);
+                        });
+                }
+
             });
         },
 
