@@ -320,7 +320,11 @@
             return;
           }
           self.state.assignedTools = (j.data && j.data.tools) ? j.data.tools : [];
-          if (global.HotAssignRight) global.HotAssignRight.render(self.getActiveVehicleLabel(), vehicleId, self.state.assignedTools);
+
+          // ✅ 統一用 syncRightMode() 來渲染（會自動帶 editMode + draftDates）
+          // - 這樣「移轉/解除」或 reload 後，EDIT 模式的列按鈕不會消失
+          self.syncRightMode();
+
         });
     }
   };
