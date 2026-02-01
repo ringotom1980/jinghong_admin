@@ -216,34 +216,6 @@
   background: rgba(37, 99, 235, 0.1);
 }
 
-/* ✅ 整列框線：只畫一個矩形框（不再每格） */
-.hot-assign .hot-table--veh tbody tr.hot-row::after {
-  content: "";
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  top: 3px;
-  bottom: 3px;
-
-  border-radius: 12px;
-  pointer-events: none;
-
-  opacity: 0;
-  border: 1px solid rgba(37, 99, 235, 0.18);
-}
-
-/* hover 顯示框 */
-.hot-assign .hot-table--veh tbody tr.hot-row:hover::after {
-  opacity: 1;
-}
-
-/* active 更粗更明顯 */
-.hot-assign .hot-table--veh tbody tr.hot-row.is-active::after {
-  opacity: 1;
-  border-width: 2px;
-  border-color: rgba(37, 99, 235, 0.28);
-}
-
 /* 避免按鈕區域顯示為 row 的手指（按鈕仍像按鈕） */
 .hot-assign .hot-table--veh tbody tr.hot-row .btn {
   cursor: pointer;
