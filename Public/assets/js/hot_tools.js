@@ -419,11 +419,23 @@
           ? '右表仍在編輯模式，請先「儲存」或「取消」後再切換分類。'
           : '左表仍在編輯模式，請先「儲存」或「取消」後再切換分類。';
 
-        toastErr(msg);
+        // ✅ 要你截圖那種提示：優先用共用 Modal.confirmChoice
+        if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
+          global.Modal.confirmChoice(
+            '尚未關閉編輯模式',
+            msg,
+            null,
+            null,
+            { confirmText: '知道了', cancelText: '' } // 只留單一按鈕
+          );
+        } else {
+          toastErr(msg);
+        }
         return;
       }
 
       if (this.state.activeItemId === itemId) return;
+
       this.state.activeItemId = itemId;
       this.syncActiveItem();
       this.renderItems();
