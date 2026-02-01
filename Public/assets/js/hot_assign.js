@@ -146,13 +146,22 @@
             return;
           }
 
-          var rows = ids.map(function (k) {
+          var rows = [];
+
+          ids.forEach(function (k) {
             var d = draft[k] || {};
-            return {
-              tool_id: Number(k),
-              inspect_date: String(d.inspect_date || ''),
-              replace_date: String(d.replace_date || '')
-            };
+            var row = { tool_id: Number(k) };
+
+            // ✅ 只帶有出現在 draft 裡的欄位（代表使用者有動過）
+            if (Object.prototype.hasOwnProperty.call(d, 'inspect_date')) {
+              row.inspect_date = String(d.inspect_date || '');
+            }
+            if (Object.prototype.hasOwnProperty.call(d, 'replace_date')) {
+              row.replace_date = String(d.replace_date || '');
+            }
+
+            // 至少有一個欄位才送
+            if (Object.keys(row).length > 1) rows.push(row);
           });
 
           global.apiPost('/api/hot/assign', { action: 'inspect_dates_update', vehicle_id: vid, rows: rows })
