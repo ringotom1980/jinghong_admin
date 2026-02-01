@@ -62,15 +62,31 @@
 
       /* === change event（EDIT 模式：日期變更） === */
       this.els.tb.addEventListener('change', function (e) {
+        // 檢驗日期
         var inp = e.target && e.target.closest ? e.target.closest('[data-act="inspect-change"]') : null;
-        if (!inp || !self.app) return;
+        if (inp && self.app) {
+          var tid = Number(inp.getAttribute('data-tool-id') || 0);
+          if (!tid) return;
 
-        var tid = Number(inp.getAttribute('data-tool-id') || 0);
-        if (!tid) return;
+          var v = String(inp.value || '');
+          if (!self.app.state.rightDraft) self.app.state.rightDraft = {};
+          if (!self.app.state.rightDraft[tid]) self.app.state.rightDraft[tid] = {};
+          self.app.state.rightDraft[tid].inspect_date = v;
+          self.app.state.rightDirty = true;
+          return;
+        }
 
-        var v = String(inp.value || '');
-        if (!self.app.state.rightDraftDates) self.app.state.rightDraftDates = {};
-        self.app.state.rightDraftDates[tid] = v;
+        // 更換日期
+        var inp2 = e.target && e.target.closest ? e.target.closest('[data-act="replace-change"]') : null;
+        if (!inp2 || !self.app) return;
+
+        var tid2 = Number(inp2.getAttribute('data-tool-id') || 0);
+        if (!tid2) return;
+
+        var v2 = String(inp2.value || '');
+        if (!self.app.state.rightDraft) self.app.state.rightDraft = {};
+        if (!self.app.state.rightDraft[tid2]) self.app.state.rightDraft[tid2] = {};
+        self.app.state.rightDraft[tid2].replace_date = v2;
         self.app.state.rightDirty = true;
       });
     },
@@ -106,29 +122,55 @@
         var cat = (r.item_code ? (r.item_code + '｜') : '') + (r.item_name || '');
         var meta = cat + '｜' + (r.tool_no || '');
 
-        var dateVal = draftDates[tid] !== undefined
-          ? String(draftDates[tid] || '')
-          : String(r.inspect_date || '');
+        // draftDates[tid] 兼容：
+        // - 舊：'YYYY-MM-DD'
+        // - 新：{inspect_date:'', replace_date:''}
+        var d = (draftDates && draftDates[tid] !== undefined) ? draftDates[tid] : null;
+
+        var inspectVal = '';
+        var replaceVal = '';
+
+        if (d && typeof d === 'object') {
+          inspectVal = String(d.inspect_date || '');
+          replaceVal = String(d.replace_date || '');
+        } else if (d !== null) {
+          // 舊版：只有 inspect_date
+          inspectVal = String(d || '');
+          replaceVal = '';
+        } else {
+          inspectVal = String(r.inspect_date || '');
+          replaceVal = String(r.replace_date || '');
+        }
 
         html += ''
           + '<tr>'
           + '  <td>' + esc(cat) + '</td>'
           + '  <td>' + esc(r.tool_no || '') + '</td>'
+
+          // 檢驗日期
           + '  <td>'
           + (editMode
-              ? '<input type="date" class="input" data-act="inspect-change" data-tool-id="' + tid + '" value="' + esc(dateVal) + '">'
-              : esc(r.inspect_date || '')
-            )
+            ? '<input type="date" class="input" data-act="inspect-change" data-tool-id="' + tid + '" value="' + esc(inspectVal) + '">'
+            : esc(r.inspect_date || '')
+          )
           + '  </td>'
-          + '  <td>' + esc(r.note || '') + '</td>'
+
+          // 更換日期（第 4 欄改為 replace_date）
           + '  <td>'
           + (editMode
-              ? '<span class="hot-row__act">'
-                + '<button type="button" class="btn btn--info" data-act="tool-transfer" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">移轉</button>'
-                + '<button type="button" class="btn btn--danger" data-act="tool-unassign" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">解除</button>'
-                + '</span>'
-              : ''
-            )
+            ? '<input type="date" class="input" data-act="replace-change" data-tool-id="' + tid + '" value="' + esc(replaceVal) + '">'
+            : esc(r.replace_date || '')
+          )
+          + '  </td>'
+
+          + '  <td>'
+          + (editMode
+            ? '<span class="hot-row__act">'
+            + '<button type="button" class="btn btn--info" data-act="tool-transfer" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">移轉</button>'
+            + '<button type="button" class="btn btn--danger" data-act="tool-unassign" data-tool-id="' + tid + '" data-tool-meta="' + esc(meta) + '">解除</button>'
+            + '</span>'
+            : ''
+          )
           + '  </td>'
           + '</tr>';
       });

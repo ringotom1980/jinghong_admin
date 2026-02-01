@@ -47,24 +47,24 @@ final class HotAssignService
   public function listToolsByVehicle(int $vehicleId): array
   {
     $sql = "
-      SELECT
-        t.id,
-        t.tool_no,
-        t.inspect_date,
-        t.note,
-        i.code AS item_code,
-        i.name AS item_name,
-        i.id AS item_id
-      FROM hot_tools t
-      JOIN hot_items i ON i.id = t.item_id
-      WHERE t.vehicle_id = :vid
-      ORDER BY i.code ASC, t.tool_no ASC
-    ";
+    SELECT
+      t.id,
+      t.tool_no,
+      t.inspect_date,
+      t.replace_date,
+      t.note,
+      i.code AS item_code,
+      i.name AS item_name,
+      i.id AS item_id
+    FROM hot_tools t
+    JOIN hot_items i ON i.id = t.item_id
+    WHERE t.vehicle_id = :vid
+    ORDER BY i.code ASC, t.tool_no ASC
+  ";
     $st = $this->db->prepare($sql);
     $st->execute([':vid' => $vehicleId]);
     return $st->fetchAll();
   }
-
   /* =========================
    * 新增車 modal：可選車（排除已存在於 hot_tools.vehicle_id 的車）
    * - 停用車可選
@@ -284,9 +284,15 @@ final class HotAssignService
     foreach ($rows as $r) {
       $tid = (int)($r['tool_id'] ?? 0);
       if ($tid <= 0) continue;
-      $date = $this->normalizeDateOrNull($r['inspect_date'] ?? null);
-      if ($date === null) throw new InvalidArgumentException('inspect_date 不可為空');
-      $map[$tid] = $date;
+
+      // 允許空字串 => NULL（可清空）
+      $inspect = $this->normalizeDateOrNull($r['inspect_date'] ?? null);
+      $replace = $this->normalizeDateOrNull($r['replace_date'] ?? null);
+
+      // 至少要有一個欄位出現（避免送空物件）
+      if (!array_key_exists('inspect_date', $r) && !array_key_exists('replace_date', $r)) continue;
+
+      $map[$tid] = ['inspect_date' => $inspect, 'replace_date' => $replace];
     }
     if (!count($map)) throw new InvalidArgumentException('rows 不可為空');
 
@@ -312,10 +318,22 @@ final class HotAssignService
         }
       }
 
-      $stUp = $this->db->prepare("UPDATE hot_tools SET inspect_date = :d WHERE id = :id");
+      $stUp = $this->db->prepare("
+  UPDATE hot_tools
+  SET inspect_date = :inspect_date,
+      replace_date = :replace_date
+  WHERE id = :id
+");
       $n = 0;
-      foreach ($map as $tid => $d) {
-        $stUp->execute([':d' => $d, ':id' => $tid]);
+      foreach ($map as $tid => $m) {
+        $inspect = $m['inspect_date'] ?? null;
+        $replace = $m['replace_date'] ?? null;
+
+        $stUp->bindValue(':inspect_date', $inspect, $inspect === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stUp->bindValue(':replace_date', $replace, $replace === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stUp->bindValue(':id', (int)$tid, PDO::PARAM_INT);
+
+        $stUp->execute();
         $n += $stUp->rowCount();
       }
 

@@ -30,7 +30,7 @@
 
       rightEditMode: false,         // ✅ 右表：VIEW/EDIT
       rightDirty: false,            // ✅ 是否有改過檢驗日期（有就提示）
-      rightDraftDates: {}           // ✅ {toolId: 'YYYY-MM-DD'} 只存使用者改過的
+      rightDraft: {}           // ✅ {toolId: 'YYYY-MM-DD'} 只存使用者改過的
     },
 
     init: function () {
@@ -137,18 +137,23 @@
           var vid = Number(self.state.activeVehicleId || 0);
           if (!vid) return;
 
-          var draft = self.state.rightDraftDates || {};
+          var draft = self.state.rightDraft || {};
           var ids = Object.keys(draft);
           if (!ids.length) {
-            toast('info', '無變更', '沒有需要儲存的檢驗日期變更');
+            toast('info', '無變更', '沒有需要儲存的日期變更');
             self.state.rightEditMode = false;
             self.syncRightMode();
             return;
           }
 
-          if (!global.apiPost) return toast('danger', '系統錯誤', 'apiPost 不存在');
-
-          var rows = ids.map(function (k) { return { tool_id: Number(k), inspect_date: String(draft[k] || '') }; });
+          var rows = ids.map(function (k) {
+            var d = draft[k] || {};
+            return {
+              tool_id: Number(k),
+              inspect_date: String(d.inspect_date || ''),
+              replace_date: String(d.replace_date || '')
+            };
+          });
 
           global.apiPost('/api/hot/assign', { action: 'inspect_dates_update', vehicle_id: vid, rows: rows })
             .then(function (j) {
@@ -207,7 +212,7 @@
           this.state.activeVehicleId,
           this.state.assignedTools,
           edit,
-          this.state.rightDraftDates || {}
+          this.state.rightDraft || {}
         );
       }
     },
