@@ -806,7 +806,7 @@
             });
 
             // 載入車輛清單
-            apiGet('/api/hot/assign', { action: 'available_vehicles' }).then(function (j) {
+            apiGet('/api/hot/assign', { action: 'vehicles_all' }).then(function (j) {
                 if (!j || !j.success) {
                     toast('danger', '載入失敗', (j && j.error) ? j.error : 'available_vehicles');
                     return;

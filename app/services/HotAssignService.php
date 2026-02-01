@@ -87,6 +87,24 @@ final class HotAssignService
   }
 
   /* =========================
+ * 移轉 modal：車輛清單（不排除已配賦車）
+ * - 停用車可選（前端會顯示「停用中」）
+ * ========================= */
+  public function listVehiclesAll(): array
+  {
+    $sql = "
+    SELECT
+      v.id,
+      v.vehicle_code,
+      v.plate_no,
+      v.is_active
+    FROM vehicle_vehicles v
+    ORDER BY v.is_active DESC, v.vehicle_code ASC
+  ";
+    return $this->db->query($sql)->fetchAll();
+  }
+
+  /* =========================
    * 新增車 modal：分類統計（A分類：總數/已配賦/可配賦）
    * ========================= */
   public function listItemsCounts(): array

@@ -58,6 +58,12 @@ try {
           return;
         }
 
+      case 'vehicles_all': {
+          $rows = $svc->listVehiclesAll();
+          json_ok(['vehicles' => $rows]);
+          return;
+        }
+
       case 'items_counts': {
           $rows = $svc->listItemsCounts();
           json_ok(['items' => $rows]);
@@ -73,21 +79,21 @@ try {
         }
 
         // ✅（A 路線要用）移轉清單：列出「非本車」且「已配賦」的工具
-      // case 'transfer_tools': {
-      //     $vehicleId = isset($_GET['vehicle_id']) ? (int)$_GET['vehicle_id'] : 0;
-      //     if ($vehicleId <= 0) json_error('vehicle_id 不可為空', 400);
+        // case 'transfer_tools': {
+        //     $vehicleId = isset($_GET['vehicle_id']) ? (int)$_GET['vehicle_id'] : 0;
+        //     if ($vehicleId <= 0) json_error('vehicle_id 不可為空', 400);
 
-      //     $itemId = isset($_GET['item_id']) && $_GET['item_id'] !== '' ? (int)$_GET['item_id'] : null;
-      //     if ($itemId !== null && $itemId <= 0) $itemId = null;
+        //     $itemId = isset($_GET['item_id']) && $_GET['item_id'] !== '' ? (int)$_GET['item_id'] : null;
+        //     if ($itemId !== null && $itemId <= 0) $itemId = null;
 
-      //     if (!method_exists($svc, 'listTransferableTools')) {
-      //       json_error('後端尚未提供 listTransferableTools', 500);
-      //     }
+        //     if (!method_exists($svc, 'listTransferableTools')) {
+        //       json_error('後端尚未提供 listTransferableTools', 500);
+        //     }
 
-      //     $rows = $svc->listTransferableTools($vehicleId, $itemId);
-      //     json_ok(['tools' => $rows]);
-      //     return;
-      //   }
+        //     $rows = $svc->listTransferableTools($vehicleId, $itemId);
+        //     json_ok(['tools' => $rows]);
+        //     return;
+        //   }
 
       default:
         json_error('未知 action', 400);
