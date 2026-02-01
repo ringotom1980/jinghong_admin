@@ -126,27 +126,27 @@
 /* 右表 hot_assign：15 / 22 / 22 / 26 / 15 */
 .hot-assign .hot-table--assign th:nth-child(1),
 .hot-assign .hot-table--assign td:nth-child(1) {
-  width: 15%;
+  width: 20%;
 }
 
 .hot-assign .hot-table--assign th:nth-child(2),
 .hot-assign .hot-table--assign td:nth-child(2) {
-  width: 22%;
+  width: 15%;
 }
 
 .hot-assign .hot-table--assign th:nth-child(3),
 .hot-assign .hot-table--assign td:nth-child(3) {
-  width: 22%;
+  width: 15%;
 }
 
 .hot-assign .hot-table--assign th:nth-child(4),
 .hot-assign .hot-table--assign td:nth-child(4) {
-  width: 26%;
+  width: 25%;
 }
 
 .hot-assign .hot-table--assign th:nth-child(5),
 .hot-assign .hot-table--assign td:nth-child(5) {
-  width: 15%;
+  width: 25%;
 }
 
 /* 空資料列（你 HTML 有 .hot-empty） */
