@@ -38,17 +38,28 @@
     return y + '-' + m + '-' + dd;
   }
 
-  function toolInspectStatus(ymd) {
-    ymd = String(ymd || '').trim();
-    if (!ymd) return 'unset';
+  function addMonthsYmd(ymd, months) {
+    var p = String(ymd || '').split('-');
+    if (p.length !== 3) return '';
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    d.setMonth(d.getMonth() + Number(months || 0));
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  }
+
+  function toolInspectStatus(inspectYmd) {
+    inspectYmd = String(inspectYmd || '').trim();
+    if (!inspectYmd) return 'unset';
 
     var t0 = todayYmd();
-    var t7 = addDaysYmd(t0, 7);
+    var expire = addMonthsYmd(inspectYmd, 6);
+    var warnFrom = addDaysYmd(expire, -7);
 
-    // YYYY-MM-DD 字串可直接字典序比較
-    if (ymd < t0) return 'overdue';
-    if (ymd >= t0 && ymd <= t7) return 'soon';
-    return ''; // > 7 天：空白
+    if (t0 > expire) return 'overdue';
+    if (t0 >= warnFrom && t0 <= expire) return 'soon';
+    return '';
   }
 
   function statusPill(st) {

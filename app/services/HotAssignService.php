@@ -44,7 +44,7 @@ final class HotAssignService
           CASE
             WHEN t.inspect_date IS NOT NULL
               AND t.inspect_date <> ''
-              AND t.inspect_date < CURDATE()
+              AND DATE_ADD(t.inspect_date, INTERVAL 6 MONTH) < CURDATE()
             THEN 1 ELSE 0
           END
         ) > 0 THEN 'overdue'
@@ -53,8 +53,8 @@ final class HotAssignService
           CASE
             WHEN t.inspect_date IS NOT NULL
               AND t.inspect_date <> ''
-              AND t.inspect_date >= CURDATE()
-              AND t.inspect_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+              AND DATE_ADD(t.inspect_date, INTERVAL 6 MONTH) >= CURDATE()
+              AND DATE_ADD(t.inspect_date, INTERVAL 6 MONTH) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
             THEN 1 ELSE 0
           END
         ) > 0 THEN 'soon'
