@@ -22,6 +22,14 @@
     return '<span class="hot-pill">使用中</span>';
   }
 
+  function inspectPill(status) {
+    status = String(status || '');
+    if (status === 'overdue') return '<span class="ins-pill ins-pill--overdue">已逾期</span>';
+    if (status === 'soon') return '<span class="ins-pill ins-pill--soon">快到期</span>';
+    if (status === 'unset') return '<span class="ins-pill ins-pill--unset">未設定</span>';
+    return ''; // 空白：>7 天不顯示任何膠囊
+  }
+
   var Mod = {
     app: null,
     els: { tb: null },
@@ -62,7 +70,7 @@
       editMode = !!editMode;
 
       if (!vehicles.length) {
-        this.els.tb.innerHTML = '<tr class="hot-empty"><td colspan="5">尚無配賦車輛</td></tr>';
+        this.els.tb.innerHTML = '<tr class="hot-empty"><td colspan="6">尚無配賦車輛</td></tr>';
         return;
       }
 
@@ -79,6 +87,7 @@
           + '  <td>' + esc(v.plate_no || '') + '</td>'
           + '  <td>' + pill(v.is_active) + '</td>'
           + '  <td>' + cnt + '</td>'
+          + '  <td>' + inspectPill(v.inspect_status) + '</td>'
           + '  <td>'
           + (editMode
             ? ('<span class="hot-row__act">'

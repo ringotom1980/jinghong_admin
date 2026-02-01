@@ -18,6 +18,46 @@
       .replace(/'/g, '&#039;');
   }
 
+  function todayYmd() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  }
+
+  function addDaysYmd(ymd, days) {
+    // ymd: YYYY-MM-DD
+    var parts = String(ymd || '').split('-');
+    if (parts.length !== 3) return '';
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    d.setDate(d.getDate() + Number(days || 0));
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  }
+
+  function toolInspectStatus(ymd) {
+    ymd = String(ymd || '').trim();
+    if (!ymd) return 'unset';
+
+    var t0 = todayYmd();
+    var t7 = addDaysYmd(t0, 7);
+
+    // YYYY-MM-DD 字串可直接字典序比較
+    if (ymd < t0) return 'overdue';
+    if (ymd >= t0 && ymd <= t7) return 'soon';
+    return ''; // > 7 天：空白
+  }
+
+  function statusPill(st) {
+    if (st === 'overdue') return '<span class="ins-pill ins-pill--overdue">已逾期</span>';
+    if (st === 'soon') return '<span class="ins-pill ins-pill--soon">快到期</span>';
+    if (st === 'unset') return '<span class="ins-pill ins-pill--unset">未設定</span>';
+    return '';
+  }
+
   var Mod = {
     app: null,
     els: { tb: null, label: null },
@@ -105,13 +145,13 @@
 
       if (!vehicleId) {
         this.els.tb.innerHTML =
-          '<tr class="hot-empty"><td colspan="5">請先選取左側車輛</td></tr>';
+          '<tr class="hot-empty"><td colspan="6">請先選取左側車輛</td></tr>';
         return;
       }
 
       if (!rows.length) {
         this.els.tb.innerHTML =
-          '<tr class="hot-empty"><td colspan="5">此車目前沒有配賦工具</td></tr>';
+          '<tr class="hot-empty"><td colspan="6">此車目前沒有配賦工具</td></tr>';
         return;
       }
 
@@ -146,6 +186,9 @@
           + '<tr>'
           + '  <td>' + esc(cat) + '</td>'
           + '  <td>' + esc(r.tool_no || '') + '</td>'
+
+          // 狀態（單筆判斷：吃 draft 的 inspectVal）
+          + '  <td>' + statusPill(toolInspectStatus(inspectVal)) + '</td>'
 
           // 檢驗日期
           + '  <td>'

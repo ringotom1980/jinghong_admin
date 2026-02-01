@@ -26,18 +26,55 @@ final class HotAssignService
   public function listAssignedVehicles(): array
   {
     $sql = "
-      SELECT
-        v.id,
-        v.vehicle_code,
-        v.plate_no,
-        v.is_active,
-        COUNT(t.id) AS assigned_cnt
-      FROM hot_tools t
-      JOIN vehicle_vehicles v ON v.id = t.vehicle_id
-      WHERE t.vehicle_id IS NOT NULL
-      GROUP BY v.id
-      ORDER BY v.is_active DESC, v.vehicle_code ASC
-    ";
+    SELECT
+      v.id,
+      v.vehicle_code,
+      v.plate_no,
+      v.is_active,
+      COUNT(t.id) AS assigned_cnt,
+
+      /* ===== 檢驗狀態彙總（定版）=====
+       * 已逾期：inspect_date < 今天
+       * 快到期：今天 <= inspect_date <= 今天+7
+       * 未設定：inspect_date 為 NULL 或 空字串
+       * 空白：全部 > 7 天 且都已設定
+       */
+      CASE
+        WHEN SUM(
+          CASE
+            WHEN t.inspect_date IS NOT NULL
+              AND t.inspect_date <> ''
+              AND t.inspect_date < CURDATE()
+            THEN 1 ELSE 0
+          END
+        ) > 0 THEN 'overdue'
+
+        WHEN SUM(
+          CASE
+            WHEN t.inspect_date IS NOT NULL
+              AND t.inspect_date <> ''
+              AND t.inspect_date >= CURDATE()
+              AND t.inspect_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 ELSE 0
+          END
+        ) > 0 THEN 'soon'
+
+        WHEN SUM(
+          CASE
+            WHEN t.inspect_date IS NULL OR t.inspect_date = ''
+            THEN 1 ELSE 0
+          END
+        ) > 0 THEN 'unset'
+
+        ELSE ''
+      END AS inspect_status
+
+    FROM hot_tools t
+    JOIN vehicle_vehicles v ON v.id = t.vehicle_id
+    WHERE t.vehicle_id IS NOT NULL
+    GROUP BY v.id
+    ORDER BY v.is_active DESC, v.vehicle_code ASC
+  ";
     return $this->db->query($sql)->fetchAll();
   }
 

@@ -69,11 +69,12 @@ $pageJs = [
             <!-- head（不捲動） -->
             <table class="table hot-table hot-table--veh hot-table--head" aria-hidden="true">
               <colgroup>
-                <col style="width:15%">
+                <col style="width:14%">
                 <col style="width:20%">
-                <col style="width:15%">
-                <col style="width:20%">
-                <col style="width:30%">
+                <col style="width:14%">
+                <col style="width:16%">
+                <col style="width:14%">
+                <col style="width:22%">
               </colgroup>
               <thead>
                 <tr>
@@ -81,6 +82,7 @@ $pageJs = [
                   <th>車牌</th>
                   <th>狀態</th>
                   <th>已配賦件數</th>
+                  <th>檢驗</th>
                   <th>功能</th>
                 </tr>
               </thead>
@@ -90,15 +92,16 @@ $pageJs = [
             <div class="hot-tableScroll">
               <table class="table hot-table hot-table--veh hot-table--body" aria-label="車輛配賦清單">
                 <colgroup>
-                  <col style="width:15%">
+                  <col style="width:14%">
                   <col style="width:20%">
-                  <col style="width:15%">
-                  <col style="width:20%">
-                  <col style="width:30%">
+                  <col style="width:14%">
+                  <col style="width:16%">
+                  <col style="width:14%">
+                  <col style="width:22%">
                 </colgroup>
                 <tbody id="tbHotVeh">
                   <tr class="hot-empty">
-                    <td colspan="5">尚無配賦活電工具的車輛</td>
+                    <td colspan="6">尚無配賦活電工具的車輛</td>
                   </tr>
                 </tbody>
               </table>
@@ -143,14 +146,16 @@ $pageJs = [
               <colgroup>
                 <col style="width:20%">
                 <col style="width:15%">
-                <col style="width:20%">
-                <col style="width:20%">
-                <col style="width:25%">
+                <col style="width:12%"> <!-- 狀態 -->
+                <col style="width:18%"> <!-- 檢驗日期 -->
+                <col style="width:18%"> <!-- 更換日期 -->
+                <col style="width:17%"> <!-- 功能 -->
               </colgroup>
               <thead>
                 <tr>
                   <th>分類</th>
                   <th>工具編號</th>
+                  <th>狀態</th>
                   <th>檢驗日期</th>
                   <th>更換日期</th>
                   <th>功能</th>
@@ -164,13 +169,14 @@ $pageJs = [
                 <colgroup>
                   <col style="width:20%">
                   <col style="width:15%">
-                  <col style="width:20%">
-                  <col style="width:20%">
-                  <col style="width:25%">
+                  <col style="width:12%"> <!-- 狀態 -->
+                  <col style="width:18%"> <!-- 檢驗日期 -->
+                  <col style="width:18%"> <!-- 更換日期 -->
+                  <col style="width:17%"> <!-- 功能 -->
                 </colgroup>
                 <tbody id="tbHotAssign">
                   <tr class="hot-empty">
-                    <td colspan="5">請先選取左側車輛</td>
+                    <td colspan="6">請先選取左側車輛</td>
                   </tr>
                 </tbody>
               </table>

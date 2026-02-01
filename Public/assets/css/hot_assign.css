@@ -9,7 +9,7 @@
 /* ===== Layout: split panes ===== */
 .hot-assign .hot-split {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);/*調整兩表寬度，目前40%、60%*/
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); /*調整兩表寬度，目前40%、60%*/
   gap: 14px;
   align-items: start;
 }
@@ -79,7 +79,7 @@
 }
 /* ===== 右表：外層不捲，只有 .hot-tableScroll 捲 ===== */
 .hot-assign .hot-tableWrap--fixed {
-  overflow: hidden;           /* ✅ 取消外層捲動（表頭就不會動） */
+  overflow: hidden; /* ✅ 取消外層捲動（表頭就不會動） */
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -88,17 +88,17 @@
 .hot-assign .hot-tableScroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;           /* ✅ 只上下捲 */
-  overflow-x: hidden;         /* ✅ 禁止左右捲 */
+  overflow-y: auto; /* ✅ 只上下捲 */
+  overflow-x: hidden; /* ✅ 禁止左右捲 */
   scrollbar-gutter: stable;
 }
 
 /* 右表：可捲但不顯示卷軸（只作用在 .hot-tableScroll） */
-.hot-assign .hot-tableScroll{
-  -ms-overflow-style: none;   /* IE/舊 Edge */
-  scrollbar-width: none;      /* Firefox */
+.hot-assign .hot-tableScroll {
+  -ms-overflow-style: none; /* IE/舊 Edge */
+  scrollbar-width: none; /* Firefox */
 }
-.hot-assign .hot-tableScroll::-webkit-scrollbar{
+.hot-assign .hot-tableScroll::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
@@ -127,7 +127,7 @@
 /* 左表 hot_vehicles：20 / 25 / 15 / 25 / 15 */
 .hot-assign .hot-table--veh th:nth-child(1),
 .hot-assign .hot-table--veh td:nth-child(1) {
-  width: 15%;
+  width: 14%;
 }
 
 .hot-assign .hot-table--veh th:nth-child(2),
@@ -137,17 +137,24 @@
 
 .hot-assign .hot-table--veh th:nth-child(3),
 .hot-assign .hot-table--veh td:nth-child(3) {
-  width: 15%;
+  width: 14%;
 }
 
 .hot-assign .hot-table--veh th:nth-child(4),
 .hot-assign .hot-table--veh td:nth-child(4) {
-  width: 20%;
+  width: 16%;
 }
 
+/* 左表：第5欄（檢驗） */
 .hot-assign .hot-table--veh th:nth-child(5),
 .hot-assign .hot-table--veh td:nth-child(5) {
-  width: 30%;
+  width: 14%;
+}
+
+/* 左表：第6欄（功能） */
+.hot-assign .hot-table--veh th:nth-child(6),
+.hot-assign .hot-table--veh td:nth-child(6) {
+  width: 22%;
 }
 
 /* 右表 hot_assign：15 / 22 / 22 / 26 / 15 */
@@ -161,19 +168,28 @@
   width: 15%;
 }
 
+/* 右表：第3欄（狀態） */
 .hot-assign .hot-table--assign th:nth-child(3),
 .hot-assign .hot-table--assign td:nth-child(3) {
-  width: 20%;
+  width: 12%;
 }
 
+/* 右表：第4欄（檢驗日期） */
 .hot-assign .hot-table--assign th:nth-child(4),
 .hot-assign .hot-table--assign td:nth-child(4) {
-  width: 20%;
+  width: 18%;
 }
 
+/* 右表：第5欄（更換日期） */
 .hot-assign .hot-table--assign th:nth-child(5),
 .hot-assign .hot-table--assign td:nth-child(5) {
-  width: 25%;
+  width: 18%;
+}
+
+/* 右表：第6欄（功能） */
+.hot-assign .hot-table--assign th:nth-child(6),
+.hot-assign .hot-table--assign td:nth-child(6) {
+  width: 17%;
 }
 
 /* 空資料列（你 HTML 有 .hot-empty） */
@@ -209,6 +225,38 @@
 .hot-assign .hot-dot--warn {
   background: rgba(180, 83, 9, 0.22);
   border-color: rgba(180, 83, 9, 0.16);
+}
+
+/* ===== Inspect status pills（定版：已逾期 / 快到期 / 未設定） ===== */
+.ins-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  white-space: nowrap;
+}
+
+.ins-pill--overdue {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.22);
+  color: rgba(153, 27, 27, 0.95);
+}
+
+.ins-pill--soon {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.24);
+  color: rgba(146, 64, 14, 0.95);
+}
+
+.ins-pill--unset {
+  background: rgba(100, 116, 139, 0.14);
+  border-color: rgba(100, 116, 139, 0.22);
+  color: rgba(51, 65, 85, 0.95);
 }
 
 /* 右上 active label（你 HTML 用 #hotActiveVehLabel） */
@@ -340,7 +388,7 @@
   display: none !important;
 }
 
-.hot-assign .hot-table--assign td:nth-child(5) .btn + .btn {
+.hot-assign .hot-table--assign td:nth-child(6) .btn + .btn {
   margin-left: 8px;
 }
 
@@ -463,7 +511,7 @@
 
 /* ===== Assign: 參考 hot_tools，鎖 pane 高度，捲動只在表格區 ===== */
 .hot-assign .hot-pane--left,
-.hot-assign .hot-pane--right{
+.hot-assign .hot-pane--right {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -472,10 +520,9 @@
   max-height: calc(100vh - var(--topbar-h) - 155px);
 }
 
-.hot-assign .hot-pane__body{
+.hot-assign .hot-pane__body {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-
