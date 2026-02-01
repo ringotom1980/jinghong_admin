@@ -101,8 +101,14 @@ $pageJs = [
           </div>
 
           <div class="hot-actions hot-actions--right" id="hotAssignRightActions" data-mode="VIEW">
-            <button class="btn btn--primary" type="button" id="btnAssignAdd">新增配賦</button>
-            <button class="btn btn--info" type="button" id="btnAssignMove">移轉進來</button>
+            <!-- VIEW -->
+            <button class="btn btn--secondary" type="button" id="btnAssignBatchDate">整批更新檢驗日期</button>
+            <button class="btn btn--primary" type="button" id="btnAssignAdd">新增</button>
+            <button class="btn btn--secondary" type="button" id="btnAssignEdit">編輯</button>
+
+            <!-- EDIT -->
+            <button class="btn btn--primary" type="button" id="btnAssignSave" hidden>儲存</button>
+            <button class="btn btn--ghost" type="button" id="btnAssignCancel" hidden>取消</button>
           </div>
         </div>
 

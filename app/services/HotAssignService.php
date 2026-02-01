@@ -135,62 +135,6 @@ final class HotAssignService
   }
 
   /* =========================
-   * 移轉清單：列出「非本車」且「已配賦」的工具（可依分類）
-   * - 用於「移轉進來」modal
-   * ========================= */
-  public function listTransferableTools(int $targetVehicleId, ?int $itemId = null): array
-  {
-    if ($targetVehicleId <= 0) throw new InvalidArgumentException('vehicle_id 不可為空');
-
-    if ($itemId !== null && $itemId > 0) {
-      $sql = "
-        SELECT
-          t.id,
-          t.tool_no,
-          t.item_id,
-          i.code AS item_code,
-          i.name AS item_name,
-          t.vehicle_id,
-          v.vehicle_code,
-          v.plate_no,
-          v.is_active
-        FROM hot_tools t
-        JOIN hot_items i ON i.id = t.item_id
-        JOIN vehicle_vehicles v ON v.id = t.vehicle_id
-        WHERE t.vehicle_id IS NOT NULL
-          AND t.vehicle_id <> :vid
-          AND t.item_id = :iid
-        ORDER BY i.code ASC, t.tool_no ASC
-      ";
-      $st = $this->db->prepare($sql);
-      $st->execute([':vid' => $targetVehicleId, ':iid' => $itemId]);
-      return $st->fetchAll();
-    }
-
-    $sql = "
-      SELECT
-        t.id,
-        t.tool_no,
-        t.item_id,
-        i.code AS item_code,
-        i.name AS item_name,
-        t.vehicle_id,
-        v.vehicle_code,
-        v.plate_no,
-        v.is_active
-      FROM hot_tools t
-      JOIN hot_items i ON i.id = t.item_id
-      JOIN vehicle_vehicles v ON v.id = t.vehicle_id
-      WHERE t.vehicle_id IS NOT NULL
-        AND t.vehicle_id <> :vid
-      ORDER BY i.code ASC, t.tool_no ASC
-    ";
-    $st = $this->db->prepare($sql);
-    $st->execute([':vid' => $targetVehicleId]);
-    return $st->fetchAll();
-  }
-
-  /* =========================
    * 新增車（必須至少 1 筆工具）
    * rows: [{tool_id, inspect_date?, note?}]
    * - 批次把選取工具 vehicle_id 設成該車
@@ -289,44 +233,76 @@ final class HotAssignService
     }
   }
 
-  /* =========================
-   * 右表：新增配賦（只能從未配賦工具選）
-   * tool_ids: []
-   * ========================= */
-  public function assignMoreUnassignedTools(int $vehicleId, array $toolIds): array
+  public function batchUpdateInspectDateByVehicle(int $vehicleId, $inspectDate): array
   {
     if ($vehicleId <= 0) throw new InvalidArgumentException('vehicle_id 不可為空');
-    $toolIds = array_values(array_unique(array_map('intval', $toolIds)));
-    $toolIds = array_values(array_filter($toolIds, fn($x) => $x > 0));
-    if (count($toolIds) < 1) throw new InvalidArgumentException('tool_ids 不可為空');
+    $date = $this->normalizeDateOrNull($inspectDate);
+    if ($date === null) throw new InvalidArgumentException('inspect_date 不可為空');
 
     $this->db->beginTransaction();
     try {
-      // 車存在即可
+      // 鎖車存在即可
       $stV = $this->db->prepare("SELECT id FROM vehicle_vehicles WHERE id = :id FOR UPDATE");
       $stV->execute([':id' => $vehicleId]);
       if (!$stV->fetch()) throw new RuntimeException('車輛不存在');
 
-      // 鎖工具且必須未配賦
+      $st = $this->db->prepare("UPDATE hot_tools SET inspect_date = :d WHERE vehicle_id = :vid");
+      $st->execute([':d' => $date, ':vid' => $vehicleId]);
+
+      $this->db->commit();
+      return ['updated' => (int)$st->rowCount(), 'vehicle_id' => $vehicleId, 'inspect_date' => $date];
+    } catch (Throwable $e) {
+      $this->db->rollBack();
+      throw $e;
+    }
+  }
+
+  public function updateInspectDatesByVehicle(int $vehicleId, array $rows): array
+  {
+    if ($vehicleId <= 0) throw new InvalidArgumentException('vehicle_id 不可為空');
+    if (count($rows) < 1) throw new InvalidArgumentException('rows 不可為空');
+
+    $map = [];
+    foreach ($rows as $r) {
+      $tid = (int)($r['tool_id'] ?? 0);
+      if ($tid <= 0) continue;
+      $date = $this->normalizeDateOrNull($r['inspect_date'] ?? null);
+      if ($date === null) throw new InvalidArgumentException('inspect_date 不可為空');
+      $map[$tid] = $date;
+    }
+    if (!count($map)) throw new InvalidArgumentException('rows 不可為空');
+
+    $toolIds = array_keys($map);
+
+    $this->db->beginTransaction();
+    try {
+      // 鎖車
+      $stV = $this->db->prepare("SELECT id FROM vehicle_vehicles WHERE id = :id FOR UPDATE");
+      $stV->execute([':id' => $vehicleId]);
+      if (!$stV->fetch()) throw new RuntimeException('車輛不存在');
+
+      // 鎖工具 + 驗證都屬於本車
       $in = implode(',', array_fill(0, count($toolIds), '?'));
       $stLock = $this->db->prepare("SELECT id, vehicle_id FROM hot_tools WHERE id IN ($in) FOR UPDATE");
       $stLock->execute($toolIds);
-      $rows = $stLock->fetchAll();
-      if (count($rows) !== count($toolIds)) throw new RuntimeException('工具資料不完整');
+      $locked = $stLock->fetchAll();
+      if (count($locked) !== count($toolIds)) throw new RuntimeException('工具資料不完整');
 
-      foreach ($rows as $r) {
-        if ($r['vehicle_id'] !== null) throw new RuntimeException('選取工具包含已配賦者（不可用新增配賦）');
+      foreach ($locked as $t) {
+        if ($t['vehicle_id'] === null || (int)$t['vehicle_id'] !== (int)$vehicleId) {
+          throw new RuntimeException('包含非本車工具（不可更新檢驗日期）');
+        }
       }
 
-      $stUp = $this->db->prepare("UPDATE hot_tools SET vehicle_id = :vid WHERE id = :id");
+      $stUp = $this->db->prepare("UPDATE hot_tools SET inspect_date = :d WHERE id = :id");
       $n = 0;
-      foreach ($toolIds as $tid) {
-        $stUp->execute([':vid' => $vehicleId, ':id' => $tid]);
+      foreach ($map as $tid => $d) {
+        $stUp->execute([':d' => $d, ':id' => $tid]);
         $n += $stUp->rowCount();
       }
 
       $this->db->commit();
-      return ['assigned' => $n];
+      return ['updated' => $n, 'vehicle_id' => $vehicleId];
     } catch (Throwable $e) {
       $this->db->rollBack();
       throw $e;

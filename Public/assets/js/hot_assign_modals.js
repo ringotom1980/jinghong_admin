@@ -69,154 +69,6 @@
         return opt;
     }
 
-    function buildRowLine(idx, items, mode) {
-        // mode: 'veh_add' | 'assign_add' | 'assign_move'
-        var opt = buildItemOptions(items);
-
-        var meta1 = '<div class="hot-field js-meta1" style="display:none;"></div>';
-        var meta2 = '<div class="hot-field js-meta2" style="display:none;"></div>';
-
-        if (mode === 'assign_move') {
-            meta1 = ''
-                + '<div class="hot-field">'
-                + '  <label class="form-label">來源車輛</label>'
-                + '  <input class="input js-from" type="text" disabled value="-" />'
-                + '</div>';
-            meta2 = ''
-                + '<div class="hot-field">'
-                + '  <label class="form-label">狀態</label>'
-                + '  <input class="input js-fromStatus" type="text" disabled value="-" />'
-                + '</div>';
-        }
-
-        return ''
-            + '<div class="hot-rowLine" data-row-idx="' + idx + '">'
-            + '  <div class="hot-rowLine__grid">'
-            + '    <div class="hot-field">'
-            + '      <label class="form-label">工具分類<span class="hot-req">(必填)</span></label>'
-            + '      <select class="input js-item">' + opt + '</select>'
-            + '    </div>'
-            + '    <div class="hot-field">'
-            + '      <label class="form-label">工具編號<span class="hot-req">(必填)</span></label>'
-            + '      <select class="input js-tool" disabled><option value="">請先選分類</option></select>'
-            + '    </div>'
-            + meta1
-            + meta2
-            + '  </div>'
-            + '  <div class="hot-rowLine__actions">'
-            + '    <button type="button" class="btn btn--ghost js-row-del">刪除列</button>'
-            + '  </div>'
-            + '</div>';
-    }
-
-    function fillMoveFromFields(line) {
-        if (!line) return;
-        var toolSel = qs('.js-tool', line);
-        var from = qs('.js-from', line);
-        var st = qs('.js-fromStatus', line);
-        if (!toolSel || !from || !st) return;
-
-        var op = toolSel.options && toolSel.selectedIndex >= 0 ? toolSel.options[toolSel.selectedIndex] : null;
-        if (!op || !op.value) {
-            from.value = '-';
-            st.value = '-';
-            return;
-        }
-
-        var code = op.getAttribute('data-from-code') || '-';
-        var plate = op.getAttribute('data-from-plate') || '-';
-        var isActive = Number(op.getAttribute('data-from-active') || 0) === 0 ? '停用' : '使用中';
-
-        from.value = code + '｜' + plate;
-        st.value = isActive;
-    }
-
-    function bindRowsBehavior(ctx) {
-        // ctx: { wrapEl, mode, itemsCounts, getActiveVehicleId, onHint }
-        if (!ctx || !ctx.wrapEl) return;
-
-        ctx.wrapEl.addEventListener('click', function (e) {
-            var del = e.target && e.target.closest ? e.target.closest('.js-row-del') : null;
-            if (!del) return;
-            var line = del.closest('.hot-rowLine');
-            if (!line) return;
-            line.parentNode.removeChild(line);
-            if (!qsa('.hot-rowLine', ctx.wrapEl).length) {
-                ctx.wrapEl.innerHTML = '<div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>';
-            }
-        });
-
-        ctx.wrapEl.addEventListener('change', function (e) {
-            var line = e.target && e.target.closest ? e.target.closest('.hot-rowLine') : null;
-            if (!line) return;
-
-            // item changed
-            if (e.target.classList.contains('js-item')) {
-                var itemId = Number(e.target.value || 0);
-                var toolSel = qs('.js-tool', line);
-                if (!toolSel) return;
-
-                if (ctx.onHint) ctx.onHint(itemId);
-
-                if (!itemId) {
-                    toolSel.innerHTML = '<option value="">請先選分類</option>';
-                    toolSel.disabled = true;
-                    if (ctx.mode === 'assign_move') fillMoveFromFields(line);
-                    return;
-                }
-
-                toolSel.disabled = true;
-                toolSel.innerHTML = '<option value="">載入中…</option>';
-
-                var params;
-                if (ctx.mode === 'assign_move') {
-                    var vid = ctx.getActiveVehicleId ? Number(ctx.getActiveVehicleId() || 0) : 0;
-                    params = { action: 'transfer_tools', vehicle_id: vid, item_id: itemId };
-                } else {
-                    params = { action: 'unassigned_tools', item_id: itemId };
-                }
-
-                apiGet('/api/hot/assign', params).then(function (j) {
-                    if (!j || !j.success) {
-                        toolSel.innerHTML = '<option value="">載入失敗</option>';
-                        toolSel.disabled = true;
-                        return;
-                    }
-
-                    var tools = (j.data && j.data.tools) ? j.data.tools : [];
-                    var opt = '<option value="">請選擇工具</option>';
-
-                    tools.forEach(function (t) {
-                        t = t || {};
-                        var tid = Number(t.id || 0);
-                        if (!tid) return;
-
-                        var text = t.tool_no || '';
-                        if (ctx.mode === 'assign_move' && (t.vehicle_code || t.plate_no)) {
-                            text += '（' + (t.vehicle_code || '-') + '｜' + (t.plate_no || '-') + '）';
-                        }
-
-                        opt += '<option value="' + tid + '"'
-                            + ' data-from-code="' + esc(t.vehicle_code || '') + '"'
-                            + ' data-from-plate="' + esc(t.plate_no || '') + '"'
-                            + ' data-from-active="' + esc(String(t.is_active || 0)) + '"'
-                            + '>' + esc(text) + '</option>';
-                    });
-
-                    toolSel.innerHTML = opt;
-                    toolSel.disabled = false;
-
-                    if (ctx.mode === 'assign_move') fillMoveFromFields(line);
-                });
-            }
-
-            // tool changed (move mode)
-            if (e.target.classList.contains('js-tool')) {
-                if (ctx.mode === 'assign_move') fillMoveFromFields(line);
-            }
-        });
-    }
-
     var Mod = {
         app: null,
         state: {
@@ -729,11 +581,13 @@
             });
         },
 
-        /* ========== 右表新增配賦（加入未配賦） ========== */
-        openAssignAdd: function () {
+        /* ========== 右表：整批更新檢驗日期（VIEW） ========== */
+        openBatchInspectDate: function (vehicleId, vehicleLabel) {
             var self = this;
-            if (!self.app || !self.app.state || !self.app.state.activeVehicleId) {
-                toast('warning', '尚未選取車輛', '請先選取左側車輛');
+
+            vehicleId = Number(vehicleId || 0);
+            if (!vehicleId) {
+                toast('warning', '尚未選車', '請先選取左側車輛');
                 return;
             }
             if (!global.Modal || typeof global.Modal.open !== 'function') {
@@ -741,120 +595,115 @@
                 return;
             }
 
-            var vehicleId = Number(self.app.state.activeVehicleId || 0);
-            var vehLabel = self.app.getActiveVehicleLabel ? self.app.getActiveVehicleLabel() : '-';
+            var pickedDate = '';
 
             var bd = global.Modal.open({
-                title: '新增配賦（加入未配賦工具）',
+                title: '整批更新檢驗日期',
                 html: ''
                     + '<div class="hot-form">'
-                    + '  <div class="hot-helpText2">目前車輛：<b>' + esc(vehLabel) + '</b>（只能加入「未配賦」工具）</div>'
-                    + '  <div class="hot-assignGrid">'
-                    + '    <div class="hot-assignGrid__head">'
-                    + '      <div class="hot-assignGrid__title">工具明細（至少 1 列）</div>'
-                    + '      <button class="btn btn--secondary" type="button" id="btnAssignAddRow">新增一列</button>'
-                    + '    </div>'
-                    + '    <div class="hot-rows" id="mAssignAddRows">'
-                    + '      <div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>'
-                    + '    </div>'
-                    + '    <div class="hot-dynHint"><span class="hot-dot hot-dot--info"></span>提示：選擇分類後顯示可選工具</div>'
+                    + '  <div class="hot-field">'
+                    + '    <label class="form-label">檢驗日期<span class="hot-req">(必填)</span></label>'
+                    + '    <input type="date" class="input" id="mBatchInspectDate" />'
+                    + '  </div>'
+                    + '  <div class="hot-helpText2" id="mBatchInspectHint" style="margin-top:10px;">'
+                    + '    請選擇日期'
                     + '  </div>'
                     + '</div>',
-                confirmText: '儲存',
+                confirmText: '確認更新',
                 cancelText: '取消',
                 allowCloseBtn: true,
                 closeOnBackdrop: true,
                 closeOnEsc: true,
                 onConfirm: function () {
-                    var rowsHost = qs('#mAssignAddRows', bd);
-                    if (!rowsHost) return false;
-
-                    var lines = qsa('.hot-rowLine', rowsHost).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
-                    if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return false; }
-
-                    var toolIds = [];
-                    for (var i = 0; i < lines.length; i++) {
-                        var line = lines[i];
-                        var itemSel = qs('.js-item', line);
-                        var toolSel = qs('.js-tool', line);
-                        var itemId = itemSel ? Number(itemSel.value || 0) : 0;
-                        var toolId = toolSel ? Number(toolSel.value || 0) : 0;
-
-                        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return false; }
-                        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return false; }
-                        toolIds.push(toolId);
+                    if (!pickedDate) {
+                        toast('warning', '資料不足', '請先選擇檢驗日期');
+                        return false;
                     }
 
-                    return apiPost('/api/hot/assign', { action: 'assign_more', vehicle_id: vehicleId, tool_ids: toolIds })
-                        .then(function (r) {
-                            if (!r || !r.success) { toast('danger', '儲存失敗', (r && r.error) ? r.error : '未知錯誤'); return false; }
-                            toast('success', '已儲存', '新增配賦完成');
-                            if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
-                            return true;
-                        });
-                }
-            });
-
-            apiGet('/api/hot/assign', { action: 'items_counts' }).then(function (j) {
-                if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
-                self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
-
-                var rowsHost = qs('#mAssignAddRows', bd);
-                bindRowsBehavior({
-                    wrapEl: rowsHost,
-                    mode: 'assign_add',
-                    itemsCounts: self.state.itemsCounts,
-                    getActiveVehicleId: function () { return vehicleId; }
-                });
-
-                var btn = qs('#btnAssignAddRow', bd);
-                if (btn) {
-                    btn.addEventListener('click', function () {
-                        if (!rowsHost) return;
-                        var empty = qs('.hot-rowLine--empty', rowsHost);
-                        if (empty) empty.parentNode.removeChild(empty);
-                        var idx = qsa('.hot-rowLine', rowsHost).length + 1;
-                        rowsHost.insertAdjacentHTML('beforeend', buildRowLine(idx, self.state.itemsCounts, 'assign_add'));
+                    return apiPost('/api/hot/assign', {
+                        action: 'inspect_date_batch',
+                        vehicle_id: vehicleId,
+                        inspect_date: pickedDate
+                    }).then(function (r) {
+                        if (!r || !r.success) {
+                            toast('danger', '更新失敗', (r && r.error) ? r.error : '未知錯誤');
+                            return false;
+                        }
+                        toast('success', '已更新', '檢驗日期已整批更新');
+                        if (self.app && typeof self.app.loadAll === 'function') {
+                            self.app.loadAll(vehicleId);
+                        }
+                        return true;
                     });
                 }
-
-                if (rowsHost) {
-                    var empty = qs('.hot-rowLine--empty', rowsHost);
-                    if (empty) empty.parentNode.removeChild(empty);
-                    rowsHost.insertAdjacentHTML('beforeend', buildRowLine(1, self.state.itemsCounts, 'assign_add'));
-                }
             });
+
+            var inp = qs('#mBatchInspectDate', bd);
+            var hint = qs('#mBatchInspectHint', bd);
+
+            if (inp) {
+                inp.addEventListener('change', function () {
+                    pickedDate = String(inp.value || '');
+                    if (hint) {
+                        hint.textContent =
+                            '確認後，' + (vehicleLabel || '-') +
+                            ' 所有活電工具檢驗日期將全部更新為「' + pickedDate + '」';
+                    }
+                });
+            }
         },
 
-        /* ========== 右表移轉進來（從其他車） ========== */
-        openAssignMove: function () {
+        /* ========== 右表：新增配賦（限定本車） ========== */
+        openAssignAddForVehicle: function (vehicleId, vehicleLabel) {
             var self = this;
-            if (!self.app || !self.app.state || !self.app.state.activeVehicleId) {
-                toast('warning', '尚未選取車輛', '請先選取左側車輛');
+
+            vehicleId = Number(vehicleId || 0);
+            if (!vehicleId) {
+                toast('warning', '尚未選車', '請先選取左側車輛');
                 return;
             }
+
+            // 🔒 暫存原本 activeVehicleId
+            var prevVid = self.app && self.app.state ? self.app.state.activeVehicleId : 0;
+
+            if (self.app && self.app.state) {
+                self.app.state.activeVehicleId = vehicleId;
+            }
+
+            // 呼叫你既有 modal（完全不改裡面）
+            self.openAssignAdd();
+
+            // Modal 關閉後還原（保險）
+            setTimeout(function () {
+                if (self.app && self.app.state) {
+                    self.app.state.activeVehicleId = prevVid;
+                }
+            }, 0);
+        },
+
+        /* ========== 右表：單筆移轉（EDIT） ========== */
+        openToolTransfer: function (toolId, meta, currentVehicleId) {
+            var self = this;
+
+            toolId = Number(toolId || 0);
+            currentVehicleId = Number(currentVehicleId || 0);
+            if (!toolId || !currentVehicleId) return;
+
             if (!global.Modal || typeof global.Modal.open !== 'function') {
                 toast('danger', '系統錯誤', 'Modal 不存在（ui_modal.js 未載入）');
                 return;
             }
 
-            var vehicleId = Number(self.app.state.activeVehicleId || 0);
-            var vehLabel = self.app.getActiveVehicleLabel ? self.app.getActiveVehicleLabel() : '-';
+            var targetVehicleId = 0;
 
             var bd = global.Modal.open({
-                title: '移轉進來（從其他車改配到本車）',
+                title: '移轉工具',
                 html: ''
                     + '<div class="hot-form">'
-                    + '  <div class="hot-helpText2">目前車輛：<b>' + esc(vehLabel) + '</b>（可移轉「其他車」已配賦工具）</div>'
-                    + '  <div class="hot-assignGrid">'
-                    + '    <div class="hot-assignGrid__head">'
-                    + '      <div class="hot-assignGrid__title">工具明細（至少 1 列）</div>'
-                    + '      <button class="btn btn--secondary" type="button" id="btnAssignMoveRow">新增一列</button>'
-                    + '    </div>'
-                    + '    <div class="hot-rows" id="mAssignMoveRows">'
-                    + '      <div class="hot-rowLine hot-rowLine--empty">尚未加入工具列</div>'
-                    + '    </div>'
-                    + '    <div class="hot-dynHint"><span class="hot-dot hot-dot--warn"></span>提示：清單只列出「非本車」且「已配賦」工具</div>'
+                    + '  <div class="hot-helpText2">工具：<b>' + esc(meta || '-') + '</b></div>'
+                    + '  <div class="hot-field" style="margin-top:10px;">'
+                    + '    <label class="form-label">目標車輛<span class="hot-req">(必填)</span></label>'
+                    + '    <select class="input" id="mTransferVehicle"><option value="">載入中…</option></select>'
                     + '  </div>'
                     + '</div>',
                 confirmText: '確認移轉',
@@ -863,63 +712,51 @@
                 closeOnBackdrop: true,
                 closeOnEsc: true,
                 onConfirm: function () {
-                    var rowsHost = qs('#mAssignMoveRows', bd);
-                    if (!rowsHost) return false;
-
-                    var lines = qsa('.hot-rowLine', rowsHost).filter(function (x) { return !x.classList.contains('hot-rowLine--empty'); });
-                    if (!lines.length) { toast('warning', '資料不足', '至少需新增 1 列工具'); return false; }
-
-                    var toolIds = [];
-                    for (var i = 0; i < lines.length; i++) {
-                        var line = lines[i];
-                        var itemSel = qs('.js-item', line);
-                        var toolSel = qs('.js-tool', line);
-                        var itemId = itemSel ? Number(itemSel.value || 0) : 0;
-                        var toolId = toolSel ? Number(toolSel.value || 0) : 0;
-
-                        if (!itemId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具分類'); return false; }
-                        if (!toolId) { toast('warning', '資料不足', '第 ' + (i + 1) + ' 列：請選工具編號'); return false; }
-                        toolIds.push(toolId);
+                    if (!targetVehicleId) {
+                        toast('warning', '資料不足', '請選擇目標車輛');
+                        return false;
                     }
 
-                    return apiPost('/api/hot/assign', { action: 'transfer', vehicle_id: vehicleId, tool_ids: toolIds })
-                        .then(function (r) {
-                            if (!r || !r.success) { toast('danger', '移轉失敗', (r && r.error) ? r.error : '未知錯誤'); return false; }
-                            toast('success', '已移轉', '移轉進來完成');
-                            if (self.app && typeof self.app.loadAll === 'function') self.app.loadAll(vehicleId);
-                            return true;
-                        });
+                    return apiPost('/api/hot/assign', {
+                        action: 'transfer',
+                        vehicle_id: targetVehicleId,
+                        tool_ids: [toolId]
+                    }).then(function (r) {
+                        if (!r || !r.success) {
+                            toast('danger', '移轉失敗', (r && r.error) ? r.error : '未知錯誤');
+                            return false;
+                        }
+                        toast('success', '已移轉', '工具已移轉至其他車輛');
+
+                        if (self.app && typeof self.app.loadAll === 'function') {
+                            self.app.loadAll(currentVehicleId);
+                        }
+                        return true;
+                    });
                 }
             });
 
-            apiGet('/api/hot/assign', { action: 'items_counts' }).then(function (j) {
-                if (!j || !j.success) { toast('danger', '載入失敗', (j && j.error) ? j.error : 'items_counts'); return; }
-                self.state.itemsCounts = (j.data && j.data.items) ? j.data.items : [];
+            // 載入車輛清單
+            apiGet('/api/hot/assign', { action: 'available_vehicles' }).then(function (j) {
+                if (!j || !j.success) {
+                    toast('danger', '載入失敗', (j && j.error) ? j.error : 'available_vehicles');
+                    return;
+                }
 
-                var rowsHost = qs('#mAssignMoveRows', bd);
-                bindRowsBehavior({
-                    wrapEl: rowsHost,
-                    mode: 'assign_move',
-                    itemsCounts: self.state.itemsCounts,
-                    getActiveVehicleId: function () { return vehicleId; }
+                var sel = qs('#mTransferVehicle', bd);
+                if (!sel) return;
+
+                var html = '<option value="">請選擇車輛</option>';
+                (j.data.vehicles || []).forEach(function (v) {
+                    var vid = Number(v.id || 0);
+                    if (!vid || vid === currentVehicleId) return; // 不列出原車
+                    html += '<option value="' + vid + '">' + esc(vehicleLabel(v)) + '</option>';
                 });
+                sel.innerHTML = html;
 
-                var btn = qs('#btnAssignMoveRow', bd);
-                if (btn) {
-                    btn.addEventListener('click', function () {
-                        if (!rowsHost) return;
-                        var empty = qs('.hot-rowLine--empty', rowsHost);
-                        if (empty) empty.parentNode.removeChild(empty);
-                        var idx = qsa('.hot-rowLine', rowsHost).length + 1;
-                        rowsHost.insertAdjacentHTML('beforeend', buildRowLine(idx, self.state.itemsCounts, 'assign_move'));
-                    });
-                }
-
-                if (rowsHost) {
-                    var empty = qs('.hot-rowLine--empty', rowsHost);
-                    if (empty) empty.parentNode.removeChild(empty);
-                    rowsHost.insertAdjacentHTML('beforeend', buildRowLine(1, self.state.itemsCounts, 'assign_move'));
-                }
+                sel.addEventListener('change', function () {
+                    targetVehicleId = Number(sel.value || 0);
+                });
             });
         },
 
@@ -936,7 +773,7 @@
 
             global.Modal.confirmChoice(
                 '解除歸屬確認',
-                '工具：' + (meta || '-') + '\n\n確認後將執行：UPDATE hot_tools SET vehicle_id = NULL WHERE id = ?',
+                '工具：' + (meta || '-') + '\n\n確認後將解除此工具的配賦歸屬。',
                 function () {
                     return apiPost('/api/hot/assign', { action: 'tool_unassign', tool_ids: [toolId] })
                         .then(function (r) {
