@@ -20,6 +20,54 @@
   }
 }
 
+/* ===== FIX: pane fill viewport, only table scroll ===== */
+.hot-assign main.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden; /* ✅ 讓整頁不捲動，改由表內捲 */
+}
+
+/* hot-split 佔滿 main 剩餘高度 */
+.hot-assign .hot-split {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 每個 pane 變成「頭固定 / 身體撐滿」 */
+.hot-assign .hot-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* pane body 撐滿，內部分成：tableWrap(可捲) + footnote(固定在底部) */
+.hot-assign .hot-pane__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ 只有表格區捲動 */
+.hot-assign .hot-tableWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* footnote 永遠在 tableWrap 下方，不參與捲動 */
+.hot-assign .hot-footNote {
+  flex: 0 0 auto;
+}
+
+/* 小螢幕允許整頁正常流動（避免高度太擠） */
+@media (max-width: 760px) {
+  .hot-assign main.page {
+    overflow: visible;
+  }
+}
+
 /* ===== Pane head: 你的 HTML 用的是 .hot-pane__head/.hot-pane__title/.hot-actions ===== */
 /* card/card--flat 已在 app.css，這裡只做 head/body 的間距與頭部底色 */
 .hot-assign .hot-pane__head {
@@ -81,7 +129,8 @@
 .hot-assign .hot-table thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
+  background: rgba(15, 23, 42, 0.03); /* 跟 app.css table th 一致 */
 }
 
 /* 本頁需求：thead + tbody 全置中（但「已配賦件數」那欄右對齊） */
