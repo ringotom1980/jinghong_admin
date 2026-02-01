@@ -114,7 +114,7 @@
           if (!vid) return toast('warning', '尚未選車', '請先選取左側車輛');
           self.state.rightEditMode = true;
           self.state.rightDirty = false;
-          self.state.rightDraftDates = {};
+          self.state.rightDraft = {};
           self.syncRightMode();
         });
       }
@@ -124,7 +124,7 @@
         this.els.btnAssignCancel.addEventListener('click', function () {
           self.state.rightEditMode = false;
           self.state.rightDirty = false;
-          self.state.rightDraftDates = {};
+          self.state.rightDraft = {};
           self.syncRightMode();
           // 回到 server 狀態
           self.loadTools(self.state.activeVehicleId);
@@ -164,7 +164,7 @@
               toast('success', '已儲存', '檢驗日期已更新');
               self.state.rightEditMode = false;
               self.state.rightDirty = false;
-              self.state.rightDraftDates = {};
+              self.state.rightDraft = {};
               self.syncRightMode();
               self.loadTools(vid);
               self.loadAll(vid); // 左表件數可能變（通常不會，但安全）
