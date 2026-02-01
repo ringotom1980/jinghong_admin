@@ -42,7 +42,7 @@ $pageJs = [
   <main class="page hot-assign" role="main">
     <section class="page-head">
       <h1>活電工具管理｜配賦表</h1>
-      <p class="page-sub">左表僅顯示「hot_tools 曾被配賦過」的車輛；停用車仍顯示並註記。左表刪除＝解除該車全部配賦（需二次確認）。</p>
+      <p class="page-sub">左表僅顯示「有配賦活電工具」的車輛；若已停用車仍顯示並註記。左表刪除＝解除該車全部配賦。</p>
     </section>
 
     <section class="hot-split">
@@ -51,7 +51,7 @@ $pageJs = [
         <div class="hot-pane__head">
           <div class="hot-pane__title">
             <h2>車輛清單</h2>
-            <div class="hot-pane__hint">來源：hot_tools vehicle_id DISTINCT</div>
+            <div class="hot-pane__hint">已配賦活電工具車輛清單(可新增配賦)</div>
           </div>
 
           <div class="hot-actions" id="hotAssignLeftActions" data-mode="VIEW">
@@ -98,7 +98,7 @@ $pageJs = [
                 </colgroup>
                 <tbody id="tbHotVeh">
                   <tr class="hot-empty">
-                    <td colspan="5">尚無配賦車輛</td>
+                    <td colspan="5">尚無配賦活電工具的車輛</td>
                   </tr>
                 </tbody>
               </table>
@@ -108,7 +108,7 @@ $pageJs = [
 
           <div class="hot-footNote">
             <span class="hot-dot hot-dot--info"></span>
-            點擊車輛列 → 右表顯示該車配賦工具。
+            點擊車輛列 → 右表就會顯示該車配賦的活電工具。
           </div>
         </div>
       </aside>
@@ -117,7 +117,7 @@ $pageJs = [
       <section class="hot-pane hot-pane--right card card--flat">
         <div class="hot-pane__head">
           <div class="hot-pane__title">
-            <h2>配賦工具</h2>
+            <h2>配賦活電工具</h2>
             <div class="hot-pane__hint">
               <span id="hotActiveVehLabel">未選取車輛</span>
             </div>
@@ -180,7 +180,7 @@ $pageJs = [
 
           <div class="hot-footNote">
             <span class="hot-dot hot-dot--warn"></span>
-            解除歸屬＝將工具 vehicle_id 設為 NULL；移轉＝從其他車改配到本車。
+            解除＝將該列活電工具取消配賦到該車輛；移轉＝將該列活電工具指定配賦到其它車輛。
           </div>
         </div>
       </section>

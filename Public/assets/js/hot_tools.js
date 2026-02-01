@@ -488,7 +488,7 @@
       var qty = this.els.mItemQty ? (parseInt(this.els.mItemQty.value, 10) || 0) : 0;
 
       if (!name) return toastErr('分類名稱為必填');
-      if (qty < 1) return toastErr('初始數量 qty 必須 >= 1');
+      if (qty < 1) return toastErr('初始數量必須 >= 1');
 
       this.apiPost(API_HOT_TOOLS, { action: 'item_create', name: name, qty: qty })
         .then(function (r) {

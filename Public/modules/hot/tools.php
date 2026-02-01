@@ -173,12 +173,12 @@ $pageJs = [
             </div>
             <div class="hot-field hot-field--row">
               <div>
-                <label class="form-label" for="mItemQty">初始數量 qty<span class="hot-req">*</span></label>
+                <label class="form-label" for="mItemQty">初始數量<span class="hot-req">*</span></label>
                 <input id="mItemQty" type="number" class="input" min="1" step="1" value="1">
               </div>
               <div class="hot-helpBox">
                 <div class="hot-helpTitle">系統行為</div>
-                <div class="hot-helpText">分類代碼由系統自動取得（A→B→…）；並依 qty 自動產生工具編號。</div>
+                <div class="hot-helpText">分類代碼由系統自動取得（A→B→…）；並依輸入的數量自動產生工具編號。</div>
               </div>
             </div>
           </div>
