@@ -157,12 +157,37 @@
       this.els.btnToolAddSubmit = qs('#btnToolAddSubmit');
     },
 
+    guardItemsEdit: function () {
+      if (this.state.itemsMode !== 'EDIT') return true;
+
+      var msg = '左表仍在編輯模式，請先「儲存」或「取消」後再操作右側功能。';
+      if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
+        global.Modal.confirmChoice('尚未關閉編輯模式', msg, null, null, { confirmText: '知道了', cancelText: '' });
+      } else {
+        toastErr(msg);
+      }
+      return false;
+    },
+
+    guardToolsEdit: function () {
+      if (this.state.toolsMode !== 'EDIT') return true;
+
+      var msg = '右表仍在編輯模式，請先「儲存」或「取消」後再操作左側功能。';
+      if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
+        global.Modal.confirmChoice('尚未關閉編輯模式', msg, null, null, { confirmText: '知道了', cancelText: '' });
+      } else {
+        toastErr(msg);
+      }
+      return false;
+    },
+
     bindActions: function () {
       var self = this;
 
       // 左：新增分類 modal 開啟
       if (this.els.btnItemAdd) {
         this.els.btnItemAdd.addEventListener('click', function () {
+          if (!self.guardToolsEdit()) return;   // ✅ 右表EDIT時，左邊不能動
           self.openItemAddModal();
         });
       }
@@ -170,6 +195,7 @@
       // 左：編輯（切換 EDIT）
       if (this.els.btnItemEdit) {
         this.els.btnItemEdit.addEventListener('click', function () {
+          if (!self.guardToolsEdit()) return;   // ✅ 右表EDIT時，左邊不能進EDIT
           if (!self.state.items || self.state.items.length === 0) return toastErr('尚無分類可編輯');
           self.setItemsMode('EDIT');
         });
@@ -208,6 +234,7 @@
       // 右：新增工具 modal 開啟
       if (this.els.btnToolAdd) {
         this.els.btnToolAdd.addEventListener('click', function () {
+          if (!self.guardItemsEdit()) return;   // ✅ 左表EDIT時，右邊不能動
           if (!self.state.activeItemId) return toastErr('請先選取左側分類');
           self.openToolAddModal();
         });
@@ -216,6 +243,7 @@
       // 右：編輯
       if (this.els.btnToolEdit) {
         this.els.btnToolEdit.addEventListener('click', function () {
+          if (!self.guardItemsEdit()) return;   // ✅ 左表EDIT時，右邊不能進EDIT
           if (!self.state.activeItemId) return toastErr('請先選取左側分類');
           self.setToolsMode('EDIT');
         });
@@ -446,6 +474,7 @@
     },
 
     openItemAddModal: function () {
+      if (!this.guardToolsEdit()) return;   // ✅ 保險：右表EDIT不給開
       if (!this.els.modalItemAdd) return;
       if (this.els.mItemName) this.els.mItemName.value = '';
       if (this.els.mItemQty) this.els.mItemQty.value = 1;
@@ -583,6 +612,7 @@
      * Right: tools handlers
      * ========================= */
     openToolAddModal: function () {
+      if (!this.guardItemsEdit()) return;   // ✅ 保險：左表EDIT不給開
       if (!this.els.modalToolAdd) return;
 
       // vehicles 下拉
