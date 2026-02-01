@@ -286,13 +286,17 @@ final class HotAssignService
       if ($tid <= 0) continue;
 
       // 允許空字串 => NULL（可清空）
-      $inspect = $this->normalizeDateOrNull($r['inspect_date'] ?? null);
-      $replace = $this->normalizeDateOrNull($r['replace_date'] ?? null);
+      $hasInspect = array_key_exists('inspect_date', $r);
+      $hasReplace = array_key_exists('replace_date', $r);
 
       // 至少要有一個欄位出現（避免送空物件）
-      if (!array_key_exists('inspect_date', $r) && !array_key_exists('replace_date', $r)) continue;
+      if (!$hasInspect && !$hasReplace) continue;
 
-      $map[$tid] = ['inspect_date' => $inspect, 'replace_date' => $replace];
+      $map[$tid] = [
+        // ✅ 有送才解析；沒送用特殊值代表「保留」
+        'inspect_date' => $hasInspect ? $this->normalizeDateOrNull($r['inspect_date'] ?? null) : '__KEEP__',
+        'replace_date' => $hasReplace ? $this->normalizeDateOrNull($r['replace_date'] ?? null) : '__KEEP__',
+      ];
     }
     if (!count($map)) throw new InvalidArgumentException('rows 不可為空');
 
@@ -307,10 +311,23 @@ final class HotAssignService
 
       // 鎖工具 + 驗證都屬於本車
       $in = implode(',', array_fill(0, count($toolIds), '?'));
-      $stLock = $this->db->prepare("SELECT id, vehicle_id FROM hot_tools WHERE id IN ($in) FOR UPDATE");
+      $stLock = $this->db->prepare("
+  SELECT id, vehicle_id, inspect_date, replace_date
+  FROM hot_tools
+  WHERE id IN ($in)
+  FOR UPDATE
+");
+
       $stLock->execute($toolIds);
       $locked = $stLock->fetchAll();
       if (count($locked) !== count($toolIds)) throw new RuntimeException('工具資料不完整');
+      $old = [];
+      foreach ($locked as $t) {
+        $old[(int)$t['id']] = [
+          'inspect_date' => $t['inspect_date'],   // 可能是 null
+          'replace_date' => $t['replace_date'],
+        ];
+      }
 
       foreach ($locked as $t) {
         if ($t['vehicle_id'] === null || (int)$t['vehicle_id'] !== (int)$vehicleId) {
@@ -326,8 +343,11 @@ final class HotAssignService
 ");
       $n = 0;
       foreach ($map as $tid => $m) {
-        $inspect = $m['inspect_date'] ?? null;
-        $replace = $m['replace_date'] ?? null;
+        $inspect = ($m['inspect_date'] ?? null);
+        $replace = ($m['replace_date'] ?? null);
+
+        if ($inspect === '__KEEP__') $inspect = $old[(int)$tid]['inspect_date'] ?? null;
+        if ($replace === '__KEEP__') $replace = $old[(int)$tid]['replace_date'] ?? null;
 
         $stUp->bindValue(':inspect_date', $inspect, $inspect === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
         $stUp->bindValue(':replace_date', $replace, $replace === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
