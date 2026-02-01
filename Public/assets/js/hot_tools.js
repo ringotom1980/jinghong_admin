@@ -413,8 +413,15 @@
       itemId = parseInt(itemId, 10) || 0;
       if (!itemId) return;
 
-      // EDIT 時不允許切換（避免編輯中資料錯位）
-      if (this.state.itemsMode === 'EDIT') return;
+      // ✅ 任一側在 EDIT 中都不允許切換分類（避免狀態混亂/誤編輯）
+      if (this.state.itemsMode === 'EDIT' || this.state.toolsMode === 'EDIT') {
+        var msg = (this.state.toolsMode === 'EDIT')
+          ? '右表仍在編輯模式，請先「儲存」或「取消」後再切換分類。'
+          : '左表仍在編輯模式，請先「儲存」或「取消」後再切換分類。';
+
+        toastErr(msg);
+        return;
+      }
 
       if (this.state.activeItemId === itemId) return;
       this.state.activeItemId = itemId;

@@ -240,19 +240,22 @@
 
     setActiveVehicle: function (vehicleId, loadTools) {
       vehicleId = Number(vehicleId || 0);
-      // ✅ 右表 EDIT 中不允許切車（避免跨車誤改）
-      if (this.state.rightEditMode) {
-        var self = this;
+      // ✅ 任一側在 EDIT 中都不允許切車（避免狀態混亂/誤操作）
+      if (this.state.rightEditMode || this.state.leftEditMode) {
+        var msg = this.state.rightEditMode
+          ? '右表仍在編輯模式，請先「儲存」或「取消」後再切換車輛。'
+          : '左表仍在編輯模式，請先「取消」後再切換車輛。';
+
         if (global.Modal && typeof global.Modal.confirmChoice === 'function') {
           global.Modal.confirmChoice(
-            '尚未儲存',
-            '右表仍在編輯模式，請先「儲存」或「取消」後再切換車輛。',
+            '尚未關閉編輯模式',
+            msg,
             null,
             null,
             { confirmText: '知道了', cancelText: '' }
           );
         } else {
-          toast('warning', '尚未儲存', '右表仍在編輯模式，請先儲存或取消');
+          toast('warning', '尚未關閉編輯模式', msg);
         }
         return;
       }
