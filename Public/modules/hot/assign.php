@@ -64,8 +64,17 @@ $pageJs = [
         </div>
 
         <div class="hot-pane__body">
-          <div class="hot-tableWrap" id="hotVehWrap">
-            <table class="table hot-table hot-table--veh" aria-label="車輛配賦清單">
+          <div class="hot-tableWrap hot-tableWrap--fixed" id="hotVehWrap">
+
+            <!-- head（不捲動） -->
+            <table class="table hot-table hot-table--veh hot-table--head" aria-hidden="true">
+              <colgroup>
+                <col style="width:15%">
+                <col style="width:20%">
+                <col style="width:15%">
+                <col style="width:20%">
+                <col style="width:30%">
+              </colgroup>
               <thead>
                 <tr>
                   <th>車輛編號</th>
@@ -75,12 +84,26 @@ $pageJs = [
                   <th>功能</th>
                 </tr>
               </thead>
-              <tbody id="tbHotVeh">
-                <tr class="hot-empty">
-                  <td colspan="5">尚無配賦車輛</td>
-                </tr>
-              </tbody>
             </table>
+
+            <!-- body（只有這裡捲動） -->
+            <div class="hot-tableScroll">
+              <table class="table hot-table hot-table--veh hot-table--body" aria-label="車輛配賦清單">
+                <colgroup>
+                  <col style="width:15%">
+                  <col style="width:20%">
+                  <col style="width:15%">
+                  <col style="width:20%">
+                  <col style="width:30%">
+                </colgroup>
+                <tbody id="tbHotVeh">
+                  <tr class="hot-empty">
+                    <td colspan="5">尚無配賦車輛</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
           </div>
 
           <div class="hot-footNote">

@@ -479,10 +479,3 @@
   flex-direction: column;
 }
 
-/* 左表：單一 table，需要外層捲 */
-.hot-assign #hotVehWrap.hot-tableWrap{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  scrollbar-gutter: stable;
-}
