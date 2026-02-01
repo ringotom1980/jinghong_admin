@@ -200,54 +200,51 @@
 }
 
 /* =====================================================
- * 左表：hover + active 框選效果（只動本頁，不碰 app.css）
- * - hover：淡底 + 內縮框線
- * - active：更明顯底色 + 實線框
+ * 左表：整列 hover + active 框選（整列一個框）
  * ===================================================== */
 
-/* 讓 row 有「可點」的感覺 */
 .hot-assign .hot-table--veh tbody tr.hot-row {
+  position: relative;
   cursor: pointer;
 }
 
-/* 基礎：td 才能畫出內縮效果 */
-.hot-assign .hot-table--veh tbody tr.hot-row > td {
-  position: relative;
-  transition:
-    background-color 0.12s ease,
-    box-shadow 0.12s ease,
-    transform 0.12s ease;
-}
-
-/* hover：淡底 + 內縮框（用 inset shadow 做“框選住”感） */
-.hot-assign .hot-table--veh tbody tr.hot-row:hover > td {
+/* hover/active 底色：用 tr 自己的背景（會覆蓋整列） */
+.hot-assign .hot-table--veh tbody tr.hot-row:hover {
   background: rgba(37, 99, 235, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.18);
 }
-
-/* active：更明顯（壓過 hover） */
-.hot-assign .hot-table--veh tbody tr.hot-row.is-active > td {
+.hot-assign .hot-table--veh tbody tr.hot-row.is-active {
   background: rgba(37, 99, 235, 0.1);
-  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.28);
 }
 
-/* active + hover：再加一點強度（可選） */
-.hot-assign .hot-table--veh tbody tr.hot-row.is-active:hover > td {
-  background: rgba(37, 99, 235, 0.12);
-  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.34);
+/* ✅ 整列框線：只畫一個矩形框（不再每格） */
+.hot-assign .hot-table--veh tbody tr.hot-row::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 3px;
+  bottom: 3px;
+
+  border-radius: 12px;
+  pointer-events: none;
+
+  opacity: 0;
+  border: 1px solid rgba(37, 99, 235, 0.18);
 }
 
-/* 讓框線看起來像「一整列」：只有首尾 cell 才有圓角 */
-.hot-assign .hot-table--veh tbody tr.hot-row > td:first-child {
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-}
-.hot-assign .hot-table--veh tbody tr.hot-row > td:last-child {
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
+/* hover 顯示框 */
+.hot-assign .hot-table--veh tbody tr.hot-row:hover::after {
+  opacity: 1;
 }
 
-/* 避免按鈕那格 hover 變成手指（你想保留 row clickable，但按鈕區仍像按鈕） */
+/* active 更粗更明顯 */
+.hot-assign .hot-table--veh tbody tr.hot-row.is-active::after {
+  opacity: 1;
+  border-width: 2px;
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+/* 避免按鈕區域顯示為 row 的手指（按鈕仍像按鈕） */
 .hot-assign .hot-table--veh tbody tr.hot-row .btn {
   cursor: pointer;
 }
