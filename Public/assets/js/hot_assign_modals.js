@@ -118,7 +118,7 @@
                 currentTools: [],
 
                 existingToolIds: {},   // ✅ 這台車原本已配賦的 tool id 集合 {id:true}
-                existingLoaded: false  // ✅ 是否已載入既有配賦
+                // existingLoaded: false  // ✅ 是否已載入既有配賦
             };
 
             function getItemMeta(itemId) {
