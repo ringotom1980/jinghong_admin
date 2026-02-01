@@ -20,28 +20,36 @@
   }
 }
 
-/* ===== FIX: pane fill viewport, only table scroll ===== */
-.hot-assign main.page {
+/* ===== FIX: hot_assign only table scroll, page no scroll ===== */
+.hot-assign.page {
+  /* 覆蓋全站 .page 的 min-height 讓它不要撐開 */
+  min-height: 0 !important;
+
+  /* 固定在 viewport 內（扣掉 topbar） */
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;           /* ✅ 禁止整頁捲 */
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden; /* ✅ 讓整頁不捲動，改由表內捲 */
 }
 
-/* hot-split 佔滿 main 剩餘高度 */
+/* page-head 佔上方固定高度 */
+.hot-assign.page .page-head {
+  flex: 0 0 auto;
+}
+
+/* split 佔剩餘高度 */
 .hot-assign .hot-split {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* 每個 pane 變成「頭固定 / 身體撐滿」 */
+/* pane：head 固定 + body 撐滿 */
 .hot-assign .hot-pane {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-/* pane body 撐滿，內部分成：tableWrap(可捲) + footnote(固定在底部) */
 .hot-assign .hot-pane__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -49,25 +57,17 @@
   flex-direction: column;
 }
 
-/* ✅ 只有表格區捲動 */
+/* ✅ 只有表內捲動 */
 .hot-assign .hot-tableWrap {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
-/* footnote 永遠在 tableWrap 下方，不參與捲動 */
+/* footnote 固定在 pane 底 */
 .hot-assign .hot-footNote {
   flex: 0 0 auto;
 }
-
-/* 小螢幕允許整頁正常流動（避免高度太擠） */
-@media (max-width: 760px) {
-  .hot-assign main.page {
-    overflow: visible;
-  }
-}
-
 /* ===== Pane head: 你的 HTML 用的是 .hot-pane__head/.hot-pane__title/.hot-actions ===== */
 /* card/card--flat 已在 app.css，這裡只做 head/body 的間距與頭部底色 */
 .hot-assign .hot-pane__head {
