@@ -663,21 +663,42 @@
                 return;
             }
 
-            // 🔒 暫存原本 activeVehicleId
-            var prevVid = self.app && self.app.state ? self.app.state.activeVehicleId : 0;
-
-            if (self.app && self.app.state) {
-                self.app.state.activeVehicleId = vehicleId;
+            if (!global.Modal || typeof global.Modal.open !== 'function') {
+                toast('danger', '系統錯誤', 'Modal 不存在（ui_modal.js 未載入）');
+                return;
             }
 
-            // 呼叫你既有 modal（完全不改裡面）
-            self.openAssignAdd();
+            // ✅ 直接用你現有的 openVehAdd modal
+            // 並在 modal 打開後，把「車輛 select」鎖定成當前車（不可改）
+            var prevVid = self.app && self.app.state ? self.app.state.activeVehicleId : 0;
+            if (self.app && self.app.state) self.app.state.activeVehicleId = vehicleId;
+
+            self.openVehAdd();
+
+            // 等 modal DOM 出現後鎖定車輛選單（openVehAdd 的 select id = #mVehPick）
+            setTimeout(function () {
+                try {
+                    var backdrop = document.querySelector('.modal-backdrop'); // ui_modal 的容器
+                    if (!backdrop) return;
+
+                    var pickVeh = backdrop.querySelector('#mVehPick');
+                    if (!pickVeh) return;
+
+                    // 強制選到目前車
+                    pickVeh.value = String(vehicleId);
+
+                    // 禁止改車（右表新增限定本車）
+                    pickVeh.disabled = true;
+
+                    // 額外顯示提示（可選，不影響功能）
+                    var help = pickVeh.parentNode ? pickVeh.parentNode.querySelector('.hot-helpText2') : null;
+                    if (help) help.textContent = '右表新增：限定本車（不可切換車輛）';
+                } catch (e) { /* ignore */ }
+            }, 0);
 
             // Modal 關閉後還原（保險）
             setTimeout(function () {
-                if (self.app && self.app.state) {
-                    self.app.state.activeVehicleId = prevVid;
-                }
+                if (self.app && self.app.state) self.app.state.activeVehicleId = prevVid;
             }, 0);
         },
 
