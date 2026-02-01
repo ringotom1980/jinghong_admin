@@ -9,7 +9,7 @@
 /* ===== Layout: split panes ===== */
 .hot-assign .hot-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);/*調整兩表寬度，目前40%、60%*/
   gap: 14px;
   align-items: start;
 }

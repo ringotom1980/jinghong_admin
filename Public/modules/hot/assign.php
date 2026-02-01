@@ -120,7 +120,7 @@ $pageJs = [
                   <th>分類</th>
                   <th>工具編號</th>
                   <th>檢驗日期</th>
-                  <th>備註</th>
+                  <th>更換日期</th>
                   <th>功能</th>
                 </tr>
               </thead>
