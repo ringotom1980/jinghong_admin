@@ -74,7 +74,7 @@
         mat_edit_b: toUrl('/Public/modules/mat/edit.php'),
         car_base: toUrl('/Public/modules/car/base.php'),
         car_stats: toUrl('/Public/modules/car/stats.php'),
-
+        hot_assign: toUrl('/Public/modules/hot/assign.php'),
     };
 
     /* =====================================================
@@ -109,6 +109,43 @@
                 '<div class="db-row">' +
                 '<div class="db-row-k">' + esc(r.k) + '</div>' +
                 '<div class="db-row-k">' + esc(r.v) + '</div>' +
+                '</div>'
+            );
+        }).join('');
+
+        el.innerHTML = html;
+    }
+
+    /* =====================================================
+ * 2-3：活電工具檢驗（已逾期 / 快到期）
+ * rows: [{ vehicle_id, name, status }] status: 'overdue'|'soon'
+ * - 顯示名稱格式：車牌編號（車牌號碼）
+ * - 不限筆數：有幾筆顯示幾筆
+ * ===================================================== */
+    function renderHotInspectVehicles(el, rows) {
+        if (!el) return;
+
+        rows = Array.isArray(rows) ? rows : [];
+        if (!rows.length) {
+            el.innerHTML = '<div class="db-empty">—</div>';
+            return;
+        }
+
+        // 右側顯示文字（不新增膠囊樣式，避免干擾你現有設計）
+        function statusText(s) {
+            return (s === 'overdue') ? '已逾期' : (s === 'soon' ? '快到期' : '');
+        }
+
+        var html = rows.map(function (r) {
+            var name = (r && r.name) ? String(r.name) : '';
+            var st = statusText(r && r.status);
+
+            return (
+                '<div class="db-row db-row--vehicle">' +
+                '<div class="db-vrow">' +
+                '<div class="db-vname">' + esc(name) + '</div>' +
+                (st ? ('<div class="db-row-k">' + esc(st) + '</div>') : '') +
+                '</div>' +
                 '</div>'
             );
         }).join('');
@@ -391,12 +428,17 @@
         renderVehicleList(qs('#carOverdueList'), 'overdue');
         renderVehicleList(qs('#carDueSoonList'), 'due_soon');
 
-        // ===== 2-3：近半年維修金額（依膠囊期間）=====
+        // ===== 2-4：近半年維修金額（依膠囊期間）=====
         var r6 = (vpack && vpack.repair_6m) ? vpack.repair_6m : null;
         setText('carRepairCompany', r6 ? formatTwdAmount(r6.company) : '—');
         setText('carRepairTeam', r6 ? formatTwdAmount(r6.team) : '—');
         setText('carRepairTotal', r6 ? formatTwdAmount(r6.total) : '—');
         setText('carRepairPeriod', r6 ? r6.label : '—');
+        // ===== 2-3：活電工具檢驗（已逾期 / 快到期）=====
+        var hot = (data && data.hot) ? data.hot : {};
+        var hotRows = Array.isArray(hot.inspect_vehicles) ? hot.inspect_vehicles : [];
+        renderHotInspectVehicles(qs('#hotInspectVehicles'), hotRows);
+
     }
 
     /* =====================================================

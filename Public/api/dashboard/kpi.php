@@ -20,6 +20,8 @@ require_once __DIR__ . '/../mat/stats_d.php';
 require_once __DIR__ . '/../mat/stats_ef.php';
 require_once __DIR__ . '/../../../app/services/VehicleService.php';
 require_once __DIR__ . '/../../../app/services/VehicleRepairStatsService.php';
+require_once __DIR__ . '/../../../app/services/HotAssignService.php';
+
 /**
  * 從日期清單中挑選「即期日期」
  * 規則：
@@ -185,8 +187,8 @@ try {
     }
 
     /* =====================================================
-     * 回傳（維持你 dashboard.js 吃的結構）
-     * ===================================================== */
+ * 回傳（維持你 dashboard.js 吃的結構）
+ * ===================================================== */
     json_ok([
         'asof_date' => $asof,
         'mat' => [
@@ -203,19 +205,20 @@ try {
             $pdo = db();
 
             /* =====================================================
-     * 2-3：近半年維修金額（依車輛維修統計膠囊：最新 end_date 的那顆）
-     * - 不用 rolling 6 months
-     * - 直接用 VehicleRepairStatsService 的 capsules/keyToRange
-     * ===================================================== */
+         * 2-3：近半年維修金額（依車輛維修統計膠囊：最新 end_date 的那顆）
+         * - 不用 rolling 6 months
+         * - 直接用 VehicleRepairStatsService 的 capsules/keyToRange
+         * ===================================================== */
             $repair6m = (function () use ($pdo) {
                 $svc = new VehicleRepairStatsService($pdo);
 
                 // 近 N 年內有資料的 capsules（svc 內已用 end_ts desc 排序）
                 $caps = $svc->getCapsules(5);
-                $key = $svc->getDefaultKeyFromCapsules($caps);
+                $key  = $svc->getDefaultKeyFromCapsules($caps);
                 if ($key === '') {
                     return [
                         'key' => '',
+                        'label' => '',
                         'start' => '',
                         'end' => '',
                         'company' => 0,
@@ -228,13 +231,13 @@ try {
 
                 // KPI 只要總額 → 直接 SUM（不走 getSummary/top3）
                 $sql = "
-          SELECT
-            COALESCE(SUM(h.company_amount_total),0) AS company_total,
-            COALESCE(SUM(h.team_amount_total),0)    AS team_total,
-            COALESCE(SUM(h.grand_total),0)          AS grand_total
-          FROM vehicle_repair_headers h
-          WHERE h.repair_date BETWEEN :s AND :e
-        ";
+                SELECT
+                  COALESCE(SUM(h.company_amount_total),0) AS company_total,
+                  COALESCE(SUM(h.team_amount_total),0)    AS team_total,
+                  COALESCE(SUM(h.grand_total),0)          AS grand_total
+                FROM vehicle_repair_headers h
+                WHERE h.repair_date BETWEEN :s AND :e
+            ";
                 $st = $pdo->prepare($sql);
                 $st->execute([':s' => $start, ':e' => $end]);
                 $r = $st->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -251,12 +254,12 @@ try {
             })();
 
             // 你已定義：到期門檻 30 天（與 VehicleService 一致）
-            $today = new DateTimeImmutable('today');
+            $today    = new DateTimeImmutable('today');
             $soonDate = $today->modify('+30 days');
 
             // 將 DB 的 type_name/type_key 正規化成你指定的 6 個字樣
             $normLabel = function (?string $typeKey, ?string $typeName): string {
-                $key = strtoupper(trim((string)$typeKey));
+                $key  = strtoupper(trim((string)$typeKey));
                 $name = trim((string)$typeName);
 
                 // 優先：type_name 內含關鍵字（最不猜、最穩）
@@ -274,23 +277,23 @@ try {
 
             // 一次撈出「每台車、每個檢查項」的 due_date + required
             $sql = "
-      SELECT
-        v.id AS vehicle_id,
-        v.vehicle_code,
-        v.plate_no,
-        t.type_key,
-        t.type_name,
-        COALESCE(r.is_required, 1) AS is_required,
-        i.due_date
-      FROM vehicle_vehicles v
-      JOIN vehicle_inspection_types t ON t.is_enabled = 1
-      LEFT JOIN vehicle_vehicle_inspection_rules r
-        ON r.vehicle_id = v.id AND r.type_id = t.type_id
-      LEFT JOIN vehicle_vehicle_inspections i
-        ON i.vehicle_id = v.id AND i.type_id = t.type_id
-      WHERE v.is_active = 1
-      ORDER BY v.vehicle_code ASC, v.id ASC, t.sort_no ASC, t.type_id ASC
-    ";
+            SELECT
+              v.id AS vehicle_id,
+              v.vehicle_code,
+              v.plate_no,
+              t.type_key,
+              t.type_name,
+              COALESCE(r.is_required, 1) AS is_required,
+              i.due_date
+            FROM vehicle_vehicles v
+            JOIN vehicle_inspection_types t ON t.is_enabled = 1
+            LEFT JOIN vehicle_vehicle_inspection_rules r
+              ON r.vehicle_id = v.id AND r.type_id = t.type_id
+            LEFT JOIN vehicle_vehicle_inspections i
+              ON i.vehicle_id = v.id AND i.type_id = t.type_id
+            WHERE v.is_active = 1
+            ORDER BY v.vehicle_code ASC, v.id ASC, t.sort_no ASC, t.type_id ASC
+        ";
             $rows = $pdo->query($sql)->fetchAll();
             if (!$rows) {
                 return [
@@ -371,6 +374,49 @@ try {
                 'due_soon_days' => 30,
                 'repair_6m' => $repair6m,
             ];
+        })(),
+
+        /* =====================================================
+     * 2-3（新增）：活電工具檢驗（只涵蓋「有配賦活電工具的車」）
+     * - 顯示名稱：車牌編號（車牌號碼）
+     * - 不限筆數：有幾筆顯示幾筆
+     * - 排序：已逾期(overdue) 排前面，其次 soon，再依 name
+     * ===================================================== */
+        'hot' => (function () {
+            $svc = new HotAssignService(db());
+
+            // 這個 service 你前面貼過：來源就是「有配賦活電工具的車」
+            $rows = $svc->listAssignedVehicles();
+            if (!is_array($rows) || !$rows) {
+                return ['inspect_vehicles' => []];
+            }
+
+            $out = [];
+            foreach ($rows as $r) {
+                $st = (string)($r['inspect_status'] ?? '');
+                if ($st !== 'overdue' && $st !== 'soon') continue;
+
+                $code = trim((string)($r['vehicle_code'] ?? ''));
+                $plate = trim((string)($r['plate_no'] ?? ''));
+                $name = $code;
+                if ($plate !== '') $name .= '（' . $plate . '）';
+
+                $out[] = [
+                    'vehicle_id' => (int)($r['id'] ?? 0),
+                    'name' => $name,
+                    'status' => $st, // overdue / soon
+                ];
+            }
+
+            usort($out, function ($a, $b) {
+                $wa = (($a['status'] ?? '') === 'overdue') ? 0 : 1;
+                $wb = (($b['status'] ?? '') === 'overdue') ? 0 : 1;
+                if ($wa !== $wb) return $wa <=> $wb;
+
+                return strcmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''));
+            });
+
+            return ['inspect_vehicles' => $out];
         })(),
 
     ]);

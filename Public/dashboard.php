@@ -205,7 +205,19 @@ $pageJs    = ['assets/js/dashboard.js'];
           </div>
         </article>
 
-        <!-- 2-3 -->
+        <!-- 2-3（新增）：活電工具檢驗（已逾期 / 快到期） -->
+        <article class="db-card" data-jump="hot_assign">
+          <div class="db-card-head">
+            <div class="db-card-title">活電工具檢驗（已逾期 / 快到期）</div>
+            <div class="db-card-meta">點卡片→活電工具配賦表</div>
+          </div>
+
+          <div class="dash-list" id="hotInspectVehicles">
+            <div class="db-empty">—</div>
+          </div>
+        </article>
+
+        <!-- 2-4 -->
         <article class="db-card" data-jump="car_stats" data-section="repair_6m">
           <div class="db-card-head">
             <div class="db-card-title">近半年維修金額｜<span id="carRepairPeriod">—</span></div>
