@@ -119,8 +119,7 @@
     /* =====================================================
  * 2-3：活電工具檢驗（已逾期 / 快到期）
  * rows: [{ vehicle_id, name, status }] status: 'overdue'|'soon'
- * - 顯示名稱格式：車牌編號（車牌號碼）
- * - 不限筆數：有幾筆顯示幾筆
+ * - 右側顯示狀態膠囊（已逾期/快到期）
  * ===================================================== */
     function renderHotInspectVehicles(el, rows) {
         if (!el) return;
@@ -130,21 +129,33 @@
             el.innerHTML = '<div class="db-empty">—</div>';
             return;
         }
+        // 已逾期一定在前面
+        rows = rows.slice().sort(function (a, b) {
+            var pa = (a && a.status === 'overdue') ? 0 : 1;
+            var pb = (b && b.status === 'overdue') ? 0 : 1;
+            return pa - pb;
+        });
 
-        // 右側顯示文字（不新增膠囊樣式，避免干擾你現有設計）
-        function statusText(s) {
+        function statusLabel(s) {
             return (s === 'overdue') ? '已逾期' : (s === 'soon' ? '快到期' : '');
+        }
+        function statusClass(s) {
+            return (s === 'overdue') ? 'db-pill--overdue' : (s === 'soon' ? 'db-pill--soon' : 'db-pill--muted');
         }
 
         var html = rows.map(function (r) {
             var name = (r && r.name) ? String(r.name) : '';
-            var st = statusText(r && r.status);
+            var st = (r && r.status) ? String(r.status) : '';
+            var label = statusLabel(st);
+            var klass = statusClass(st);
 
             return (
-                '<div class="db-row db-row--vehicle">' +
+                '<div class="db-row db-row--vehicle" data-vid="' + esc(r.vehicle_id || '') + '">' +
                 '<div class="db-vrow">' +
                 '<div class="db-vname">' + esc(name) + '</div>' +
-                (st ? ('<div class="db-row-k">' + esc(st) + '</div>') : '') +
+                (label
+                    ? ('<div class="db-pills"><span class="db-pill ' + klass + '">' + esc(label) + '</span></div>')
+                    : '') +
                 '</div>' +
                 '</div>'
             );

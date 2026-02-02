@@ -417,6 +417,18 @@
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(15, 23, 42, 0.12);
 }
+/* 2-3：活電工具檢驗 狀態膠囊（只用兩種字） */
+.db-pill--overdue {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.26);
+  color: rgba(185, 28, 28, 0.9);
+}
+
+.db-pill--soon {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.26);
+  color: rgba(133, 77, 14, 0.92);
+}
 
 .db-more {
   margin-top: 10px;

@@ -208,7 +208,7 @@ $pageJs    = ['assets/js/dashboard.js'];
         <!-- 2-3（新增）：活電工具檢驗（已逾期 / 快到期） -->
         <article class="db-card" data-jump="hot_assign">
           <div class="db-card-head">
-            <div class="db-card-title">活電工具檢驗（已逾期 / 快到期）</div>
+            <div class="db-card-title">活電工具（快到期為7天內）</div>
             <div class="db-card-meta">點卡片→活電工具配賦表</div>
           </div>
 
