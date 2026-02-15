@@ -119,6 +119,7 @@ $u = function (string $path) use ($base): string {
             <nav class="drawer__nav" aria-label="活電工具管理導覽">
                 <a class="nav__item" data-nav="hot_tools" href="<?= htmlspecialchars($u('/hot/tools'), ENT_QUOTES) ?>">工具主檔</a>
                 <a class="nav__item" data-nav="hot_assign" href="<?= htmlspecialchars($u('/hot/assign'), ENT_QUOTES) ?>">配賦管理</a>
+                <a class="nav__item" data-nav="hot_helmets" href="<?= htmlspecialchars($u('/hot/helmets'), ENT_QUOTES) ?>">安全帽管理</a>
             </nav>
         </section>
 
