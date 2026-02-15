@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Path: app/services/HotToolsService.php
  * 說明: 活電工具（tools）後端服務
@@ -433,20 +434,21 @@ final class HotToolsService
   private function nextBatchSeq(string $batch, int $seq): array
   {
     $seq += 1;
-    if ($seq <= 999) return [$batch, $seq];
 
-    // 進位 batch
-    $seq = 1;
-    $nextBatch = $this->base36Inc2($batch);
-    return [$nextBatch, $seq];
+    // 需求確認：不會超過 999；若真的超過就直接擋下
+    if ($seq > 999) {
+      throw new RuntimeException('此分類工具編號已達 999 上限');
+    }
+
+    // batch 不再使用，但為了不動其他流程與 DB 欄位，原樣回傳
+    return [$batch, $seq];
   }
 
   private function composeToolNo(string $code, string $batch, int $seq): string
   {
-    $code = strtoupper(trim($code));
-    $batch = strtoupper(trim($batch));
+    $code = strtoupper(trim($code)); // 仍維持 DB 內 code = A~Z
     $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
-    return $code . $batch . $seqStr;
+    return '16' . $code . $seqStr;   // 新規則：16A001
   }
 
   /**
