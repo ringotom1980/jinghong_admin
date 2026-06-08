@@ -130,10 +130,10 @@ body.public-page.pole-map-page {
   gap: 0;
   padding: 0 6px;
   height: 44px;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 16px 44px rgba(2, 6, 23, 0.12);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -151,7 +151,7 @@ body.public-page.pole-map-page {
   outline: 0;
   background: transparent;
   font-size: 16px; /* ★iOS 必要：避免 focus 自動 zoom */
-  font-weight: 650;
+  font-weight: 560;
   color: rgba(15, 23, 42, 0.92);
 }
 
@@ -169,7 +169,7 @@ body.public-page.pole-map-page {
 .pole-search__clear {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -187,10 +187,10 @@ body.public-page.pole-map-page {
 .pole-picked {
   margin-top: 10px;
   padding: 10px 12px;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 40px rgba(2, 6, 23, 0.1);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -223,10 +223,10 @@ body.public-page.pole-map-page {
   top: 54px;
   left: 0;
   right: 0;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 18px 54px rgba(2, 6, 23, 0.16);
+  box-shadow: 0 12px 34px rgba(2, 6, 23, 0.14);
   backdrop-filter: blur(10px);
   overflow: hidden;
 }
@@ -263,9 +263,9 @@ body.public-page.pole-map-page {
 /* 右側導航（選到點後才顯示） */
 .pole-nav {
   height: 44px;
-  border-radius: 16px;
-  font-weight: 760;
-  box-shadow: 0 14px 40px rgba(2, 6, 23, 0.1);
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
 }
 /* 導航鍵：固定在 Dock 上方置中 */
 #poleNavBtn {
@@ -317,4 +317,137 @@ body.app-page.pole-map-page .pole-top__left {
 /* 導航鍵置中：中心點要以內容區（扣掉 rail）為準 */
 body.app-page.pole-map-page #poleNavBtn {
   left: calc(50% + (var(--rail-w) / 2));
+}
+
+@media (max-width: 720px) {
+  body.pole-map-page {
+    overscroll-behavior: none;
+  }
+
+  body.app-page.pole-map-page .topbar {
+    height: 48px;
+  }
+
+  body.app-page.pole-map-page {
+    --topbar-h: 48px;
+  }
+
+  body.app-page.pole-map-page .brand__text {
+    display: none;
+  }
+
+  body.app-page.pole-map-page .topbar__actions .btn {
+    height: 30px;
+  }
+
+  body.app-page.pole-map-page .sidenav {
+    display: none;
+  }
+
+  body.app-page.pole-map-page .page {
+    margin-left: 0;
+    padding: 0 !important;
+    height: calc(var(--vh) * 100 - var(--topbar-h)) !important;
+  }
+
+  body.app-page.pole-map-page .pole-top,
+  .pole-top {
+    top: calc(var(--topbar-h) + 8px);
+    left: 8px;
+    right: 8px;
+  }
+
+  body.public-page.pole-map-page .pole-top {
+    top: 8px;
+  }
+
+  .pole-top__center {
+    max-width: none;
+  }
+
+  .pole-search {
+    grid-template-columns: 38px 1fr 38px;
+    height: 42px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .pole-search__input {
+    height: 34px;
+    font-size: 16px;
+  }
+
+  .pole-search__clear {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pole-picked {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    max-height: 27vh;
+    overflow: auto;
+  }
+
+  .pole-picked__row {
+    grid-template-columns: 38px 1fr;
+    gap: 8px;
+  }
+
+  .pole-suggest {
+    top: 50px;
+    border-radius: 10px;
+  }
+
+  .pole-suggest__list {
+    max-height: min(48vh, 360px);
+  }
+
+  .pole-top__left,
+  body.app-page.pole-map-page .pole-top__left {
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .pole-brand__text {
+    display: none;
+  }
+
+  .pole-brand__logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .pole-login {
+    height: 34px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
+
+  #poleNavBtn,
+  body.app-page.pole-map-page #poleNavBtn {
+    left: 50%;
+    bottom: calc(54px + env(safe-area-inset-bottom));
+    height: 40px;
+    width: min(260px, calc(100vw - 24px));
+    transform: translateX(-50%);
+  }
+
+  .leaflet-top.leaflet-left {
+    top: calc(var(--topbar-h) + 56px);
+  }
+
+  body.public-page.pole-map-page .leaflet-top.leaflet-left {
+    top: 58px;
+  }
+
+  .leaflet-control-attribution {
+    margin-bottom: 96px;
+    max-width: calc(100vw - 16px);
+    white-space: normal;
+  }
 }

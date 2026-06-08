@@ -542,6 +542,69 @@
   max-height: calc(100vh - var(--topbar-h) - 155px);
 }
 
+/* ===== Responsive density and table handling ===== */
+.hot-assign .hot-assignGrid__title,
+.hot-vehAdd__midTitle,
+.hot-vehAdd__botTitle,
+.hot-vehAdd__sumHead {
+  font-weight: 720;
+}
+
+.hot-assign .hot-tableScroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 760px) {
+  .hot-assign .hot-pane--left,
+  .hot-assign .hot-pane--right {
+    max-height: none;
+  }
+
+  .hot-assign .hot-pane__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hot-assign .hot-pane__hint {
+    white-space: normal;
+  }
+
+  .hot-assign .hot-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .hot-assign .hot-actions .btn {
+    flex: 1 1 auto;
+    min-width: 88px;
+  }
+
+  .hot-assign .hot-table {
+    min-width: 620px;
+  }
+
+  .hot-assign .hot-tableWrap--fixed {
+    overflow-x: auto;
+  }
+
+  .hot-assign .hot-tableScroll {
+    max-height: 46vh;
+  }
+
+  .hot-assign .hot-table th,
+  .hot-assign .hot-table td {
+    padding: 8px 7px;
+    font-size: 13px;
+  }
+
+  .hot-assign .hot-table td:nth-child(2),
+  .hot-assign .hot-table td:nth-child(3) {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
 .hot-assign .hot-pane__body {
   flex: 1 1 auto;
   min-height: 0;

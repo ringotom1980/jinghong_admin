@@ -9,7 +9,7 @@
   max-width: none;
   width: 100%;
   margin: 0;
-  padding: 18px 22px;
+  padding: 14px 16px;
 }
 
 /* 讓整頁至少撐滿（視覺不會上面一小塊、下面空一大片） */
@@ -37,7 +37,7 @@
 }
 
 .ms-toolbar__date {
-  font-weight: 900;
+  font-weight: 720;
   color: rgba(15, 23, 42, 0.9);
 }
 
@@ -95,7 +95,7 @@
   padding: 0 10px;
   border-radius: 999px; /* ✅ 做成膠囊，但不影響原本 */
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 650;
   white-space: nowrap; /* ✅ 不換行 */
   max-width: 180px; /* ✅ 避免太長把整排擠爆 */
   overflow: hidden;
@@ -104,7 +104,7 @@
 
 /* active 狀態：跟原本一致，不用另寫也可；你要更明顯可加這段 */
 .ms-filter__btn--person.is-active {
-  font-weight: 900;
+  font-weight: 760;
 }
 
 .ms-filter__btn:hover {
@@ -116,7 +116,7 @@
   background: rgba(37, 99, 235, 0.12);
   border-color: rgba(37, 99, 235, 0.32);
   color: rgba(30, 58, 138, 0.95);
-  font-weight: 800;
+  font-weight: 720;
 }
 
 /* ===== Status ===== */
@@ -147,7 +147,7 @@
 /* 小螢幕收斂 padding */
 @media (max-width: 720px) {
   .page.mat-stats .content {
-    padding: 14px 12px;
+    padding: 10px 0 0;
   }
   .ms-toolbar__head {
     flex-direction: column;
@@ -170,7 +170,7 @@
 
 /* 視覺：黏住時看起來像浮在內容上（可微調） */
 .page.mat-stats .ms-toolbar.card {
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.08);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
 }
 
 /* ✅ 黏住 topbar 時：上緣改直角，避免圓角透出底下內容 */
@@ -185,7 +185,7 @@
 .ms-capsules {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)); /* ✅ 每列 3 個月 */
-  gap: 14px;
+  gap: 10px;
   padding: 6px 0;
   overflow: visible; /* ✅ 不要橫向卷軸 */
 }
@@ -196,7 +196,7 @@
   gap: 6px;
   padding: 10px 10px 12px;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.72);
   min-width: 0; /* ✅ 防止內容撐爆造成卷軸 */
 }
@@ -204,7 +204,7 @@
 /* 月份標題：純文字 */
 .ms-capsules__month-title {
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 720;
   color: rgba(15, 23, 42, 0.65);
   padding: 0;
   margin: 0;
@@ -242,13 +242,13 @@
   background: rgba(37, 99, 235, 0.12);
   border-color: rgba(37, 99, 235, 0.35);
   color: rgba(30, 58, 138, 0.95);
-  font-weight: 900;
+  font-weight: 760;
 }
 
 /* ===== Stats section cards (A-F) ===== */
 /* 讓卡片標頭不要貼圓角邊界：標題往右內縮 */
 .page.mat-stats .ms-section__head {
-  padding: 12px 16px;
+  padding: 10px 12px;
 }
 
 /* 讓標題本身不要有預設外距干擾 */
@@ -258,7 +258,7 @@
 
 /* 內容區也同步左右對齊（可選，但通常會更順） */
 .page.mat-stats .ms-section__body {
-  padding: 0 16px 14px;
+  padding: 0 12px 12px;
 }
 
 /* 統計頁所有表格：淡外框 + 淡格線 */
@@ -268,6 +268,12 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   overflow: hidden;
+}
+
+.ms-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ms-table-wrap .ms-table thead th {
@@ -317,6 +323,310 @@
 
 /* 合計列（F班用） */
 .ms-table .ms-tr-sum td {
-  font-weight: 900;
+  font-weight: 760;
   background: rgba(15, 23, 42, 0.03);
+}
+
+@media (max-width: 900px), ((max-height: 560px) and (pointer: coarse)) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body.mat-stats-page,
+  body:has(.page.mat-stats) {
+    background: var(--bg);
+  }
+
+  body.mat-stats-page .sidenav,
+  body:has(.page.mat-stats) .sidenav {
+    display: none;
+  }
+
+  body.mat-stats-page .topbar,
+  body:has(.page.mat-stats) .topbar {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  body.mat-stats-page .brand__text,
+  body:has(.page.mat-stats) .brand__text {
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.mat-stats-page .topbar__right,
+  body:has(.page.mat-stats) .topbar__right {
+    gap: 6px;
+  }
+
+  body.mat-stats-page .topbar__actions,
+  body:has(.page.mat-stats) .topbar__actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  body.mat-stats-page .topbar__actions .btn,
+  body:has(.page.mat-stats) .topbar__actions .btn {
+    height: 30px;
+    padding: 0 9px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  body.mat-stats-page .footer,
+  body:has(.page.mat-stats) .footer {
+    margin-left: 0;
+    border-left: 0;
+  }
+
+  .page.mat-stats {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100vw;
+    padding: 10px 0 14px;
+    border-left: 0;
+    overflow-x: hidden;
+  }
+
+  .page.mat-stats .page-head {
+    padding: 0 10px;
+  }
+
+  .page.mat-stats .content {
+    width: 100%;
+    max-width: 100vw;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .page.mat-stats .ms-toolbar {
+    position: static;
+    top: auto;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100vw;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+
+  .page.mat-stats .card {
+    max-width: 100vw;
+  }
+
+  .page.mat-stats .ms-toolbar .card__head {
+    padding: 10px 12px 8px;
+  }
+
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: 44vh;
+    overflow: auto;
+    padding: 10px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ms-toolbar__title {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .ms-toolbar__actions {
+    width: 100%;
+  }
+
+  .ms-toolbar__actions .btn {
+    width: 100%;
+  }
+
+  .ms-capsules {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ms-capsules__month {
+    padding: 8px;
+  }
+
+  .ms-capsules__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .ms-capsule {
+    flex: 0 0 auto;
+  }
+
+  .ms-filter {
+    margin-top: 10px;
+    padding-bottom: 4px;
+  }
+
+  .ms-content {
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .page.mat-stats .ms-section {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .page.mat-stats .ms-section__head {
+    position: sticky;
+    top: calc(var(--topbar-h) + 47px);
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .page.mat-stats .ms-section__title {
+    font-size: 16px;
+  }
+
+  .ms-table-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: auto;
+    overflow-y: visible;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ms-table-wrap .ms-table {
+    min-width: 720px;
+    width: max-content;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .ms-table-wrap .ms-table--b {
+    min-width: 980px;
+  }
+
+  .ms-table-wrap .ms-table--d {
+    min-width: 820px;
+  }
+
+  .ms-table-wrap .ms-table th,
+  .ms-table-wrap .ms-table td {
+    padding: 7px 8px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .ms-table-wrap .ms-table th:nth-child(1),
+  .ms-table-wrap .ms-table td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 46px !important;
+    min-width: 46px;
+    background: #fff;
+  }
+
+  .ms-table-wrap .ms-table th:nth-child(2),
+  .ms-table-wrap .ms-table td:nth-child(2) {
+    position: sticky;
+    left: 46px;
+    z-index: 2;
+    min-width: 140px;
+    max-width: 180px;
+    background: #fff;
+    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.08);
+  }
+
+  .ms-table-wrap .ms-table thead th:nth-child(1),
+  .ms-table-wrap .ms-table thead th:nth-child(2) {
+    z-index: 3;
+    background: #f7f8fb;
+  }
+
+  .ms-table-wrap .ms-table thead tr:not(:first-child) th {
+    position: static;
+    left: auto;
+    z-index: 1;
+    min-width: 0;
+    max-width: none;
+    box-shadow: none;
+  }
+
+  .ms-td-name {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+.ms-mobile-shift-dock {
+  display: none;
+}
+
+@media (max-width: 900px), ((max-height: 560px) and (pointer: coarse)) {
+  .ms-mobile-shift-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--topbar-h);
+    z-index: 44;
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.08);
+  }
+
+  .ms-mobile-shift-dock.is-visible {
+    display: block;
+  }
+
+  .ms-mobile-shift-dock[hidden] {
+    display: none !important;
+  }
+
+  .ms-mobile-shift-dock__inner {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ms-mobile-shift-dock__inner::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .ms-mobile-shift-dock .ms-filter__btn {
+    flex: 0 0 auto;
+    height: 32px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: 50vh;
+  }
+
+  .ms-table-wrap .ms-table th,
+  .ms-table-wrap .ms-table td {
+    padding: 6px 7px;
+    font-size: 12px;
+  }
 }

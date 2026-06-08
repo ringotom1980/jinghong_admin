@@ -34,7 +34,7 @@ $pageJs = [
 <html lang="zh-Hant">
 <?php require __DIR__ . '/../../partials/head.php'; ?>
 
-<body>
+<body class="mat-stats-page">
 
     <?php require __DIR__ . '/../../partials/header.php'; ?>
     <?php require __DIR__ . '/../../partials/sidebar.php'; ?>

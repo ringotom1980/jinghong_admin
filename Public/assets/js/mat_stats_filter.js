@@ -12,14 +12,17 @@
   var Mod = {
     app: null,
     el: null,
+    mobileEl: null,
 
     init: function (app) {
       this.app = app;
       this.el = qs('#msShiftFilter');
       if (!this.el) return;
+      this.ensureMobileDock();
 
       // ✅ 事件委派：只綁一次
       this.el.addEventListener('click', this.onClick.bind(this));
+      if (this.mobileEl) this.mobileEl.addEventListener('click', this.onClick.bind(this));
 
       // ✅ 統一 render（先畫「全部」，再補 A-F）
       this.renderBase();
@@ -28,30 +31,74 @@
 
     onClick: function (e) {
       var btn = e.target && e.target.closest ? e.target.closest('.ms-filter__btn') : null;
-      if (!btn || !this.el || !this.el.contains(btn)) return;
-
-      // UI active
-      var all = this.el.querySelectorAll('.ms-filter__btn');
-      for (var i = 0; i < all.length; i++) all[i].classList.remove('is-active');
-      btn.classList.add('is-active');
+      var inMain = !!(btn && this.el && this.el.contains(btn));
+      var inMobile = !!(btn && this.mobileEl && this.mobileEl.contains(btn));
+      if (!btn || (!inMain && !inMobile)) return;
 
       var shift = btn.getAttribute('data-shift') || 'ALL';
       shift = String(shift).toUpperCase();
+      this.setActive(shift);
 
       if (this.app && this.app.setShift) this.app.setShift(shift);
     },
 
     setActive: function (shift) {
-      if (!this.el) return;
-
       shift = String(shift || 'ALL').toUpperCase();
 
+      var roots = [];
+      if (this.el) roots.push(this.el);
+      if (this.mobileEl) roots.push(this.mobileEl);
+
+      for (var r = 0; r < roots.length; r++) {
+        var btns = roots[r].querySelectorAll('.ms-filter__btn');
+        for (var i = 0; i < btns.length; i++) {
+          var b = btns[i];
+          var s = String(b.getAttribute('data-shift') || '').toUpperCase();
+          b.classList.toggle('is-active', s === shift);
+        }
+      }
+    },
+
+    ensureMobileDock: function () {
+      var exist = qs('#msMobileShiftDock');
+      if (exist) {
+        this.mobileEl = exist;
+        return;
+      }
+
+      var dock = document.createElement('div');
+      dock.id = 'msMobileShiftDock';
+      dock.className = 'ms-mobile-shift-dock';
+      dock.setAttribute('aria-label', 'Shift quick filter');
+      dock.hidden = true;
+
+      var inner = document.createElement('div');
+      inner.className = 'ms-mobile-shift-dock__inner';
+      dock.appendChild(inner);
+
+      document.body.appendChild(dock);
+      this.mobileEl = dock;
+    },
+
+    syncMobileDock: function () {
+      if (!this.mobileEl || !this.el) return;
+
+      var inner = this.mobileEl.querySelector('.ms-mobile-shift-dock__inner');
+      if (!inner) return;
+
+      inner.innerHTML = '';
       var btns = this.el.querySelectorAll('.ms-filter__btn');
       for (var i = 0; i < btns.length; i++) {
-        var b = btns[i];
-        var s = String(b.getAttribute('data-shift') || '').toUpperCase();
-        b.classList.toggle('is-active', s === shift);
+        var src = btns[i];
+        var clone = document.createElement('button');
+        clone.type = 'button';
+        clone.className = src.className;
+        clone.setAttribute('data-shift', src.getAttribute('data-shift') || 'ALL');
+        clone.textContent = src.textContent || '';
+        inner.appendChild(clone);
       }
+
+      this.setActive((this.app && this.app.state && this.app.state.shift) ? this.app.state.shift : 'ALL');
     },
 
     renderBase: function () {
@@ -65,6 +112,7 @@
       btnAll.setAttribute('data-shift', 'ALL');
       btnAll.textContent = '全部';
       this.el.appendChild(btnAll);
+      this.syncMobileDock();
       // 依 app.state.shift 決定預設 active（支援 hash 進頁）
       this.setActive((this.app && this.app.state && this.app.state.shift) ? this.app.state.shift : 'ALL');
 
@@ -102,6 +150,7 @@
 
           self.el.appendChild(btn);
         }
+        self.syncMobileDock();
         // A-F 都 render 完後，再依 app.state.shift 套一次 active（避免先亮到全部）
         self.setActive((self.app && self.app.state && self.app.state.shift) ? self.app.state.shift : 'ALL');
 

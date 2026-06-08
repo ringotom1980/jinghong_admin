@@ -197,24 +197,47 @@
     document.addEventListener('DOMContentLoaded', function () {
         App.init();
 
-        // ✅ 偵測 ms-toolbar 是否進入 sticky 狀態（黏住 topbar 時加 .is-stuck）
+        // ✅ 桌機保留 sticky 狀態；手機改為查詢卡滑走後顯示薄型班別列
         (function () {
             var tb = document.querySelector('.page.mat-stats .ms-toolbar');
             if (!tb) return;
+            var mobileDock = document.querySelector('#msMobileShiftDock');
+            var mq = global.matchMedia ? global.matchMedia('(max-width: 900px), ((max-height: 560px) and (pointer: coarse))') : null;
 
-            // 在 toolbar 前插一個「哨兵」，用來判斷是否被吸到 topbar
-            var sentinel = document.createElement('div');
-            sentinel.style.height = '1px';
-            sentinel.style.marginTop = '-1px';
-            tb.parentNode.insertBefore(sentinel, tb);
+            function isMobileStatsLayout() {
+                return mq ? mq.matches : ((global.innerWidth || 9999) <= 900);
+            }
 
-            var io = new IntersectionObserver(function (entries) {
-                // 當 sentinel 被 topbar 推出視窗（intersectionRatio = 0）代表 toolbar 已經黏住
-                var stuck = entries[0] && entries[0].intersectionRatio === 0;
-                tb.classList.toggle('is-stuck', !!stuck);
-            }, { root: null, threshold: [1] });
+            function setMobileDockVisible(on) {
+                mobileDock = mobileDock || document.querySelector('#msMobileShiftDock');
+                if (!mobileDock) return;
 
-            io.observe(sentinel);
+                var show = !!on && isMobileStatsLayout();
+                mobileDock.hidden = !show;
+                mobileDock.classList.toggle('is-visible', show);
+            }
+
+            function updateDockByToolbarPosition() {
+                var topbarH = 0;
+                try {
+                    topbarH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h')) || 0;
+                } catch (e) {
+                    topbarH = 0;
+                }
+
+                var rect = tb.getBoundingClientRect();
+                var out = rect.bottom <= (topbarH + 2);
+
+                tb.classList.toggle('is-stuck', !!out);
+                setMobileDockVisible(out);
+            }
+
+            global.addEventListener('scroll', updateDockByToolbarPosition, { passive: true });
+            global.addEventListener('resize', updateDockByToolbarPosition);
+            setTimeout(updateDockByToolbarPosition, 0);
+            if (mq && mq.addEventListener) {
+                mq.addEventListener('change', updateDockByToolbarPosition);
+            }
         })();
     });
 
