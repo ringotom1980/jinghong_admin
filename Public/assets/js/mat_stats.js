@@ -228,7 +228,7 @@
                 var rect = tb.getBoundingClientRect();
                 var out = rect.bottom <= (topbarH + 2);
 
-                tb.classList.toggle('is-stuck', !!out);
+                tb.classList.toggle('is-stuck', !isMobileStatsLayout() && rect.top <= (topbarH + 1));
                 setMobileDockVisible(out);
             }
 

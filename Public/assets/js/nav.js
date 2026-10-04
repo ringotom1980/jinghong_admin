@@ -201,6 +201,7 @@
             });
 
             rail.addEventListener('pointerleave', function (e) {
+                if (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches) return;
                 var to = e.relatedTarget;
                 if (isInside(to, host)) return; // 移到抽屜不關
                 scheduleClose();
@@ -223,7 +224,19 @@
 
         // hover tab：切換 drawer + 定位
         railTabs.forEach(function (tab) {
-            tab.addEventListener('pointerenter', function () {
+            tab.addEventListener('click', function (e) {
+                var touch = window.matchMedia('(hover: none)').matches;
+                if (!touch && e.detail !== 0) return;
+                if (tab.getAttribute('data-no-drawer') === '1') return;
+                var id = tab.getAttribute('data-drawer');
+                if (!id) return;
+                e.preventDefault();
+                clearCloseTimer();
+                if (sidenav.classList.contains('is-open') && lastDrawerId === id) closeHost(sidenav);
+                else openWithDrawer(id, tab);
+            });
+            tab.addEventListener('pointerenter', function (e) {
+                if (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches) return;
                 clearCloseTimer();
 
                 // ✅ no-drawer：例如「電桿地圖」只要點擊直達，不要浮出抽屜
@@ -242,8 +255,16 @@
             });
         });
 
+        document.addEventListener('click', function (e) {
+            if (!isInside(e.target, sidenav)) closeHost(sidenav);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeHost(sidenav);
+        });
+
         // 保底：真的離開 rail+host 才關
         sidenav.addEventListener('pointerleave', function (e) {
+            if (e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches) return;
             var to = e.relatedTarget;
             if (isInside(to, rail) || isInside(to, host)) return;
             scheduleClose();

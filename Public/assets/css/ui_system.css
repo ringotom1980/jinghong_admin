@@ -1,0 +1,107 @@
+/* Shared UI contract. Screen only: report/print styles retain their own geometry.
+ * Page files own layout; this layer owns typography, controls and focus states.
+ * No web-font downloads. Use the same tokens on desktop and mobile.
+ */
+@media screen {
+  :root { --fs-ui: 16px; }
+  body { font-family: var(--font-ui); }
+  html:is(.ui-static-dialog-open, .ui-modal-open) { overflow: hidden; }
+  body :is(button, input, select, textarea) { font-family: var(--font-ui); }
+  body .btn {
+    font-size: var(--fs-ui);
+    font-weight: 600;
+    line-height: 1.4;
+    border-radius: var(--radius-sm);
+    min-height: 38px;
+    height: auto;
+    padding-block: 7px;
+  }
+  body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+    font-size: var(--fs-ui);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    min-width: 0;
+    max-width: 100%;
+  }
+  body :is(label, .form-label, .mi-label) { font-size: var(--fs-ui); font-weight: 600; }
+  body .page h1 { font-size: var(--fs-title); line-height: 1.35; font-weight: 700; }
+  body .page h2 { font-size: var(--fs-section); line-height: 1.4; font-weight: 700; }
+  body :is(.page-sub, .mi-note, .me-note, .hot-pane__hint, .carb-hint, .hot-footNote) {
+    font-size: var(--fs-sub);
+    line-height: var(--lh);
+    color: var(--muted);
+    opacity: 1;
+  }
+  :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+  body .btn:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+  body .btn.is-loading:disabled { opacity: .92; }
+  body :is(input, select, textarea):disabled { background: #f1f5f9; color: #475569; }
+  .content, .card, .card__body { min-width: 0; }
+
+  /* Static dialogs use hidden, while JS-created dialogs use .is-open. */
+  .modal-backdrop[hidden] { display: none; }
+  .modal-backdrop[id]:not([hidden]), .modal-backdrop[id]:not([hidden]) .modal-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+  }
+  .modal-backdrop { max-height: 100dvh; padding: 12px; }
+  .modal-backdrop .modal-panel {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius);
+  }
+  .modal-backdrop .modal__head, .modal-backdrop .modal__foot { flex: 0 0 auto; flex-wrap: wrap; }
+  .modal-backdrop .modal__body { min-height: 0; overflow: auto; overscroll-behavior: contain; font-size: var(--fs-ui); }
+  .modal-backdrop .modal__title { font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+  .modal-backdrop.modal--car-repair .modal-panel,
+  .equ-modal .equ-modal__panel { max-height: calc(100dvh - 24px); }
+  .modal-backdrop.modal--car-repair .modal__body,
+  .equ-modal .equ-modal__body { max-height: none; min-height: 0; flex: 1 1 auto; }
+  .equ-modal { z-index: var(--z-dialog); }
+  .admin-center .ac-modal { z-index: var(--z-dialog); }
+  .admin-center .ac-modal__panel { max-height: calc(100dvh - 112px); }
+}
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  body .btn { min-height: 44px; padding-inline: 12px; }
+  body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select) { min-height: 44px; }
+  .topbar .topbar__actions .btn { min-height: 44px; height: auto; font-size: 14px; padding: 8px; }
+  .topbar .brand__text { max-width: none; white-space: normal; font-size: 14px; line-height: 1.3; }
+  .topbar__left { flex: 1 1 auto; }
+  .topbar__center { flex: 0 0 0; }
+  .topbar .topbar__brand { gap: 6px; }
+  .topbar__right { gap: 6px; }
+  .topbar .brand__logo { flex: 0 0 24px; width: 24px; height: 24px; }
+  .topbar { gap: 6px; }
+  .page :is(.card__head, .card__body) { padding: 12px; }
+  .sidenav__rail { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .sidenav__drawerHost { max-height: min(360px, calc(100dvh - var(--topbar-h) - 92px)); }
+  .drawer__nav { max-height: min(300px, calc(100dvh - var(--topbar-h) - 148px)); }
+  .nav__item { min-height: 44px; }
+  .admin-center .ac-modal__panel { max-height: calc(100dvh - 36px); }
+}
+@media screen {
+  :is(.cs-modal, .es-modal) { z-index: var(--z-dialog); }
+  :is(.cs-modal__panel, .es-modal__panel) {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px;
+    max-height: calc(100dvh - 24px);
+    border-radius: var(--radius);
+  }
+  :is(.cs-modal__head, .es-modal__head, .cs-modal__foot, .es-modal__foot) { flex: 0 0 auto; }
+  :is(.cs-modal__body, .es-modal__body) { overflow: auto; min-height: 0; }
+  :is(.cs-modal__close, .es-modal__close, .equ-modal__close) { min-width: 44px; min-height: 44px; }
+}
+
+@media print {
+  /* Retain the pre-existing nav token value for non-report print views. */
+  :root { --shadow: 0 12px 34px rgba(2, 6, 23, 0.08); }
+}

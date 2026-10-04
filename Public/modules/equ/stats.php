@@ -159,8 +159,8 @@ $pageJs = [
         </div>
 
         <div class="es-modal__foot">
-          <button type="button" class="btn btn-ghost" data-close="1">取消</button>
-          <button type="button" class="btn btn-primary" id="esPrintConfirm">確認列印</button>
+          <button type="button" class="btn btn--ghost" data-close="1">取消</button>
+          <button type="button" class="btn btn--primary" id="esPrintConfirm">確認列印</button>
         </div>
       </div>
     </div>

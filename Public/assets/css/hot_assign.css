@@ -611,3 +611,20 @@
   display: flex;
   flex-direction: column;
 }
+
+@media screen and (max-width: 900px) {
+  .hot-assign .hot-split { grid-template-columns: minmax(0, 1fr); }
+  .hot-assign :is(.hot-pane, .hot-pane__body, .hot-tableWrap) { min-width: 0; max-width: 100%; }
+  /* One horizontal owner for both header and body keeps their columns aligned. */
+  .hot-assign .hot-tableWrap--fixed { overflow-x: auto; }
+  .hot-assign .hot-tableScroll { width: 620px; overflow-x: visible; max-height: min(420px, 45dvh); }
+  .hot-assign .hot-table { width: 620px; min-width: 620px; }
+  .hot-assign .hot-pane__head { align-items: flex-start; flex-direction: column; }
+  .hot-assign .hot-pane__hint { white-space: normal; }
+  .hot-assign .hot-pane { max-height: none; }
+}
+
+@media screen {
+  .hot-assign .hot-row__act { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .hot-assign .hot-table--assign td:nth-child(6) .hot-row__act .btn + .btn { margin-left: 0; }
+}

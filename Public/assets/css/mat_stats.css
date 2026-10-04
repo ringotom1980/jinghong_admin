@@ -328,54 +328,9 @@
 }
 
 @media (max-width: 900px), ((max-height: 560px) and (pointer: coarse)) {
-  html,
-  body {
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
   body.mat-stats-page,
   body:has(.page.mat-stats) {
     background: var(--bg);
-  }
-
-  body.mat-stats-page .sidenav,
-  body:has(.page.mat-stats) .sidenav {
-    display: none;
-  }
-
-  body.mat-stats-page .topbar,
-  body:has(.page.mat-stats) .topbar {
-    left: 0;
-    right: 0;
-    width: 100%;
-  }
-
-  body.mat-stats-page .brand__text,
-  body:has(.page.mat-stats) .brand__text {
-    max-width: 38vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  body.mat-stats-page .topbar__right,
-  body:has(.page.mat-stats) .topbar__right {
-    gap: 6px;
-  }
-
-  body.mat-stats-page .topbar__actions,
-  body:has(.page.mat-stats) .topbar__actions {
-    display: inline-flex;
-    gap: 6px;
-  }
-
-  body.mat-stats-page .topbar__actions .btn,
-  body:has(.page.mat-stats) .topbar__actions .btn {
-    height: 30px;
-    padding: 0 9px;
-    font-size: 12px;
-    border-radius: 8px;
   }
 
   body.mat-stats-page .footer,
@@ -388,9 +343,9 @@
     margin-left: 0;
     width: 100%;
     max-width: 100vw;
-    padding: 10px 0 14px;
+    padding: 10px 0 calc(82px + env(safe-area-inset-bottom));
     border-left: 0;
-    overflow-x: hidden;
+
   }
 
   .page.mat-stats .page-head {
@@ -401,7 +356,7 @@
     width: 100%;
     max-width: 100vw;
     padding: 0;
-    overflow-x: hidden;
+
   }
 
   .page.mat-stats .ms-toolbar {
@@ -484,8 +439,8 @@
   }
 
   .page.mat-stats .ms-section__head {
-    position: sticky;
-    top: calc(var(--topbar-h) + 47px);
+    position: static;
+    top: auto;
     z-index: 30;
     background: rgba(255, 255, 255, 0.96);
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
@@ -509,7 +464,8 @@
 
   .ms-table-wrap .ms-table {
     min-width: 720px;
-    width: max-content;
+    width: 100%;
+    table-layout: fixed;
     border-radius: 0;
     border-left: 0;
     border-right: 0;
@@ -530,40 +486,19 @@
     line-height: 1.35;
   }
 
-  .ms-table-wrap .ms-table th:nth-child(1),
-  .ms-table-wrap .ms-table td:nth-child(1) {
+  /* Pin only material name: grouped rowspan headers must not freeze numeric columns. */
+  .ms-table-wrap .ms-table tr > .ms-td-name,
+  .ms-table-wrap .ms-table thead tr:first-child > th:nth-child(2) {
     position: sticky;
     left: 0;
     z-index: 2;
-    width: 46px !important;
-    min-width: 46px;
+    width: 160px;
     background: #fff;
+    box-shadow: 1px 0 0 var(--line);
   }
-
-  .ms-table-wrap .ms-table th:nth-child(2),
-  .ms-table-wrap .ms-table td:nth-child(2) {
-    position: sticky;
-    left: 46px;
-    z-index: 2;
-    min-width: 140px;
-    max-width: 180px;
-    background: #fff;
-    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.08);
-  }
-
-  .ms-table-wrap .ms-table thead th:nth-child(1),
-  .ms-table-wrap .ms-table thead th:nth-child(2) {
+  .ms-table-wrap .ms-table thead tr:first-child > th:nth-child(2) {
     z-index: 3;
     background: #f7f8fb;
-  }
-
-  .ms-table-wrap .ms-table thead tr:not(:first-child) th {
-    position: static;
-    left: auto;
-    z-index: 1;
-    min-width: 0;
-    max-width: none;
-    box-shadow: none;
   }
 
   .ms-td-name {
@@ -627,6 +562,11 @@
   .ms-table-wrap .ms-table th,
   .ms-table-wrap .ms-table td {
     padding: 6px 7px;
-    font-size: 12px;
+    font-size: var(--fs-sub);
   }
+}
+
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  .ms-capsule { min-height: 44px; height: auto; line-height: 1.4; padding-block: 8px; }
+  .ms-filter__btn, .ms-mobile-shift-dock .ms-filter__btn { min-height: 44px; height: auto; }
 }

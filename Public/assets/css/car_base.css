@@ -700,3 +700,20 @@ body.page-enter{
 .carb-switch2:active .carb-switch2__thumb{
   width: 20px;
 }
+
+@media screen and (max-width: 980px), screen and (max-height: 560px) and (pointer: coarse) {
+  body.page-enter:has(.page.car-base) { height: auto; overflow: visible; }
+  .page.car-base { height: auto; overflow: visible; min-height: calc(100dvh - var(--topbar-h)); }
+  .carb-shell { grid-template-columns: minmax(0, 1fr); }
+  .carb-left__body { max-height: min(360px, 35dvh); }
+  .carb-right { overflow: visible; }
+  .carb-workspace { overflow: visible; }
+  .carb-item__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .carb-item__meta { grid-column: 1 / -1; grid-row: 2; flex-wrap: wrap; }
+  .carb-item__code { white-space: normal; overflow-wrap: anywhere; }
+}
+@media screen and (max-width: 980px) {
+  .carb-right__head { flex-wrap: wrap; }
+  .carb-actions { flex-wrap: wrap; }
+  .carb-panels { overflow: visible; }
+}

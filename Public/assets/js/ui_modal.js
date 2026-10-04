@@ -34,6 +34,7 @@
 
     open: function (opts) {
       opts = opts || {};
+      var previousFocus = document.activeElement;
       var title = opts.title || '';
       var html = opts.html || '';
       var confirmText = opts.confirmText || '確認';
@@ -175,10 +176,36 @@
         document.addEventListener('keydown', bd._escHandler);
       }
 
+      // UI only: keep keyboard focus inside the top dialog and restore the opener.
+      bd._previousFocus = previousFocus;
+      bd._focusHandler = function (e) {
+        if (e.key !== 'Tab' || Modal._current !== bd) return;
+        var nodes = Array.prototype.filter.call(panel.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]'
+        ), function (el) { return el.getClientRects().length > 0; });
+        if (!nodes.length) { e.preventDefault(); return; }
+        var first = nodes[0], last = nodes[nodes.length - 1];
+        if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) {
+          e.preventDefault(); first.focus();
+        }
+      };
+      document.addEventListener('keydown', bd._focusHandler);
+      if (!this._stack.length) {
+        this._bodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('ui-modal-open');
+      }
       // ✅ 堆疊管理
       this._stack.push(bd);
       this._current = bd;
 
+      requestAnimationFrame(function () {
+        if (Modal._current !== bd) return;
+        var first = panel.querySelector('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), .modal__cancel, .modal__confirm');
+        if (first) first.focus({ preventScroll: true });
+      });
       return bd;
     },
 
@@ -239,9 +266,17 @@
         document.removeEventListener('keydown', bd._escHandler);
       }
 
+      if (bd._focusHandler) document.removeEventListener('keydown', bd._focusHandler);
+
       // 先從堆疊移除，避免動畫期間再點擊造成狀態錯亂
       this._stack.pop();
       this._current = this._stack.length ? this._stack[this._stack.length - 1] : null;
+
+      if (!this._stack.length) {
+        document.body.style.overflow = this._bodyOverflow || '';
+        document.documentElement.classList.remove('ui-modal-open');
+      }
+      if (bd._previousFocus && bd._previousFocus.isConnected) bd._previousFocus.focus({ preventScroll: true });
 
       window.setTimeout(function () {
         if (bd && bd.parentNode) bd.parentNode.removeChild(bd);

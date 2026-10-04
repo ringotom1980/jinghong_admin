@@ -69,7 +69,7 @@ function asset(string $path): string
   <link rel="stylesheet" href="<?= asset('assets/css/ui_toast.css') ?>" />
   <link rel="stylesheet" href="<?= asset('assets/css/ui_modal.css') ?>" />
 
-  <?php foreach ($pageCss as $css): ?>
+  <?php foreach (array_unique(array_diff($pageCss, ['assets/css/app.css', 'assets/css/nav.css', 'assets/css/motion.css', 'assets/css/ui_toast.css', 'assets/css/ui_modal.css'])) as $css): ?>
     <?php $href = (string)$css; ?>
     <?php if (preg_match('#^https?://#i', $href)): ?>
       <link rel="stylesheet" href="<?= htmlspecialchars($href, ENT_QUOTES) ?>" />
@@ -78,4 +78,6 @@ function asset(string $path): string
     <?php endif; ?>
   <?php endforeach; ?>
 
+  <!-- Shared screen components follow page styles; print styles remain authoritative. -->
+  <link rel="stylesheet" href="<?= asset('assets/css/ui_system.css') ?>" />
 </head>

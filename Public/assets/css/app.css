@@ -55,9 +55,23 @@
 
   /* ===== Typography scale (site-wide) 全站字級 ===== */
   --fs-base: 16px;
-  --fs-ui: 15px; /* buttons/inputs/table */
+  --fs-ui: 15px; /* legacy print density; screen scale is in ui_system.css */
   --fs-sub: 14px; /* helper text */
   --lh: 1.55;
+  --font-ui: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Segoe UI", sans-serif;
+  --fs-title: 22px;
+  --fs-section: 18px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --focus-ring: #2563eb;
+  /* Layer ownership: table < sticky content < navigation < dialogs < notices. */
+  --z-content: 30;
+  --z-dock: 44;
+  --z-header: 50;
+  --z-nav: 60;
+  --z-dialog: 4000;
 }
 
 /* ===== Reset / Base ===== */

@@ -342,3 +342,15 @@
   width: 0;
   height: 0;
 }
+
+@media screen and (max-width: 900px) {
+  .hot-tools .hot-pane__head { align-items: stretch; flex-direction: column; }
+  .hot-tools .hot-pane__hint { white-space: normal; }
+  .hot-tools .hot-actions { justify-content: flex-start; }
+  .hot-tools .hot-tableWrap { overflow-x: auto; }
+  .hot-tools .hot-table { min-width: 600px; }
+  .hot-tools .hot-table td { white-space: normal; overflow-wrap: anywhere; }
+  .hot-tools .hot-pane--right { max-height: none; }
+  .hot-tools .hot-pane--right .hot-tableScroll { width: 600px; max-height: min(420px, 45dvh); }
+  .page.hot-tools + footer { position: static; }
+}

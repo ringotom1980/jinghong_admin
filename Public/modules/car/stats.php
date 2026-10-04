@@ -167,8 +167,8 @@ $pageJs = [
                 </div>
 
                 <div class="cs-modal__foot">
-                    <button type="button" class="btn btn-ghost" data-close="1">取消</button>
-                    <button type="button" class="btn btn-primary" id="csPrintConfirm">確認列印</button>
+                    <button type="button" class="btn btn--ghost" data-close="1">取消</button>
+                    <button type="button" class="btn btn--primary" id="csPrintConfirm">確認列印</button>
                 </div>
             </div>
         </div>

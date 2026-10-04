@@ -42,7 +42,7 @@ body.public-page.pole-map-page {
   left: 12px;
   right: 12px;
   top: 12px;
-  z-index: 1100;
+  z-index: var(--z-content);
   pointer-events: none;
   display: grid;
   grid-template-columns: 1fr;
@@ -63,7 +63,7 @@ body.public-page.pole-map-page {
   left: 12px;
   right: 12px;
   bottom: 12px;
-  z-index: 1200;
+  z-index: var(--z-content);
 
   display: flex;
   align-items: center;
@@ -273,7 +273,7 @@ body.public-page.pole-map-page {
   left: 50%;
   transform: translateX(-50%);
   bottom: 72px; /* ✅ 在底部列上方（可微調 64~86） */
-  z-index: 1250;
+  z-index: var(--z-content);
 }
 
 /* ===== Leaflet 控制項避開左上角品牌 ===== */
@@ -319,30 +319,20 @@ body.app-page.pole-map-page #poleNavBtn {
   left: calc(50% + (var(--rail-w) / 2));
 }
 
-@media (max-width: 720px) {
+@media screen and (max-width: 900px), print and (max-width: 720px) {
   body.pole-map-page {
     overscroll-behavior: none;
   }
 
-  body.app-page.pole-map-page .topbar {
-    height: 48px;
-  }
 
-  body.app-page.pole-map-page {
-    --topbar-h: 48px;
-  }
 
-  body.app-page.pole-map-page .brand__text {
-    display: none;
-  }
+
 
   body.app-page.pole-map-page .topbar__actions .btn {
     height: 30px;
   }
 
-  body.app-page.pole-map-page .sidenav {
-    display: none;
-  }
+
 
   body.app-page.pole-map-page .page {
     margin-left: 0;
@@ -450,4 +440,16 @@ body.app-page.pole-map-page #poleNavBtn {
     max-width: calc(100vw - 16px);
     white-space: normal;
   }
+}
+
+@media screen {
+  /* Leaflet has its own pane stack; contain it below the shared navigation. */
+  .map-canvas { isolation: isolate; z-index: 0; position: relative; }
+}
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  body.app-page.pole-map-page #poleNavBtn {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .pole-suggest__list { max-height: min(320px, 35dvh); }
+  .pole-picked { max-height: 25dvh; }
 }

@@ -363,3 +363,10 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+
+@media screen and (max-width: 900px) {
+  .mat-issue .mi-grid { grid-template-columns: minmax(0, 1fr); }
+  .mat-issue .mi-card { grid-column: 1; min-width: 0; }
+  .mat-issue .mi-field { min-width: 0; }
+  .mat-issue :is(#miFiles, #miWithdrawDate) { height: auto; min-height: 44px; font-size: var(--fs-ui); }
+}

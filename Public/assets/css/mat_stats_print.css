@@ -74,10 +74,16 @@
 
   /* ===== 只有表格要框線 ===== */
   #msPrintArea table {
+    /* Screen-only fixed columns must not change report pagination. */
+    table-layout: auto;
     width: 100% !important;
     border-collapse: collapse !important;
     border: 1.5px solid #9a9a9a !important;
     border-radius: 0 !important;
+  }
+
+  #msPrintArea .ms-td-name {
+    width: auto;
   }
 
   /*每個表格內格子內距設定*/
@@ -179,5 +185,23 @@
   /* 只縮小：B班的「筆數」欄位（列印專用） */
   #msPrintArea table.ms-table--b td.ms-td-count {
     font-size: 10px !important; /* 你要多小再調 */
+  }
+}
+
+/* Preserve the original narrow-paper column sizing independently of screen UI. */
+@media print and (max-width: 900px) {
+  #msPrintArea .ms-table th:nth-child(1),
+  #msPrintArea .ms-table td:nth-child(1) {
+    width: 46px !important;
+    min-width: 46px;
+  }
+  #msPrintArea .ms-table th:nth-child(2),
+  #msPrintArea .ms-table td:nth-child(2) {
+    min-width: 140px;
+    max-width: 180px;
+  }
+  #msPrintArea .ms-table thead tr:not(:first-child) th {
+    min-width: 0;
+    max-width: none;
   }
 }
