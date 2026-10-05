@@ -120,6 +120,7 @@
           confirmBtn.disabled = true;
           confirmBtn.setAttribute('aria-busy', 'true');
           var shouldClose = true;
+          var saved = bd._unsaved ? bd._unsaved.capture() : null;
 
           if (onConfirm) {
             try {
@@ -130,6 +131,10 @@
                 confirmBtn.textContent = '處理中…';
                 Promise.resolve(r).then(function (v) {
                   if (v === false) return;
+                  if (bd._unsaved) {
+                    bd._unsaved.markClean(saved);
+                    if (bd._unsaved.isDirty()) return;
+                  }
                   Modal.close(bd); // 只關閉發出請求的 dialog
                 }).catch(function () { /* caller handles feedback */ }).finally(releaseConfirm);
                 return;
@@ -145,12 +150,17 @@
       }
 
       var cancelBtn = panel.querySelector('.modal__cancel');
+      function requestCancel() {
+        function cancel() {
+          if (onCancel) { try { onCancel(); } catch (e) { /* ignore */ } }
+          Modal.close(bd);
+        }
+        if (bd._unsaved) global.UnsavedChanges.request(cancel, [bd._unsaved]);
+        else cancel();
+      }
       if (cancelBtn) {
         cancelBtn.addEventListener('click', function () {
-          if (onCancel) {
-            try { onCancel(); } catch (e) { /* ignore */ }
-          }
-          Modal.close();
+          requestCancel();
         });
       }
 
@@ -160,20 +170,14 @@
           // confirm-only：預設不允許用 X 關閉；confirmChoice 會 allowCloseBtn=true
           if (!allowCloseBtn) return;
 
-          if (onCancel) {
-            try { onCancel(); } catch (e) { /* ignore */ }
-          }
-          Modal.close();
+          requestCancel();
         });
       }
 
       if (closeOnBackdrop) {
         bd.addEventListener('click', function (e) {
           if (e.target === bd && Modal._current === bd) {
-            if (onCancel) {
-              try { onCancel(); } catch (err) { /* ignore */ }
-            }
-            Modal.close();
+            requestCancel();
           }
         });
       }
@@ -181,10 +185,7 @@
       if (closeOnEsc) {
         bd._escHandler = function (e) {
           if (e.key === 'Escape' && Modal._current === bd) {
-            if (onCancel) {
-              try { onCancel(); } catch (err2) { /* ignore */ }
-            }
-            Modal.close();
+            requestCancel();
           }
         };
         document.addEventListener('keydown', bd._escHandler);
@@ -214,6 +215,9 @@
       // ✅ 堆疊管理
       this._stack.push(bd);
       this._current = bd;
+      if (global.UnsavedChanges && opts.trackChanges !== false && panel.querySelector('input, select, textarea')) {
+        bd._unsaved = global.UnsavedChanges.watch(bd, { root: bd, busy: function () { return confirming; } });
+      }
 
       requestAnimationFrame(function () {
         if (Modal._current !== bd) return;
@@ -275,6 +279,7 @@
       var bd = this._stack[index];
       var wasCurrent = this._current === bd;
       if (!bd) return;
+      if (bd._unsaved) bd._unsaved.dispose();
 
       bd.classList.remove('is-open');
       bd.classList.add('is-leave');

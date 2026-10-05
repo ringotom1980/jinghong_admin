@@ -45,11 +45,17 @@
     }
 
     document.body.classList.add('modal-open');
+    if (bd.querySelector('input, select, textarea')) bd._unsaved = global.UnsavedChanges.watch(bd, {
+      root: bd, active: function () { return !bd.hidden && bd.classList.contains('is-open'); },
+      busy: function () { return !!bd.querySelector('[aria-busy="true"]'); }
+    });
   }
 
-  function closeModal(id) {
+  function closeModal(id, discard) {
     var bd = qs('#' + id);
     if (!bd) return;
+    if (!discard && bd._unsaved && bd._unsaved.isDirty()) return global.UnsavedChanges.request(function () { closeModal(id, true); }, [bd._unsaved]);
+    if (bd._unsaved) bd._unsaved.dispose();
 
     // ✅ 用共用 modal CSS 的關閉規則（is-leave）
     bd.classList.remove('is-open');
@@ -211,9 +217,11 @@
       // 左：取消
       if (this.els.btnItemCancel) {
         this.els.btnItemCancel.addEventListener('click', function () {
+          global.UnsavedChanges.request(function () {
           self.setItemsMode('VIEW');
           // 回到 DB 狀態（重新拉 items + tools）
           self.reloadItemsKeepActive();
+          }, [self.itemsDraft]);
         });
       }
 
@@ -259,8 +267,10 @@
       // 右：取消
       if (this.els.btnToolCancel) {
         this.els.btnToolCancel.addEventListener('click', function () {
+          global.UnsavedChanges.request(function () {
           self.setToolsMode('VIEW');
           self.reloadTools();
+          }, [self.toolsDraft]);
         });
       }
 
@@ -419,6 +429,8 @@
       if (this.els.btnItemCancel) this.els.btnItemCancel.hidden = !isEdit;
 
       this.renderItems();
+      if (this.itemsDraft) this.itemsDraft.dispose();
+      if (isEdit) this.itemsDraft = global.UnsavedChanges.watch('tools-items', { root: qs('#tbHotItems') });
     },
 
     setToolsMode: function (mode) {
@@ -433,6 +445,8 @@
       if (this.els.btnToolCancel) this.els.btnToolCancel.hidden = !isEdit;
 
       this.renderTools();
+      if (this.toolsDraft) this.toolsDraft.dispose();
+      if (isEdit) this.toolsDraft = global.UnsavedChanges.watch('tools-edit', { root: qs('#tbHotTools') });
     },
 
     /* =========================
@@ -490,11 +504,14 @@
 
       if (!name) return toastErr('分類名稱為必填');
       if (qty < 1) return toastErr('初始數量必須 >= 1');
+      var draft = this.els.modalItemAdd._unsaved;
+      var saved = draft.capture();
 
       this.apiPost(API_HOT_TOOLS, { action: 'item_create', name: name, qty: qty })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '建立分類失敗');
-          closeModal('modalItemAdd');
+          draft.markClean(saved);
+          if (self.els.modalItemAdd._unsaved === draft && !draft.isDirty()) closeModal('modalItemAdd', true);
           toastOk('已建立分類');
 
           // 重新載入 items，並將新分類設為 active（以 code 找最末新增也可，但這裡用 reload 再取第一筆不準）
@@ -600,10 +617,14 @@
         if (!rows[i].name) return toastErr('分類名稱不可為空');
       }
 
+      var draft = this.itemsDraft;
+      var saved = draft.capture();
       this.apiPost(API_HOT_TOOLS, { action: 'item_update', rows: rows })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
           toastOk('已儲存分類');
+          draft.markClean(saved);
+          if (self.itemsDraft !== draft || draft.isDirty()) return;
           self.setItemsMode('VIEW');
           self.reloadItemsKeepActive();
         });
@@ -705,6 +726,8 @@
       };
 
       var version = this.state.toolAddVersion;
+      var draft = this.els.modalToolAdd._unsaved;
+      var saved = draft.capture();
       var btn = this.els.btnToolAddSubmit;
       var label = btn ? btn.innerHTML : '';
       this.state.toolAddSaving = true;
@@ -712,7 +735,8 @@
       return Promise.resolve().then(function () { return self.apiPost(API_HOT_TOOLS, payload); })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '新增工具失敗');
-          if (self.state.toolAddVersion === version) closeModal('modalToolAdd');
+          draft.markClean(saved);
+          if (self.state.toolAddVersion === version && !draft.isDirty()) closeModal('modalToolAdd', true);
           toastOk('已新增工具');
 
           // 右表刷新、左表 counts 也要刷新（reloadItemsKeepActive 內部會再 reloadTools）
@@ -749,6 +773,8 @@
         });
       });
 
+      var draft = this.toolsDraft;
+      var saved = draft.capture();
       this.apiPost(API_HOT_TOOLS, {
         action: 'tool_update',
         item_id: this.state.activeItemId,
@@ -756,6 +782,8 @@
       }).then(function (r) {
         if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
         toastOk('已儲存工具');
+        draft.markClean(saved);
+        if (self.toolsDraft !== draft || draft.isDirty()) return;
         self.setToolsMode('VIEW');
         self.reloadItemsKeepActive(); // counts 可能變（內部會再 reloadTools）
       });

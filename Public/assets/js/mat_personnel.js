@@ -39,7 +39,7 @@
 
       if (this.els.btnReload) {
         this.els.btnReload.addEventListener('click', function () {
-          App.load();
+          global.UnsavedChanges.request(function () { return App.load(); }, App.drafts);
         });
       }
 
@@ -48,6 +48,7 @@
 
     load: function () {
       if (!global.apiGet) return;
+      (this.drafts || []).forEach(function (w) { w.dispose(); });
 
       if (this.els.list) this.els.list.innerHTML = '<div class="me-note">載入中…</div>';
 
@@ -95,6 +96,10 @@
     },
 
     bindRowEvents: function () {
+      this.drafts = qsa('.mp-row', this.els.list).map(function (row) {
+        row._unsaved = global.UnsavedChanges.watch(row, { root: row });
+        return row._unsaved;
+      });
       // 更新按鈕
       qsa('.mp-row [data-act="update"]', this.els.list).forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -164,6 +169,7 @@
 
         // 成功：更新 orig
         if (input) input.setAttribute('data-orig', name);
+        if (row._unsaved) row._unsaved.markClean();
         toast('success', '已更新', '班別 ' + shift + ' 承辦人已更新');
       });
     }

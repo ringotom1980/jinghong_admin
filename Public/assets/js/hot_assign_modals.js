@@ -383,6 +383,16 @@
                 }
             });
 
+            // Track submitted selections, not the category used to browse tools.
+            if (bd._unsaved) bd._unsaved.dispose();
+            bd._unsaved = global.UnsavedChanges.watch(bd, { root: bd,
+              busy: function () { return !!bd.querySelector('.modal__confirm[aria-busy="true"]'); }, snapshot: function () {
+                var pick = qs('#mVehPick', bd) || qs('#mVehPickFixed', bd);
+                return JSON.stringify([pick ? pick.value : '', Object.keys(modalState.selectedByItemId).sort().map(function (id) {
+                    return [id, Object.keys(modalState.selectedByItemId[id].toolMap).sort()];
+                }).filter(function (pair) { return pair[1].length; })]);
+            } });
+
             // load initial data
             Promise.all([
                 apiGet('/api/hot/assign', { action: 'available_vehicles' }),

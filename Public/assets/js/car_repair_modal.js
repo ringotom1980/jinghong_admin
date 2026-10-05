@@ -129,6 +129,7 @@
         self.bindModalEvents();
         self.fillFormFromState();
         self.recalcTotals();
+        if (bd._unsaved) bd._unsaved.markClean();
       }, 0);
     },
 
@@ -341,20 +342,21 @@
       var self = this;
       if (!global.apiPost) return false;
 
+      this.syncHeaderFromForm();
+      if (global.CarRepairItems) global.CarRepairItems.syncRowsToState();
       var err = this.validate();
       if (err) {
         Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
         return false;
       }
 
-      this.syncHeaderFromForm();
-      if (global.CarRepairItems) global.CarRepairItems.syncRowsToState();
-
       var payload = {
         id: (this.state.mode === 'EDIT') ? this.state.id : 0,
         header: this.state.data.header,
         items: this.state.data.items
       };
+      var draft = this._bd && this._bd._unsaved;
+      var saved = draft ? draft.capture() : null;
 
       return global.apiPost('/api/car/car_repair_save', payload).then(function (j) {
         if (!j || !j.success) {
@@ -368,7 +370,8 @@
         if (self.app && self.app.loadCapsules) self.app.loadCapsules();
         else if (self.app && self.app.loadList) self.app.loadList(self.app.state ? self.app.state.activeKey : '');
 
-        return true;
+        if (draft) draft.markClean(saved);
+        return !draft || !draft.isDirty();
 
       });
     }

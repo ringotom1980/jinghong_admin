@@ -61,6 +61,8 @@
     });
   }
 
+  var profileDraft, passwordDraft;
+
   function bindTabs(){
     var tabs = qsa('.ma-tab');
     var panes = qsa('.ma-pane');
@@ -76,13 +78,22 @@
   }
 
   function loadMe(){
+    var initialName = qs('#maName').value;
+    var initialUsername = qs('#maUsername').value;
     return apiJson(apiUrl('/api/auth/me'))
       .then(function(j){
         var u = j.data || {};
         var elName = qs('#maName');
         var elUsername = qs('#maUsername');
-        if (elName) elName.value = u.name || '';
-        if (elUsername) elUsername.value = u.username || '';
+        if (elName && elName.value === initialName) elName.value = u.name || '';
+        if (elUsername && elUsername.value === initialUsername) elUsername.value = u.username || '';
+        // A late initial /me response must not erase edits already being typed.
+        var baseline = JSON.parse(profileDraft.capture()).map(function (field) {
+          if (field[0] === 'name' || field[0] === 'maName') field[2] = String(u.name || '').trim();
+          if (field[0] === 'username' || field[0] === 'maUsername') field[2] = String(u.username || '').trim();
+          return field;
+        });
+        profileDraft.markClean(JSON.stringify(baseline));
       });
   }
 
@@ -98,6 +109,8 @@
       var username = (qs('#maUsername').value || '').trim();
       if (!name || !username) return toastErr('姓名與帳號不可為空');
 
+      var draft = form.getAttribute('id') === 'maProfileForm' ? profileDraft : passwordDraft;
+      var saved = draft.capture();
       var release = lockForm(form);
       Promise.resolve().then(function(){ return apiJson(apiUrl('/api/me/account_update'), {
         method: 'POST',
@@ -107,7 +120,8 @@
         .then(function(){
           toastOk('已更新基本資料');
           // 重新刷新 topbar 顯示（最簡單：重抓 /me）
-          return loadMe();
+          draft.markClean(saved);
+          if (!draft.isDirty()) return loadMe();
         })
         .catch(function(err){
           toastErr(err.message || '更新失敗');
@@ -130,6 +144,8 @@
       if (newp !== newp2) return toastErr('新密碼與確認不一致');
       if (newp.length < 8) return toastErr('新密碼至少 8 碼');
 
+      var draft = form.getAttribute('id') === 'maProfileForm' ? profileDraft : passwordDraft;
+      var saved = draft.capture();
       var release = lockForm(form);
       Promise.resolve().then(function(){ return apiJson(apiUrl('/api/auth/change_password'), {
         method: 'POST',
@@ -137,7 +153,8 @@
         body: JSON.stringify({ old_password: oldp, new_password: newp })
       }); })
         .then(function(){
-          form.reset();
+          draft.markClean(saved);
+          if (!draft.isDirty()) { form.reset(); draft.markClean(); }
           toastOk('密碼已更新');
         })
         .catch(function(err){
@@ -148,9 +165,11 @@
 
   document.addEventListener('DOMContentLoaded', function(){
     bindTabs();
+    profileDraft = global.UnsavedChanges.watch('account-profile', { root: qs('#maProfileForm'), busy: function () { return !!qs('#maProfileForm')._saving; } });
     loadMe().catch(function(){});
     bindProfileSave();
     bindPwdChange();
+    passwordDraft = global.UnsavedChanges.watch('account-password', { root: qs('#maPwdForm'), busy: function () { return !!qs('#maPwdForm')._saving; } });
   });
 
 })(window);

@@ -67,3 +67,10 @@
 .modal__close {
   display: none; /* ✅ Confirm-only：不提供右上角關閉 */
 }
+.modal-panel.modal-panel--unsaved { width: min(440px, calc(100vw - 32px)); background: #fff; }
+.modal-panel--unsaved .modal__foot { gap: 12px; }
+.modal-backdrop--unsaved {
+  background: rgba(2, 6, 23, 0.22);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

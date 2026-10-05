@@ -28,11 +28,16 @@
 
     function openModal(id) {
         const el = document.getElementById(id);
+        if (id === 'modalAssigneeAdd') $('#mAssigneeName').value = '';
         if (id === 'modalAssigneeAdd') state.assigneeVersion = (state.assigneeVersion || 0) + 1;
         if (el) el.hidden = false;
+        if (el) el._unsaved = window.UnsavedChanges.watch(el, { root: el, active: () => !el.hidden,
+            busy: () => !!el.querySelector('[aria-busy="true"]') });
     }
-    function closeModal(id) {
+    function closeModal(id, discard = false) {
         const el = document.getElementById(id);
+        if (el && !discard && el._unsaved?.isDirty()) return window.UnsavedChanges.request(() => closeModal(id, true), [el._unsaved]);
+        if (el?._unsaved) el._unsaved.dispose();
         if (el) el.hidden = true;
     }
 
@@ -223,6 +228,8 @@
         if (!aid) return toast('assignee_id 不存在', 'warn');
         if (!serial) return toast('請選擇庫存帽號', 'warn');
         if (!inspect) return toast('檢驗日期為必填', 'warn');
+        const draft = $('#modalAssign')._unsaved;
+        const saved = draft.capture();
 
         // decide assign or swap by current row status
         const row = state.assignedRows.find(r => String(r.assignee_id) === String(aid));
@@ -239,7 +246,8 @@
                 await apiPost('assign', { assignee_id: aid, serial_no: serial, inspect_date: inspect });
                 toast('配賦完成', 'ok');
             }
-            closeModal('modalAssign');
+            draft.markClean(saved);
+            if ($('#modalAssign')._unsaved === draft && !draft.isDirty()) closeModal('modalAssign', true);
             await refreshAll();
         } catch (e) {
             toast(e.message || '操作失敗', 'danger');
@@ -305,6 +313,8 @@
         const version = state.assigneeVersion;
         const btn = $('#btnAssigneeAddSubmit');
         const label = btn?.innerHTML || '';
+        const draft = $('#modalAssigneeAdd')._unsaved;
+        const saved = draft.capture();
         state.assigneeSaving = true;
         if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '新增中…'; }
 
@@ -312,8 +322,11 @@
             await apiPost('assignee_create', { name });
             toast('已新增員工', 'ok');
             if (state.assigneeVersion === version) {
-                closeModal('modalAssigneeAdd');
-                $('#mAssigneeName').value = '';
+                draft.markClean(saved);
+                if (!draft.isDirty()) {
+                    closeModal('modalAssigneeAdd', true);
+                    $('#mAssigneeName').value = '';
+                }
             }
             await refreshAll();
         } catch (e) {

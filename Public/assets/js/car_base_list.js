@@ -67,7 +67,6 @@
           var id = item.getAttribute('data-id');
           if (!id) return;
 
-          Mod.setActive(id);
           app.selectVehicle(id);
         });
       }

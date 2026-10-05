@@ -24,6 +24,8 @@
     render: function () {
       var app = this.app;
       if (!app || !app.els) return;
+      var recon = global.MatEditReconciliation;
+      var retained = recon && recon.unsaved && recon.unsaved.isDirty() ? Array.from(app.els.recon.querySelectorAll('.me-qty')).map(function (el) { return [el.id, el.value]; }) : [];
 
       this.renderActions();
 
@@ -72,6 +74,8 @@
       }
 
       app.els.recon.innerHTML = html;
+      retained.forEach(function (pair) { var el = qs('#' + pair[0]); if (el) el.value = pair[1]; });
+      if (recon) recon.trackChanges();
 
       // drag sort
       if (edit) {
@@ -79,6 +83,7 @@
         if (global.MatEditUI && global.MatEditUI.enableDragSort) {
           global.MatEditUI.enableDragSort(listEl, '.me-item', '.me-drag', function (ids) {
             Mod._pendingOrder = ids;
+            global.UnsavedChanges.update();
           });
         }
       }
@@ -123,11 +128,16 @@
       app.state.editModeCats = true;
       this._pendingOrder = null;
       this.render();
+      this.unsaved = global.UnsavedChanges.watch('D-categories', { root: function () { return qs('#meCatEditList'); },
+        active: function () { return app.state.editModeCats; }
+      });
     },
 
     saveEditMode: function () {
       var app = this.app;
       if (!global.apiPost) return;
+      var draft = this.unsaved;
+      var saved = draft ? draft.capture() : null;
 
       var cats = app.state.categories || [];
       var updates = [];
@@ -165,8 +175,11 @@
         }
 
         if (global.Toast) global.Toast.show({ type: 'success', title: '已更新', message: '分類已更新' });
+        if (draft) draft.markClean(saved);
+        if (draft && draft.isDirty()) return;
 
         app.state.editModeCats = false;
+        if (Mod.unsaved) Mod.unsaved.dispose();
         Mod._pendingOrder = null;
 
         // reload all (categories + recon + cm)

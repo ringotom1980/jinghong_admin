@@ -41,10 +41,16 @@
         dateEl.addEventListener('change', function () {
           var v = String(dateEl.value || '').trim();
           if (!v) return;
+          if (v === app.state.date) return;
+          dateEl.value = app.state.date;
+          global.UnsavedChanges.request(function () {
+          if (Mod.unsaved) { Mod.unsaved.dispose(); Mod.unsaved = null; }
+          dateEl.value = v;
           app.state.date = v;
-          app.loadReconciliation(v).then(function () {
+          return app.loadReconciliation(v).then(function () {
             if (global.MatEditCategories && global.MatEditCategories.render) global.MatEditCategories.render();
           });
+          }, [Mod.unsaved]);
         });
       }
 
@@ -72,6 +78,19 @@
         var input = qs('#meQty-' + id);
         if (input) input.disabled = lock;
       });
+    },
+
+    trackChanges: function () {
+      var app = this.app;
+      if (!this.unsaved) this.unsaved = global.UnsavedChanges.watch('D-recon', {
+        root: function () { return app.els.recon; }, busy: function () { return !!Mod._savingRequest; },
+        snapshot: function () {
+          return JSON.stringify(Array.from(app.els.recon.querySelectorAll('.me-qty')).map(function (el) {
+            return [el.id, Number(el.value || 0)];
+          }).sort(function (a, b) { return a[0].localeCompare(b[0]); }));
+        }
+      });
+      else if (!this.unsaved.isDirty()) this.unsaved.markClean();
     },
 
     // force=true 表示使用者已確認日期沒匯入也要存
@@ -150,6 +169,8 @@
         }
 
         if (global.Toast) global.Toast.show({ type: 'success', title: '已儲存', message: '對帳資料已更新' });
+        if (Mod.unsaved) Mod.unsaved.dispose();
+        Mod.unsaved = null;
 
         // reload recon to normalize
         return app.loadReconciliation(d).then(function () {

@@ -135,6 +135,7 @@
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         if (!self.isOpen()) return;
+        if (global.Modal && global.Modal._current) return;
         self.close();
       });
       // ✅ tool/vendor suggest（focus 出清單、input 即時 like）
@@ -198,10 +199,19 @@
       // 填表單
       this.fillFormFromState();
       this.recalcTotals();
+      var self = this;
+      this.unsaved = global.UnsavedChanges.watch('equ-repair', { root: this.els.modal,
+        active: function () { return self.isOpen(); }, busy: function () { return !!self.state._saving; }
+      });
     },
 
-    close: function () {
+    close: function (discard) {
       if (!this.els || !this.els.modal) return;
+      var self = this;
+      if (!discard && this.unsaved && this.unsaved.isDirty()) {
+        return global.UnsavedChanges.request(function () { self.close(true); }, [this.unsaved]);
+      }
+      if (this.unsaved) this.unsaved.dispose();
       this.els.modal.setAttribute('aria-hidden', 'true');
     },
 
@@ -549,6 +559,8 @@
           header: this.state.data.header,
           items: this.state.data.items
         };
+        var draft = this.unsaved;
+        var saved = draft ? draft.capture() : null;
 
         // 送出
         return global.apiPost('/api/equ/equ_repair_save', payload).then(function (j) {
@@ -560,7 +572,8 @@
           Toast && Toast.show({ type: 'success', title: '已存檔', message: '紀錄已更新' });
 
           // 關閉 modal
-          self.close();
+          if (draft) draft.markClean(saved);
+          if (self.unsaved === draft && (!draft || !draft.isDirty())) self.close(true);
 
           // ✅ 存檔後：膠囊要更新（你說的對，不能移除）
           // 但「按儲存當下」最怕多次並發，所以在上面先鎖按鈕

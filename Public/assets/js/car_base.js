@@ -101,11 +101,14 @@
         this.els.editBtn.addEventListener('click', function () {
           if (!self.state.activeId) return;
           self.setMode('EDIT');
+          self.trackChanges();
         });
       }
 
       if (this.els.cancelBtn) {
         this.els.cancelBtn.addEventListener('click', function () {
+          global.UnsavedChanges.request(function () {
+          if (self.unsaved) self.unsaved.dispose();
           if (self.state.mode === 'CREATE') {
             self.exitCreateMode();
             return;
@@ -114,6 +117,7 @@
             self.setMode('VIEW');
             if (global.CarBaseDetail) global.CarBaseDetail.reloadFromState();
           }
+          }, [self.unsaved]);
         });
       }
 
@@ -180,6 +184,15 @@
       if (global.CarBasePhoto && global.CarBasePhoto.bindData) global.CarBasePhoto.bindData({ vehicle: null });
 
       this.setMode('CREATE');
+      this.trackChanges();
+    },
+
+    trackChanges: function () {
+      var self = this;
+      this.unsaved = global.UnsavedChanges.watch('car-base', {
+        root: qs('#carbDetailForm'), active: function () { return self.state.mode !== 'VIEW'; },
+        busy: function () { return self.els.saveBtn && self.els.saveBtn.classList.contains('is-loading'); }
+      });
     },
 
     exitCreateMode: function () {
@@ -320,16 +333,22 @@
         });
     },
 
-    selectVehicle: function (vehicleId) {
+    selectVehicle: function (vehicleId, discard) {
       var self = this;
       vehicleId = Number(vehicleId || 0);
       if (!vehicleId) return;
+      if (vehicleId === self.state.activeId && self.state.mode !== 'VIEW') return Promise.resolve(true);
+      if (!discard && self.unsaved && self.unsaved.isDirty()) {
+        return global.UnsavedChanges.request(function () { return self.selectVehicle(vehicleId, true); }, [self.unsaved]);
+      }
+      if (self.unsaved) self.unsaved.dispose();
 
       // ✅ request 序號，避免連點車輛時舊回應覆蓋新回應
       self.state.reqSeq = (self.state.reqSeq || 0) + 1;
       var seq = self.state.reqSeq;
 
       self.state.activeId = vehicleId;
+      if (global.CarBaseList) global.CarBaseList.setActive(vehicleId);
       self.setMode('VIEW');
       self.enableWorkspace(false);     // 等 get 完再開
       self.setRightLoading(true);      // ✅ 右側遮罩轉圈

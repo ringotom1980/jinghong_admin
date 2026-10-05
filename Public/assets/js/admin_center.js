@@ -90,6 +90,8 @@
       if (newp !== newp2) return toastErr('新密碼與確認不一致');
       if (newp.length < 8) return toastErr('新密碼至少 8 碼');
 
+      var draft = form.getAttribute('id') === 'acUserForm' ? userDraft : passwordDraft;
+      var saved = draft.capture();
       var release = lockForm(form);
       Promise.resolve().then(function(){ return apiJson(apiUrl('/api/auth/change_password'), {
         method: 'POST',
@@ -97,7 +99,8 @@
         body: JSON.stringify({ old_password: oldp, new_password: newp })
       }); })
         .then(function(){
-          form.reset();
+          draft.markClean(saved);
+          if (!draft.isDirty()) { form.reset(); draft.markClean(); }
           toastOk('密碼已更新');
         })
         .catch(function(err){
@@ -154,11 +157,16 @@
       });
   }
 
+  var userDraft, passwordDraft;
+
   function modalOpen(){
     var m = qs('#acUserModal');
     if (m) m.hidden = false;
+    userDraft = global.UnsavedChanges.watch('admin-user', { root: qs('#acUserForm'), active: function () { return !m.hidden; }, busy: function () { return !!qs('#acUserForm')._saving; } });
   }
-  function modalClose(){
+  function modalClose(discard){
+    if (!discard && userDraft && userDraft.isDirty()) return global.UnsavedChanges.request(function () { modalClose(true); }, [userDraft]);
+    if (userDraft) userDraft.dispose();
     var m = qs('#acUserModal');
     if (m) m.hidden = true;
   }
@@ -245,7 +253,7 @@
     });
 
     document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape' && !m.hidden) modalClose();
+      if (e.key === 'Escape' && !m.hidden && !global.Modal._current) modalClose();
     });
   }
 
@@ -268,6 +276,8 @@
       if (role !== 'ADMIN' && role !== 'STAFF') return toastErr('角色不合法');
 
       var version = state.modalVersion;
+      var draft = form.getAttribute('id') === 'acUserForm' ? userDraft : passwordDraft;
+      var saved = draft.capture();
       var release = lockForm(form);
       Promise.resolve().then(function(){ return apiJson(apiUrl('/api/admin/users_save'), {
         method: 'POST',
@@ -282,7 +292,8 @@
         })
       }); })
         .then(function(){
-          if (state.modalVersion === version) modalClose();
+          draft.markClean(saved);
+          if (state.modalVersion === version && !draft.isDirty()) modalClose(true);
           return loadUsers();
         })
         .then(function(){
@@ -297,6 +308,7 @@
   document.addEventListener('DOMContentLoaded', function(){
     bindTabs();
     bindMyPwd();
+    passwordDraft = global.UnsavedChanges.watch('admin-password', { root: qs('#acPwdForm'), busy: function () { return !!qs('#acPwdForm')._saving; } });
 
     bindNewUser();
     bindUsersTable();

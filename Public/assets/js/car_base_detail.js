@@ -477,6 +477,9 @@
       if (mode === 'EDIT' && !payload.id) return;
 
       setBtnLoading(btn, true);
+      var draft = app.unsaved;
+      var saved = draft ? draft.capture() : null;
+      var savedSeq = app.state.reqSeq;
 
       var url = (mode === 'CREATE') ? '/api/car/car_create' : '/api/car/car_save';
 
@@ -494,6 +497,9 @@
             title: '已儲存',
             message: (mode === 'CREATE') ? '車輛已新增' : '基本資料已更新'
           });
+          if (draft) draft.markClean(saved);
+          if (draft !== app.unsaved || savedSeq !== app.state.reqSeq) return;
+          if (draft && draft.isDirty()) return;
 
           // CREATE：切回 VIEW + 選到新車
           if (mode === 'CREATE' && j.data && j.data.vehicle && j.data.vehicle.id) {

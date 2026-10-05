@@ -286,14 +286,7 @@
 
             if (!isPromise(r)) return (r !== false);
 
-            r.then(function (ok) {
-              if (ok === false) return;
-              global.Modal.close();
-            }).catch(function () {
-              // 失敗不關，讓外層 Toast 顯示即可
-            });
-
-            return false; // Promise 情況先不關
+            return r; // 由共享 modal 鎖定送出並關閉發出請求的視窗
           } catch (e) {
             return false;
           }

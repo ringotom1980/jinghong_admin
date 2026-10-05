@@ -12,7 +12,11 @@
   var Mod = {
     app: null,
 
-    init: function (app) { this.app = app; },
+    init: function (app) {
+      this.app = app;
+      if (app.els.files) this.unsaved = global.UnsavedChanges.watch('issue-files', { root: app.els.files.parentElement,
+        busy: function () { return !!app.els.btnImport.disabled; } });
+    },
 
     doImport: function () {
       if (!global.apiPostForm) return;
@@ -30,6 +34,8 @@
       }
 
       var btn = (this.app && this.app.els) ? this.app.els.btnImport : null;
+      var draft = this.unsaved;
+      var saved = draft.capture();
       if (btn) {
         btn.classList.add('is-loading');
         btn.disabled = true;
@@ -58,8 +64,9 @@
           MatIssueApp.toast('success', '匯入完成', msg, 2600);
           // ✅ (1) 匯入成功後清空檔案 input（避免殘留、避免重複送出同一批檔案）
           var fileInput = Mod.app && Mod.app.els ? Mod.app.els.files : null;
-          if (fileInput) {
+          if (fileInput && draft.capture() === saved) {
             try { fileInput.value = ''; } catch (e) { }
+            draft.markClean();
           }
 
           // ✅ 存本次匯入 batch_ids（本次匯入範圍）
