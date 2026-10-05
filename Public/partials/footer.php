@@ -24,6 +24,6 @@ if (is_file($versionFile)) {
     <span class="footer__ver"><?= htmlspecialchars($version, ENT_QUOTES) ?></span>
   </div>
   <div class="footer__right">
-    <span>© <?= date('Y') ?> 境宏工程有限公司｜Jinghong Engineering Co., Ltd.</span>
+    <span class="footer__copyright-flat">© <?= date('Y') ?> 境宏工程有限公司｜Jinghong Engineering Co., Ltd.</span><span class="footer__copyright-mobile"><span class="footer__company">© <?= date('Y') ?> 境宏工程有限公司</span><span class="footer__separator">｜</span><span class="footer__english">Jinghong Engineering Co., Ltd.</span></span>
   </div>
 </footer>

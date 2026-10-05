@@ -111,3 +111,33 @@
   body .btn { white-space: nowrap; flex-shrink: 0; }
   .sidenav__rail { background: #fff; }
 }
+
+@media screen {
+  .footer__left { min-width: 0; max-width: 40%; }
+  .footer__ver, .auth-foot { overflow-wrap: anywhere; }
+}
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  /* The footer owns bottom-rail clearance; the content does not need it twice. */
+  body:has(> .footer) > .page { padding-bottom: 24px; min-height: 0; }
+  body .footer.footer {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 12px calc(76px + env(safe-area-inset-bottom));
+    text-align: center;
+  }
+  .footer .footer__right { order: 0; margin: 0; min-width: 0; max-width: 100%; }
+  .footer .footer__left { order: 1; min-width: 0; max-width: 100%; }
+  .footer__company, .footer__english { display: block; font-size: 14px; line-height: 1.5; }
+  .footer__company { white-space: nowrap; }
+  .footer__separator { display: none; }
+  .footer__ver { font-size: 13px; line-height: 1.5; color: var(--muted); }
+}
+
+/* Keep the original uninterrupted text run on desktop and in print. */
+.footer__copyright-mobile { display: none; }
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  .footer__copyright-flat { display: none; }
+  .footer__copyright-mobile { display: inline; }
+}
