@@ -319,3 +319,21 @@
   body:has(.mat-edit) .me-modal-name { grid-column: 2; overflow-wrap: anywhere; }
   body:has(.mat-edit) .me-modal-badge { grid-column: 2; }
 }
+
+@media screen and (max-width: 900px) {
+  .mat-edit .me-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .mat-edit .me-head h2 { margin: 0; min-width: 0; }
+  .mat-edit .me-head__title { display: block; }
+  .mat-edit .me-head__hint {
+    display: block;
+    margin-top: 6px;
+    font-size: var(--fs-sub);
+    line-height: 1.55;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .mat-edit .me-head__actions { gap: 8px; }
+  .mat-edit :is(.me-item, .me-mat-item) { padding: 8px 10px; gap: 6px; }
+  .mat-edit :is(.me-list, .me-mat) { gap: 8px; }
+  .mat-edit .me-mat-item > .btn { justify-self: start; }
+}

@@ -105,3 +105,9 @@
   /* Retain the pre-existing nav token value for non-report print views. */
   :root { --shadow: 0 12px 34px rgba(2, 6, 23, 0.08); }
 }
+
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  /* Short actions keep their labels intact; their containing rows may wrap. */
+  body .btn { white-space: nowrap; flex-shrink: 0; }
+  .sidenav__rail { background: #fff; }
+}

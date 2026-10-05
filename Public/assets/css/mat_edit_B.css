@@ -165,10 +165,10 @@
   .mat-edit-b :is(.mb-head, .mb-toolbar) { align-items: stretch; flex-direction: column; }
   .mat-edit-b .mb-search { min-width: 0; width: 100%; }
   .mat-edit-b .mb-item { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; padding: 10px; }
-  .mat-edit-b .mb-idx { grid-column: 2; }
-  .mat-edit-b .mb-code { grid-column: 2; overflow-wrap: anywhere; }
-  .mat-edit-b .mb-name { grid-column: 1 / -1; white-space: normal; overflow-wrap: anywhere; }
-  .mat-edit-b .mb-act { grid-column: 3; grid-row: 1 / 3; }
-  .mat-edit-b .mb-drag { height: 44px; }
+  .mat-edit-b .mb-idx { grid-column: 2; grid-row: 1; }
+  .mat-edit-b .mb-code { grid-column: 1 / -1; grid-row: 2; overflow-wrap: anywhere; }
+  .mat-edit-b .mb-name { grid-column: 1 / -1; grid-row: 3; white-space: normal; overflow-wrap: anywhere; }
+  .mat-edit-b .mb-act { grid-column: 3; grid-row: 1; }
+  .mat-edit-b .mb-drag { grid-column: 1; grid-row: 1; height: 44px; }
   .mat-edit-b .mb-search__clear { width: 44px; height: 44px; right: 0; }
 }

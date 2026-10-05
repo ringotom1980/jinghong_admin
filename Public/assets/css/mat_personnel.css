@@ -89,3 +89,22 @@
   .mat-personnel .mp-name  { grid-area: name; }
   .mat-personnel .mp-actions { grid-area: act; justify-content: flex-start; }
 }
+
+/* Mobile rows: keep the normal phone layout compact, wrap predictably on narrow phones. */
+@media screen and (max-width: 560px) {
+  .mat-personnel .mp-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-areas: "shift name act";
+    gap: 8px;
+    padding: 8px;
+  }
+  .mat-personnel .mp-name { min-width: 0; }
+  .mat-personnel .mp-actions { justify-content: flex-end; }
+  .mat-personnel .mp-input { padding-inline: 8px; }
+}
+@media screen and (max-width: 359px) {
+  .mat-personnel .mp-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-areas: "shift name" ". act";
+  }
+}
