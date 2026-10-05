@@ -570,3 +570,9 @@
   .ms-capsule { min-height: 44px; height: auto; line-height: 1.4; padding-block: 8px; }
   .ms-filter__btn, .ms-mobile-shift-dock .ms-filter__btn { min-height: 44px; height: auto; }
 }
+
+/* Screen filters keep complete labels; only the filter strip scrolls. */
+@media screen {
+  .ms-filter, .ms-mobile-shift-dock__inner { min-width: 0; max-width: 100%; }
+  .ms-filter__btn { flex: 0 0 auto; white-space: nowrap; }
+}
