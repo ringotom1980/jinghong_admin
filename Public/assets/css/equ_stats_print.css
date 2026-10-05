@@ -4,6 +4,7 @@
  */
 
 @page {
+  size: A4 landscape;
   margin: 6mm;
   @bottom-right {
     content: "第 " counter(page) " 頁";
@@ -149,3 +150,7 @@ thead tr.print-head-row > th {
   background: #fff !important;
   padding-bottom: 6px;
 }
+
+/* Twelve-month summaries use the paper width without reducing type size. */
+.print--equ-summary :is(th, td) { padding-inline: 4px; }
+.print--equ-summary :is(th, td).col-month { width: auto; }

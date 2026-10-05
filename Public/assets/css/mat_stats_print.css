@@ -205,3 +205,17 @@
     max-width: none;
   }
 }
+
+/* Keep a reusable snapshot without duplicating the on-screen report. */
+@media screen {
+  #msPrintArea { display: none; }
+}
+@media print {
+  html, body { display: block !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+  #msPrintArea { position: static; }
+  #msPrintArea .ms-content { display: block; width: auto; max-width: none; margin: 0; }
+  #msPrintArea :is(.ms-section, .ms-table-wrap) { overflow: visible !important; max-width: none !important; }
+  #msPrintArea .ms-section { break-inside: auto !important; page-break-inside: auto !important; }
+  #msPrintArea .ms-table { min-width: 0 !important; }
+  #msPrintArea :is(th, td) { position: static !important; font-size: 15px; }
+}

@@ -4,6 +4,7 @@
 
 /* 邊界更小（佔版面更大） */
 @page {
+  size: A4 landscape;
   /* 列印邊界 */
   margin: 6mm 6mm 6mm 6mm;
 
@@ -261,3 +262,5 @@ td.col-detail {
   text-align: left;
 } /* 內容靠左 */
 /* ===== all_details(各車維修明細表)：8欄 欄寬（可自行調整）結束===== */
+/* Twelve-month summaries use the paper width without reducing type size. */
+.print--summary :is(th, td) { padding-inline: 4px; }

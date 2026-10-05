@@ -26,6 +26,8 @@
             btn.addEventListener('click', function () {
                 self.print();
             });
+            // Native browser preview (including keyboard printing) uses the current tables.
+            global.addEventListener('beforeprint', function () { self._preparePrintArea(); });
         },
 
         _formatNow: function () {
@@ -175,50 +177,31 @@
             });
         },
 
-        print: function () {
+        _preparePrintArea: function () {
             var src = qs('#msContent');
             if (!src) return;
+            this._cleanup();
+            var wrap = document.createElement('div');
+            wrap.id = 'msPrintArea';
+            var clone = src.cloneNode(true);
+            // The retained print copy must not duplicate live navigation IDs.
+            clone.removeAttribute('id');
+            qsa('[id]', clone).forEach(function (el) { el.removeAttribute('id'); });
+            this._insertHeaderIntoEachTableThead(clone);
+            this._stripSectionCardTitle(clone);
+            wrap.appendChild(clone);
+            document.body.appendChild(wrap);
+        },
 
+        print: function () {
+            if (!qs('#msContent')) return;
             var self = this;
-
-            // 先算出跟 _insertHeaderIntoEachTableThead 一樣的 logoSrc（必須一致）
             var base = (location.pathname.split('/')[1] === 'jinghong_admin') ? '/jinghong_admin' : '';
-            // ✅ 建議加版本號避免某些快取狀態不穩（你也可改成 filemtime 版本）
             var logoSrc = base + '/assets/img/brand/JH_logo.png?v=1';
-
-            // 先清掉舊列印區，避免殘留
-            self._cleanup();
-
-            // ✅ 核心：先預載 LOGO，載好才進列印
             self._preloadLogo(logoSrc, function () {
-
-                var wrap = document.createElement('div');
-                wrap.id = 'msPrintArea';
-
-                // 只印表格內容：clone #msContent（A-F）
-                var clone = src.cloneNode(true);
-
-                // 1) 抬頭塞進每個 table thead（跨頁重複）
-                self._insertHeaderIntoEachTableThead(clone);
-
-                // 2) 移除原本卡片式班別標題，避免重複
-                self._stripSectionCardTitle(clone);
-
-                wrap.appendChild(clone);
-                document.body.appendChild(wrap);
-
-                var done = false;
-
-                function finish() {
-                    if (done) return;
-                    done = true;
-                    self._cleanup();
-                    global.removeEventListener('afterprint', finish);
-                }
-
-                global.addEventListener('afterprint', finish);
-                setTimeout(finish, 2500);
-
+                self._preparePrintArea();
+                // Keep the hidden snapshot until the next print, even if a native
+                // preview returns early or emits afterprint before its sheet closes.
                 global.print();
             });
         }
