@@ -59,7 +59,7 @@
 
     applyLockState: function () {
       var app = this.app;
-      var lock = !!(app && app.state && app.state.editModeCats); // 編輯分類模式
+      var lock = !!this._savingRequest || !!(app && app.state && app.state.editModeCats);
       var dateEl = qs('#meReconDate');
       var btnSave = qs('#meBtnSaveRecon');
 
@@ -78,6 +78,7 @@
     saveRecon: function (force) {
       var app = this.app;
       if (!app || !global.apiPost) return;
+      if (this._savingRequest) return false;
 
       var dateEl = qs('#meReconDate');
       var d = dateEl ? String(dateEl.value || '').trim() : (app.state.date || '');
@@ -103,7 +104,19 @@
         values[String(it.category_id)] = it.qty;
       });
 
-      return global.apiPost('/api/mat/edit_reconciliation?action=save', {
+      var request = {};
+      this._savingRequest = request;
+      this.applyLockState();
+      var btn = qs('#meBtnSaveRecon');
+      var label = btn ? btn.textContent : '';
+      if (btn) { btn.setAttribute('aria-busy', 'true'); btn.textContent = '儲存中…'; }
+      function releaseSave() {
+        if (Mod._savingRequest !== request) return;
+        Mod._savingRequest = null;
+        if (btn) { btn.removeAttribute('aria-busy'); btn.textContent = label; }
+        Mod.applyLockState();
+      }
+      return Promise.resolve().then(function () { return global.apiPost('/api/mat/edit_reconciliation?action=save', {
         // ✅ 兼容你的後端（你貼的 API 是吃 payload.action / withdraw_date / values / confirm）
         action: 'save',
         withdraw_date: d,
@@ -112,36 +125,41 @@
 
         // 若你後端 service 其實是吃 items，也可同時帶著不影響：
         // items: items,
-      }).then(function (j) {
+      }); }).then(function (j) {
         if (!j || !j.success) {
           if (global.Toast) global.Toast.show({ type: 'error', title: '儲存失敗', message: (j && j.error) ? j.error : 'save error' });
-          return;
+          return false;
         }
 
         // ✅ 你的後端回 need_confirm（不是 confirm_required）
         if (j.data && j.data.need_confirm) {
+          releaseSave();
           if (global.Modal && global.Modal.confirmChoice) {
             global.Modal.confirmChoice(
               '日期確認',
               j.data.message || ('提領時間為' + d + '當日尚未匯入提領資料，要儲存的提領日期是否正確'),
-              function () { Mod.saveRecon(true); },  // 仍要儲存 → confirm=true
+              function () { return Mod.saveRecon(true); },  // 等待儲存結果後才關閉
               function () { },                      // 取消
               { confirmText: '仍要儲存', cancelText: '取消' }
             );
           } else {
             // 保底（避免完全沒反應）
-            if (confirm(j.data.message || '當日尚未匯入提領資料，仍要儲存嗎？')) Mod.saveRecon(true);
+            if (confirm(j.data.message || '當日尚未匯入提領資料，仍要儲存嗎？')) return Mod.saveRecon(true);
           }
-          return;
+          return false;
         }
 
         if (global.Toast) global.Toast.show({ type: 'success', title: '已儲存', message: '對帳資料已更新' });
 
         // reload recon to normalize
-        app.loadReconciliation(d).then(function () {
+        return app.loadReconciliation(d).then(function () {
           if (global.MatEditCategories && global.MatEditCategories.render) global.MatEditCategories.render();
+          return true;
         });
-      });
+      }).catch(function (e) {
+        if (global.Toast) global.Toast.show({ type: 'danger', title: '儲存失敗', message: (e && e.message) ? e.message : '網路或伺服器忙碌' });
+        return false;
+      }).finally(releaseSave);
     }
   };
 

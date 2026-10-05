@@ -267,6 +267,7 @@
       // 新增工具：qty 變更時即時計算範圍（GET add_preview）
       if (this.els.mToolQty) {
         this.els.mToolQty.addEventListener('input', function () {
+          self.els.mToolQty.setCustomValidity('');
           self.refreshToolAddRangePreview();
         });
       }
@@ -614,11 +615,15 @@
     openToolAddModal: function () {
       if (!this.guardItemsEdit()) return;   // ✅ 保險：左表EDIT不給開
       if (!this.els.modalToolAdd) return;
+      this.state.toolAddVersion = (this.state.toolAddVersion || 0) + 1;
 
       // vehicles 下拉
       this.injectVehiclesSelect(this.els.mToolVehicle, this.state.vehicles);
 
-      if (this.els.mToolQty) this.els.mToolQty.value = 1;
+      if (this.els.mToolQty) {
+        this.els.mToolQty.value = 1;
+        this.els.mToolQty.setCustomValidity('');
+      }
       if (this.els.mToolInspectDate) this.els.mToolInspectDate.value = '';
       if (this.els.mToolVehicle) this.els.mToolVehicle.value = '';
       if (this.els.mToolNote) this.els.mToolNote.value = '';
@@ -646,8 +651,8 @@
       var itemId = this.state.activeItemId;
       if (!itemId) return;
 
-      var qty = this.els.mToolQty ? (parseInt(this.els.mToolQty.value, 10) || 0) : 0;
-      if (qty < 1) {
+      var qty = this.els.mToolQty ? Number(this.els.mToolQty.value) : 0;
+      if (!Number.isSafeInteger(qty) || qty < 1) {
         if (this.els.mToolRangeText) this.els.mToolRangeText.textContent = '-';
         return;
       }
@@ -669,11 +674,22 @@
 
     submitToolAdd: function () {
       var self = this;
+      if (this.state.toolAddSaving) return;
       var itemId = this.state.activeItemId;
       if (!itemId) return toastErr('請先選取左側分類');
 
-      var qty = this.els.mToolQty ? (parseInt(this.els.mToolQty.value, 10) || 0) : 0;
-      if (qty < 1) return toastErr('新增數量 qty 必須 >= 1');
+      var qtyInput = this.els.mToolQty;
+      var qty = qtyInput ? Number(qtyInput.value) : 0;
+      if (qtyInput) qtyInput.setCustomValidity('');
+      if (!Number.isSafeInteger(qty) || qty < 1) {
+        if (qtyInput) {
+          qtyInput.setCustomValidity('新增數量必須是大於或等於 1 的整數');
+          qtyInput.focus();
+          qtyInput.reportValidity();
+        }
+        return toastErr('新增數量必須是大於或等於 1 的整數');
+      }
+      if (qtyInput && !qtyInput.reportValidity()) return;
 
       var inspectDate = this.els.mToolInspectDate ? String(this.els.mToolInspectDate.value || '').trim() : '';
       var vehicleId = this.els.mToolVehicle ? String(this.els.mToolVehicle.value || '').trim() : '';
@@ -688,14 +704,24 @@
         note: note || null
       };
 
-      this.apiPost(API_HOT_TOOLS, payload)
+      var version = this.state.toolAddVersion;
+      var btn = this.els.btnToolAddSubmit;
+      var label = btn ? btn.innerHTML : '';
+      this.state.toolAddSaving = true;
+      if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '新增中…'; }
+      return Promise.resolve().then(function () { return self.apiPost(API_HOT_TOOLS, payload); })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '新增工具失敗');
-          closeModal('modalToolAdd');
+          if (self.state.toolAddVersion === version) closeModal('modalToolAdd');
           toastOk('已新增工具');
 
           // 右表刷新、左表 counts 也要刷新（reloadItemsKeepActive 內部會再 reloadTools）
-          self.reloadItemsKeepActive();
+          return self.reloadItemsKeepActive();
+        }).catch(function (e) {
+          toastErr(e && e.message ? e.message : '新增工具失敗');
+        }).finally(function () {
+          self.state.toolAddSaving = false;
+          if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
         });
     },
 

@@ -28,6 +28,7 @@
 
     function openModal(id) {
         const el = document.getElementById(id);
+        if (id === 'modalAssigneeAdd') state.assigneeVersion = (state.assigneeVersion || 0) + 1;
         if (el) el.hidden = false;
     }
     function closeModal(id) {
@@ -298,17 +299,28 @@
     }
 
     async function addAssignee() {
+        if (state.assigneeSaving) return;
         const name = ($('#mAssigneeName')?.value || '').trim();
         if (!name) return toast('姓名不可為空', 'warn');
+        const version = state.assigneeVersion;
+        const btn = $('#btnAssigneeAddSubmit');
+        const label = btn?.innerHTML || '';
+        state.assigneeSaving = true;
+        if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '新增中…'; }
 
         try {
             await apiPost('assignee_create', { name });
             toast('已新增員工', 'ok');
-            closeModal('modalAssigneeAdd');
-            $('#mAssigneeName').value = '';
+            if (state.assigneeVersion === version) {
+                closeModal('modalAssigneeAdd');
+                $('#mAssigneeName').value = '';
+            }
             await refreshAll();
         } catch (e) {
             toast(e.message || '新增失敗', 'danger');
+        } finally {
+            state.assigneeSaving = false;
+            if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
         }
     }
 

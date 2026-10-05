@@ -16,7 +16,7 @@
 
   function toastOk(msg){
     if (global.Toast && typeof global.Toast.show === 'function') {
-      global.Toast.show('success', '成功', msg);
+      global.Toast.show({ type: 'success', title: '成功', message: msg });
     } else {
       alert(msg);
     }
@@ -24,10 +24,25 @@
 
   function toastErr(msg){
     if (global.Toast && typeof global.Toast.show === 'function') {
-      global.Toast.show('error', '錯誤', msg);
+      global.Toast.show({ type: 'danger', title: '錯誤', message: msg });
     } else {
       alert(msg);
     }
+  }
+
+  // Form-scoped lock also covers Enter / programmatic repeated submits.
+  function lockForm(form){
+    form._saving = true;
+    form.setAttribute('aria-busy', 'true');
+    var buttons = qsa('button[type="submit"]', form);
+    var previous = buttons.map(function(btn){ return btn.disabled; });
+    var labels = buttons.map(function(btn){ return btn.innerHTML; });
+    buttons.forEach(function(btn){ btn.disabled = true; btn.textContent = '儲存中…'; });
+    return function(){
+      form._saving = false;
+      form.removeAttribute('aria-busy');
+      buttons.forEach(function(btn, i){ btn.disabled = previous[i]; btn.innerHTML = labels[i]; });
+    };
   }
 
   function apiJson(url, opts){
@@ -67,6 +82,7 @@
 
     form.addEventListener('submit', function(e){
       e.preventDefault();
+      if (form._saving) return;
       var oldp = (form.querySelector('[name="old_password"]').value || '');
       var newp = (form.querySelector('[name="new_password"]').value || '');
       var newp2 = (form.querySelector('[name="new_password2"]').value || '');
@@ -74,18 +90,19 @@
       if (newp !== newp2) return toastErr('新密碼與確認不一致');
       if (newp.length < 8) return toastErr('新密碼至少 8 碼');
 
-      apiJson(apiUrl('/api/auth/change_password'), {
+      var release = lockForm(form);
+      Promise.resolve().then(function(){ return apiJson(apiUrl('/api/auth/change_password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ old_password: oldp, new_password: newp })
-      })
+      }); })
         .then(function(){
           form.reset();
           toastOk('密碼已更新');
         })
         .catch(function(err){
           toastErr(err.message || '更新失敗');
-        });
+        }).finally(release);
     });
   }
 
@@ -149,6 +166,7 @@
   function fillModal(u){
     var form = qs('#acUserForm');
     if (!form) return;
+    state.modalVersion = (state.modalVersion || 0) + 1;
 
     form.querySelector('[name="id"]').value = u ? String(u.id) : '0';
     form.querySelector('[name="name"]').value = u ? (u.name || '') : '';
@@ -237,6 +255,7 @@
 
     form.addEventListener('submit', function(e){
       e.preventDefault();
+      if (form._saving) return;
 
       var id = parseInt(form.querySelector('[name="id"]').value || '0', 10);
       var name = (form.querySelector('[name="name"]').value || '').trim();
@@ -248,7 +267,9 @@
       if (!name || !username) return toastErr('姓名與帳號不可為空');
       if (role !== 'ADMIN' && role !== 'STAFF') return toastErr('角色不合法');
 
-      apiJson(apiUrl('/api/admin/users_save'), {
+      var version = state.modalVersion;
+      var release = lockForm(form);
+      Promise.resolve().then(function(){ return apiJson(apiUrl('/api/admin/users_save'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -259,9 +280,9 @@
           is_active: isActive,
           new_password: newPwd // 可空字串
         })
-      })
+      }); })
         .then(function(){
-          modalClose();
+          if (state.modalVersion === version) modalClose();
           return loadUsers();
         })
         .then(function(){
@@ -269,7 +290,7 @@
         })
         .catch(function(err){
           toastErr(err.message || '儲存失敗');
-        });
+        }).finally(release);
     });
   }
 

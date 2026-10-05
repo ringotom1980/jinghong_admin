@@ -523,6 +523,14 @@
         btn.setAttribute('aria-busy', 'true');
         btn.textContent = '儲存中…';
       }
+      function releaseSave() {
+        self.state._saving = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.removeAttribute('aria-busy');
+          btn.textContent = oldTxt || '儲存';
+        }
+      }
 
       try {
         // 同步狀態
@@ -532,6 +540,7 @@
         var err = this.validate();
         if (err) {
           Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
+          releaseSave();
           return;
         }
 
@@ -565,24 +574,11 @@
         }).catch(function (e) {
           Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (e && e.message) ? e.message : '網路或伺服器忙碌' });
           return false;
-        }).finally(function () {
-          // ✅ 還原按鈕
-          self.state._saving = false;
-          if (btn) {
-            btn.disabled = false;
-            btn.removeAttribute('aria-busy');
-            btn.textContent = oldTxt || '儲存';
-          }
-        });
+        }).finally(releaseSave);
 
       } catch (e) {
         // 同步錯誤也要還原
-        this.state._saving = false;
-        if (btn) {
-          btn.disabled = false;
-          btn.removeAttribute('aria-busy');
-          btn.textContent = oldTxt || '儲存';
-        }
+        releaseSave();
         throw e;
       }
     }

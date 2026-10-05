@@ -105,8 +105,20 @@
       });
 
       var confirmBtn = panel.querySelector('.modal__confirm');
+      var confirming = false;
+      var confirmLabel = confirmBtn ? confirmBtn.textContent : '';
+      function releaseConfirm() {
+        confirming = false;
+        confirmBtn.disabled = false;
+        confirmBtn.removeAttribute('aria-busy');
+        confirmBtn.textContent = confirmLabel;
+      }
       if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
+          if (confirming || Modal._current !== bd) return;
+          confirming = true;
+          confirmBtn.disabled = true;
+          confirmBtn.setAttribute('aria-busy', 'true');
           var shouldClose = true;
 
           if (onConfirm) {
@@ -115,18 +127,20 @@
 
               // ✅ Promise 支援：resolve 後再決定關不關
               if (isPromise(r)) {
-                r.then(function (v) {
+                confirmBtn.textContent = '處理中…';
+                Promise.resolve(r).then(function (v) {
                   if (v === false) return;
-                  Modal.close(); // 只關最上層
-                }).catch(function () { /* ignore */ });
+                  Modal.close(bd); // 只關閉發出請求的 dialog
+                }).catch(function () { /* caller handles feedback */ }).finally(releaseConfirm);
                 return;
               }
 
               if (r === false) shouldClose = false;
-            } catch (e) { /* ignore */ }
+            } catch (e) { shouldClose = false; }
           }
 
-          if (shouldClose) Modal.close();
+          releaseConfirm();
+          if (shouldClose) Modal.close(bd);
         });
       }
 
@@ -253,10 +267,13 @@
     },
 
     // ✅ 關閉最上層（不會關到底）
-    close: function () {
+    close: function (target) {
       if (!this._stack || !this._stack.length) return;
 
-      var bd = this._stack[this._stack.length - 1];
+      var index = target ? this._stack.indexOf(target) : this._stack.length - 1;
+      if (index < 0) return; // 舊請求的 dialog 已關閉，不能關到新表單
+      var bd = this._stack[index];
+      var wasCurrent = this._current === bd;
       if (!bd) return;
 
       bd.classList.remove('is-open');
@@ -269,14 +286,14 @@
       if (bd._focusHandler) document.removeEventListener('keydown', bd._focusHandler);
 
       // 先從堆疊移除，避免動畫期間再點擊造成狀態錯亂
-      this._stack.pop();
+      this._stack.splice(index, 1);
       this._current = this._stack.length ? this._stack[this._stack.length - 1] : null;
 
       if (!this._stack.length) {
         document.body.style.overflow = this._bodyOverflow || '';
         document.documentElement.classList.remove('ui-modal-open');
       }
-      if (bd._previousFocus && bd._previousFocus.isConnected) bd._previousFocus.focus({ preventScroll: true });
+      if (wasCurrent && bd._previousFocus && bd._previousFocus.isConnected) bd._previousFocus.focus({ preventScroll: true });
 
       window.setTimeout(function () {
         if (bd && bd.parentNode) bd.parentNode.removeChild(bd);
