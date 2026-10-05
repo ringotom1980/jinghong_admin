@@ -73,7 +73,7 @@ $pageJs = [
 
     <div class="ac-pane" data-pane="users" role="tabpanel">
       <div class="ac-toolbar">
-        <button type="button" class="btn btn--secondary" id="acBtnNewUser">新增使用者</button>
+        <button type="button" class="btn btn--primary" id="acBtnNewUser">新增使用者</button>
       </div>
 
       <div class="ac-tablewrap">

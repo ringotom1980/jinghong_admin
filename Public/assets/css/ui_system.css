@@ -141,3 +141,51 @@
   .footer__copyright-flat { display: none; }
   .footer__copyright-mobile { display: inline; }
 }
+
+@media screen {
+  .ui-table-note { margin: 0 0 10px; color: var(--muted); font-size: var(--fs-sub); }
+  :is(.cs-tableWrap, .es-tableWrap):focus-visible { outline-offset: -3px; }
+}
+@media print { .ui-table-note { display: none; } }
+
+/* Desktop work areas retain their row density and local action ownership. */
+@media screen and (min-width: 901px) {
+  .page :is(.hot-actions, .carb-actions, .me-head__actions, .mp-head__actions,
+    .ms-toolbar__actions, .cr-head__right, .equ-head__right, .ac-toolbar) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+  }
+  .page :is(.hot-actions, .carb-actions, .me-head__actions, .mp-head__actions,
+    .ms-toolbar__actions, .cr-head__right, .equ-head__right, .ac-toolbar) .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  :is(.hot-tools, .hot-assign) .hot-pane__head { align-items: center; }
+  :is(.hot-tools, .hot-assign) .hot-pane__title { min-width: 0; }
+  :is(.hot-tools, .hot-assign) .hot-pane__hint {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Only the long report tables gain vertical scroll; short tables stay short. */
+  :is(.car-stats .cs-tableWrap, .equ-stats .es-tableWrap) {
+    max-height: min(640px, max(240px, calc(100dvh - 320px)));
+    scrollbar-gutter: stable;
+  }
+  :is(.cs-table, .es-table) :is(th.num, td.ta-r) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  :is(.cs-table, .es-table) td:not(.ta-r) { overflow-wrap: anywhere; }
+  :is(.cs-table, .es-table) tbody tr.is-active > td:first-child {
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+  .hot-tools .hot-table--items :is(th, td):is(:nth-child(3), :nth-child(4), :nth-child(5)) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}

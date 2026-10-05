@@ -45,20 +45,21 @@ $pageJs = [
             <div class="cs-capsules" id="csCapsules" aria-label="期間選擇"></div>
 
             <div class="cs-toolbar__right">
-                <button type="button" class="btn cs-printBtn" id="csPrintBtn">
+                <button type="button" class="btn btn--secondary cs-printBtn" id="csPrintBtn">
                     <i class="fa-solid fa-print" aria-hidden="true"></i>
                     <span>列印</span>
                 </button>
             </div>
         </section>
 
+        <p class="ui-table-note">金額單位：元；點選車輛彙總列查看維修明細。</p>
         <section class="cs-grid" aria-label="維修統計內容">
             <div class="cs-panel">
                 <div class="cs-panel__head">
                     <h2>車輛彙總</h2>
                     <div class="cs-panel__meta" id="csSummaryMeta"></div>
                 </div>
-                <div class="cs-tableWrap">
+                <div class="cs-tableWrap" tabindex="0" role="region" aria-label="車輛彙總捲動區">
                     <table class="cs-table cs-table--summary" id="csSummaryTable" aria-label="車輛彙總表">
                         <!-- ✅ 百分比欄寬：由 colgroup 控制（比照 repairs） -->
                         <colgroup>
@@ -97,7 +98,7 @@ $pageJs = [
                     <h2>維修明細</h2>
                     <div class="cs-panel__meta" id="csDetailsMeta"></div>
                 </div>
-                <div class="cs-tableWrap">
+                <div class="cs-tableWrap" tabindex="0" role="region" aria-label="維修明細捲動區">
                     <table class="cs-table cs-table--details" id="csDetailsTable" aria-label="維修明細表">
                         <!-- ✅ 百分比欄寬：由 colgroup 控制（比照 repairs） -->
                         <colgroup>

@@ -57,7 +57,7 @@ $pageJs = [
                         </h2>
 
                         <div class="ms-toolbar__actions">
-                            <button class="btn" type="button" id="msBtnPrint">
+                            <button class="btn btn--secondary" type="button" id="msBtnPrint">
                                 列印報表
                             </button>
                         </div>

@@ -47,13 +47,14 @@ $pageJs = [
       <div class="es-capsules" id="esCapsules" aria-label="期間選擇"></div>
 
       <div class="es-toolbar__right">
-        <button type="button" class="btn es-printBtn" id="esPrintBtn">
+        <button type="button" class="btn btn--secondary es-printBtn" id="esPrintBtn">
           <i class="fa-solid fa-print" aria-hidden="true"></i>
           <span>列印</span>
         </button>
       </div>
     </section>
 
+    <p class="ui-table-note">金額單位：元；點選廠商彙總列查看維修明細。</p>
     <section class="es-grid" aria-label="工具維修統計內容">
 
       <!-- 左：廠商彙總 -->
@@ -63,7 +64,7 @@ $pageJs = [
           <div class="es-panel__meta" id="esSummaryMeta"></div>
         </div>
 
-        <div class="es-tableWrap">
+        <div class="es-tableWrap" tabindex="0" role="region" aria-label="廠商彙總捲動區">
           <table class="es-table es-table--summary" id="esSummaryTable" aria-label="廠商彙總表">
             <colgroup>
               <col class="es-col es-col--vendor">  <!-- 廠商 -->
@@ -101,7 +102,7 @@ $pageJs = [
           <div class="es-panel__meta" id="esDetailsMeta"></div>
         </div>
 
-        <div class="es-tableWrap">
+        <div class="es-tableWrap" tabindex="0" role="region" aria-label="維修明細捲動區">
           <table class="es-table es-table--details" id="esDetailsTable" aria-label="廠商維修明細表">
             <colgroup>
               <col class="es-col es-col--date">    <!-- 維修日期 -->

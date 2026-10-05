@@ -576,3 +576,21 @@
   .ms-filter, .ms-mobile-shift-dock__inner { min-width: 0; max-width: 100%; }
   .ms-filter__btn { flex: 0 0 auto; white-space: nowrap; }
 }
+
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  .ms-toolbar__head { flex-direction: row; flex-wrap: wrap; }
+  .ms-toolbar__actions { width: auto; flex: 0 0 auto; }
+  .ms-toolbar__actions .btn { width: auto; }
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: min(280px, 36dvh);
+  }
+  .ms-capsules { gap: 6px; padding-block: 0; }
+  .ms-capsules__month {
+    grid-template-columns: 82px minmax(0, 1fr);
+    align-items: center;
+    padding: 6px;
+  }
+  .ms-capsules__list { min-width: 0; padding: 3px; }
+  /* The wrapper owns horizontal scrolling; table clipping would defeat sticky cells. */
+  .ms-table-wrap .ms-table { overflow: visible; }
+}
