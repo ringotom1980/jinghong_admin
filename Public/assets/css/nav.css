@@ -1,0 +1,578 @@
+/*
+ * Path: Public/assets/css/nav.css
+ * 說明: 導覽與側邊抽屜樣式（Topbar + Sidenav｜抽屜改成「浮動小面板」）
+ * 重點：
+ * - 抽屜不再全高，不再整條拉出
+ * - 抽屜只在選單旁出現，寬度更窄
+ */
+
+:root {
+  --nav-bg: #ffffff;
+  --nav-bg-2: #f6f7fb;
+  --nav-panel: rgba(255, 255, 255, 0.96);
+
+  --nav-text: rgba(15, 23, 42, 0.78); /* ✅ 深灰，乾淨不死黑 */
+  --nav-sub: rgba(15, 23, 42, 0.62);
+  --nav-line: rgba(15, 23, 42, 0.1);
+
+  --nav-accent-blue: var(--primary);
+  --nav-accent-red: var(--danger);
+
+  --topbar-h: 56px;
+  --rail-w: 92px;
+
+  /* ✅ 抽屜面板改成浮動小面板：不要太寬 */
+  --drawer-w: 140px;
+
+}
+
+/* ===== Topbar ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, var(--nav-bg), var(--nav-bg-2));
+  border-bottom: 1px solid var(--nav-line);
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.topbar__center {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.topbar__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--nav-text);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.brand__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+  border: 0;
+}
+
+.brand__text {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+@media screen and (max-width: 900px), print and (max-width: 720px) {
+  .brand__text {
+    font-size: 18px;
+  }
+}
+
+.topbar__user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--nav-sub);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+/* ✅ user dot：目前無狀態意義，先隱藏（保留 DOM 以便未來擴充） */
+.user__dot {
+  display: none;
+}
+
+.topbar__actions .btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.topbar__actions .btn--ghost {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--nav-text);
+}
+.topbar__actions .btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* ===== Sidenav ===== */
+.sidenav {
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  pointer-events: none;
+
+  /* ✅ 只包 rail，避免透明大區塊 */
+  width: var(--rail-w);
+}
+
+.sidenav__rail {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width: var(--rail-w);
+  background: linear-gradient(
+    180deg,
+    rgba(246, 247, 251, 0.96),
+    rgba(255, 255, 255, 0.94)
+  );
+  border-right: 1px solid var(--nav-line);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rail__tab {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  height: 62px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--nav-sub);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.rail__tab .tab__icon i {
+  font-size: 16px;
+  line-height: 1;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.tab__abbr {
+  font-size: 14px; /* ✅ 跟子選單一致 */
+  letter-spacing: 0.02em; /* ✅ 字距小一點更扎實 */
+  font-weight: 800; /* ✅ 視覺更有份量 */
+  color: rgba(15, 23, 42, 0.72); /* ✅ 稍微更深 */
+  line-height: 1.1;
+}
+
+.rail__tab:hover {
+  color: var(--nav-text);
+  background: var(--primary-soft);
+  border-color: rgba(47, 63, 122, 0.22);
+}
+
+.rail__tab:hover .tab__icon i {
+  color: var(--nav-accent-blue);
+}
+
+.rail__tab.is-active {
+  color: var(--nav-text);
+  background: var(--primary-soft);
+  border-color: rgba(47, 63, 122, 0.26);
+}
+
+.rail__tab.is-active .tab__icon i {
+  color: var(--nav-accent-blue);
+}
+.rail__tab.is-active .tab__abbr {
+  color: rgba(15, 23, 42, 0.86);
+}
+
+/* ===== DrawerHost: 浮動小面板 ===== */
+.sidenav__drawerHost {
+  pointer-events: auto;
+
+  /* ✅ 浮動在 rail 旁邊，不吃全高 */
+  position: absolute;
+  left: calc(var(--rail-w) + 6px);
+  top: 10px;
+
+  width: var(--drawer-w);
+  max-height: calc(100vh - var(--topbar-h) - 20px);
+
+  background: var(--nav-panel);
+  border: 1px solid var(--nav-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+
+  overflow: hidden;
+
+  transform: translateX(-6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
+}
+
+.sidenav.is-open .sidenav__drawerHost {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* drawer panel（內容自己撐高） */
+.drawerPanel {
+  display: none;
+}
+.drawerPanel.is-active {
+  display: block;
+}
+
+.drawer__head {
+  padding: 12px 12px 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(246, 247, 251, 0.9),
+    rgba(255, 255, 255, 0)
+  );
+}
+/*子選單標題*/
+.drawer__title {
+  color: var(--nav-text);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+
+  display: flex; /* 改成 flex */
+  align-items: center;
+  justify-content: center; /* ✅ 水平置中 */
+  font-size: 15px;
+  gap: 10px;
+  width: 100%; /* ✅ 吃滿 drawer head */
+  text-align: center; /* ✅ 保險 */
+}
+
+.drawer__title i {
+  color: var(--nav-accent-blue);
+}
+
+.drawer__hint {
+  margin-top: 4px;
+  color: var(--nav-sub);
+  font-size: 12px;
+}
+
+/* ✅ 不要固定滿高：改成最大高度 + 自動捲動 */
+.drawer__nav {
+  padding: 8px 10px 10px 10px; /* 原本太鬆，縮緊 */
+  max-height: 360px;
+  overflow: auto;
+}
+
+/*子選單文字*/
+.nav__item {
+  display: flex; /* ✅ 用 flex 置中更穩 */
+  align-items: center;
+  justify-content: center; /* ✅ 文字置中 */
+
+  color: var(--nav-text);
+  text-decoration: none;
+
+  padding: 10px 10px; /* ✅ 左右縮一點，避免白邊感 */
+  border-radius: 12px;
+  margin: 2px 6px; /* ✅ 讓左右留白一致、乾淨 */
+  border: 1px solid transparent;
+  background: transparent;
+
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center; /* ✅ 多一層保底 */
+  white-space: nowrap; /* ✅ 避免換行造成看起來歪 */
+}
+
+.nav__item:hover {
+  background: var(--primary-soft);
+  border-color: rgba(47, 63, 122, 0.18);
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.nav__item.is-active {
+  background: var(--primary-soft);
+  border-color: rgba(47, 63, 122, 0.22);
+  color: rgba(15, 23, 42, 0.96);
+}
+
+/* ===== Main content spacing helper ===== */
+/* 目的：
+ * - Topbar 固定（你已做）
+ * - Sidebar 固定（position:fixed）
+ * - 內容 + footer 跟著捲動（不釘 footer）
+ * - 修正「像兩個版面」：主內容區要有一致底板，不要露出 body 背景
+ */
+.page {
+  margin-left: var(--rail-w);
+  padding: 18px 18px 24px 18px;
+
+  /* ✅ 關鍵：給主內容區一層「工作底板」，避免露出 body 漸層造成雙層感 */
+  --page-bg: rgba(246, 247, 251, 0.92);
+  background: var(--page-bg);
+
+  border-left: 1px solid rgba(15, 23, 42, 0.06);
+
+  /* 讓內容至少撐滿視窗高度（扣掉 topbar） */
+  min-height: calc(100vh - var(--topbar-h));
+}
+
+/* footer 跟內容一起捲：不要 fixed/sticky */
+.footer {
+  margin-left: var(--rail-w);
+  padding: 14px 18px 18px 18px;
+
+  /* ✅ 同一塊底板：視覺連續 */
+  background: var(--page-bg);
+
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-left: 1px solid rgba(15, 23, 42, 0.06);
+
+  color: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media screen and (max-width: 900px), print and (max-width: 720px) {
+  .brand__text {
+    font-size: 15px;
+  }
+  .topbar {
+    padding: 0 10px;
+  }
+  .topbar__user {
+    display: none;
+  }
+
+  /* 小螢幕抽屜再窄一點 */
+  :root {
+    --drawer-w: 200px;
+  }
+}
+
+@media (max-height: 520px) and (pointer: coarse) {
+  :root {
+    --rail-w: 0px;
+    --drawer-w: min(260px, calc(100vw - 20px));
+  }
+
+  .brand__text {
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidenav {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 58px;
+    z-index: 60;
+  }
+
+  .sidenav__rail {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 58px;
+    padding: 5px 8px;
+    border-right: 0;
+    border-top: 1px solid var(--nav-line);
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 -8px 24px rgba(2, 6, 23, 0.08);
+  }
+
+  .rail__tab {
+    min-width: 66px;
+    height: 48px;
+    border-radius: 8px;
+    gap: 2px;
+  }
+
+  .tab__abbr {
+    font-size: 12px;
+  }
+
+  .sidenav__drawerHost {
+    left: 10px;
+    right: 10px;
+    bottom: 68px;
+    top: auto !important;
+    width: auto;
+    max-height: calc(100vh - var(--topbar-h) - 78px);
+    border-radius: 10px;
+  }
+
+  .page {
+    margin-left: 0;
+    padding-bottom: 76px;
+    border-left: 0;
+  }
+
+  .footer {
+    margin-left: 0;
+    padding-bottom: 70px;
+    border-left: 0;
+  }
+}
+
+/* ===== Density and mobile layout polish ===== */
+
+.brand__text {
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.rail__tab {
+  border-radius: 10px;
+}
+
+.tab__abbr,
+.nav__item,
+.drawer__title {
+  letter-spacing: 0;
+}
+
+.tab__abbr,
+.nav__item {
+  font-weight: 700;
+}
+
+.drawer__title {
+  font-weight: 760;
+}
+
+.nav__item {
+  border-radius: 8px;
+}
+
+@media screen and (max-width: 900px), print and (max-width: 720px) {
+  :root {
+    --rail-w: 0px;
+    --drawer-w: min(260px, calc(100vw - 20px));
+  }
+
+  .brand__text {
+    max-width: 48vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar__right {
+    gap: 6px;
+  }
+
+  .topbar__actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .topbar__actions .btn {
+    height: 32px;
+    padding: 0 9px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .sidenav {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(62px + env(safe-area-inset-bottom));
+    z-index: var(--z-nav);
+  }
+
+  .sidenav__rail {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(62px + env(safe-area-inset-bottom));
+    padding: 6px 8px;
+    border-right: 0;
+    border-top: 1px solid var(--nav-line);
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 -8px 24px rgba(2, 6, 23, 0.08);
+  }
+
+  .rail__tab {
+    min-width: 68px;
+    height: 50px;
+    border-radius: 8px;
+    gap: 2px;
+  }
+
+  .rail__tab .tab__icon i {
+    font-size: 15px;
+  }
+
+  .tab__abbr {
+    font-size: 12px;
+  }
+
+  .sidenav__drawerHost {
+    left: 10px;
+    right: 10px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    top: auto !important;
+    width: auto;
+    max-height: min(420px, calc(100vh - var(--topbar-h) - 92px));
+    border-radius: 10px;
+  }
+
+  .drawer__nav {
+    max-height: 300px;
+  }
+
+  .page {
+    margin-left: 0;
+    padding: 14px 10px calc(82px + env(safe-area-inset-bottom)) 10px;
+    border-left: 0;
+  }
+
+  .footer {
+    margin-left: 0;
+    padding: 12px 10px calc(74px + env(safe-area-inset-bottom)) 10px;
+    border-left: 0;
+  }
+}

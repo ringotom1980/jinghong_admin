@@ -1,0 +1,460 @@
+/*
+ * Path: Public/assets/css/dashboard.css
+ * 說明: Dashboard 共用視覺基底（卡片 / 按鈕 / hover / 陰影 / 排版）
+ * 規則：
+ * 1) 除了 h1-h6 以外，不設定任何字型/字級/字重（不碰 font-*）
+ * 2) 1-4（dash-tx2 內部卡片）整段不動
+ */
+
+/* =====================================================
+ * 0. Dashboard scope（只管顏色，不管字體）
+ * ===================================================== */
+
+.dashboard {
+  color: var(--text);
+}
+
+/* =====================================================
+ * 1. 標題（唯一允許的字體階層：h1~h6）
+ * ===================================================== */
+
+.dashboard h1,
+.dashboard h2,
+.dashboard h3,
+.dashboard h4,
+.dashboard h5,
+.dashboard h6 {
+  margin: 0;
+}
+
+/* 你頁面目前用到的是 h1/h2：只在這裡做統一 */
+.dashboard h1 {
+  /* 允許：h1~h6 的共用樣式 */
+  font-size: 22px;
+  font-weight: 760;
+}
+
+.dashboard h2 {
+  font-size: 18px;
+  font-weight: 730;
+}
+
+/* =====================================================
+ * 2. Section 版型
+ * ===================================================== */
+
+.dash-section {
+  margin-top: 14px;
+}
+
+.dash-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dash-section__meta {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* =====================================================
+ * 3. 卡片（系統級共用）
+ * - 不碰字體，只管：邊框/陰影/hover/間距
+ * ===================================================== */
+
+.db-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 10px 24px rgba(15, 23, 42, 0.08);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.db-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.16);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 14px 32px rgba(15, 23, 42, 0.12);
+}
+
+.db-card:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+/* 小卡片（只收斂 padding/陰影，不碰字體） */
+.db-card--sm {
+  padding: 10px 12px;
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.db-card--sm:hover {
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 12px 26px rgba(15, 23, 42, 0.1);
+}
+
+/* 卡片頭：只管排版 */
+.db-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.db-card-title {
+  font-weight: 700; /* 或 bold */
+}
+
+.db-card-meta {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* =====================================================
+ * 4. Row（小列：只管排版/邊框/背景）
+ * ===================================================== */
+
+.db-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.db-row + .db-row {
+  margin-top: 8px;
+}
+
+.db-row-k {
+  color: var(--muted);
+}
+
+.db-row-v {
+  color: var(--text);
+}
+
+.db-empty {
+  padding: 10px 4px;
+  color: var(--muted);
+}
+
+/* =====================================================
+ * 5. 動畫（可選）
+ * ===================================================== */
+
+.db-fade-in {
+  animation: dbFadeIn 0.18s ease-out both;
+}
+
+@keyframes dbFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* =====================================================
+ * 6. dash-grid：卡片同列不換行
+ * ===================================================== */
+
+.dash-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.dash-grid > .db-card {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* =====================================================
+ * 6-1. 車輛管理：由 3 張→4 張，改用 grid 自動排欄
+ * - 只影響 .dash-grid--vehicle，不影響其他 dash-grid
+ * ===================================================== */
+
+.dash-grid--vehicle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px; /* 跟原本一致 */
+}
+
+/* grid 下不需要 flex 設定，但保留 min-width:0 避免內容撐爆 */
+.dash-grid--vehicle > .db-card {
+  min-width: 0;
+}
+
+/* =====================================================
+ * 7. 1-1：近期領退作業狀態（四顆燈號按鈕）
+ * - 只做「燈條」+「字置中」+「高度/間距」
+ * - 不碰字體（不設定 font-*）
+ * - 不改你原本 db-card 的邊框/陰影/hover
+ * ===================================================== */
+
+.dash-lights {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* button reset（只做布局/外觀，不動字體） */
+.dash-light {
+  width: 100%;
+  text-align: center; /* 你要卡片內文字置中 */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: var(--muted);
+}
+
+/* 小卡片本體：用 pseudo-element 畫「上方燈條」 */
+.dash-light.db-card--sm {
+  position: relative; /* 給 ::before 定位 */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 文字/內容置中 */
+  gap: 10px;
+  min-height: 56px;
+  padding-top: 18px; /* 預留燈條空間（不壓到內容） */
+}
+
+/* 上方燈條（預設中性淡紅） */
+.dash-light.db-card--sm::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  height: 8px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* 你不要點：在 1-1 區塊隱藏原本 dot（不刪規則，避免別處用到） */
+.dash-lights .dash-light__dot {
+  display: none;
+}
+
+/* 燈條顏色：給有資料時顯示
+ * 你在 JS 或 HTML 上加 class：is-green / is-red
+ */
+.dash-light.is-green.db-card--sm::before {
+  background: rgba(34, 197, 94, 0.22); /* 淡綠 */
+}
+
+/* 1-1 小卡片下方提示文字 */
+.dash-hint{
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-2);
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* =====================================================
+ * 8. 1-4：你已調好的一段 — 完全保留不動
+ * ===================================================== */
+
+/* 1-4：領料 / 退料 左右排（只排版） */
+.dash-tx2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* 新 / 舊 / 合計 的位置排列（只排版） */
+.dash-tx2__grid {
+  display: grid;
+  grid-template-columns: auto minmax(56px, 22%) minmax(56px, 22%);
+  row-gap: 8px;
+  column-gap: 6px;
+  align-items: center;
+}
+
+/* 左側：桿上型/亭置式/合計 → 靠近數字框 + 置中 */
+.dash-tx2__grid > .db-sub:nth-child(3n + 1) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 靠右貼近數字框 */
+  padding-right: 2px;
+  margin: 0;
+  line-height: 1;
+}
+
+/* 1-4：領料/退料 標題底下虛線（符合你示意圖的位置） */
+.dash-tx2 > div > .db-h3 {
+  position: relative;
+  text-align: center;
+  color: var(--text);
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+}
+
+.dash-tx2 > div > .db-h3::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  border-bottom: 1px dashed rgba(15, 23, 42, 0.28);
+}
+
+/* 1-4：小卡片更小（只影響 dash-tx2 內） */
+.dash-tx2 .db-row {
+  padding: 4px 6px;
+  min-width: 0;
+  justify-content: center;
+  width: 100%;
+  margin-top: 0;
+}
+
+/* 1-4：卡片內文字顏色（只影響 1-4，不影響其他卡片） */
+.dash-tx2,
+.dash-tx2 .db-sub,
+.dash-tx2 .db-h3,
+.dash-tx2 .db-row-k,
+.dash-tx2 .db-row-v,
+.dash-tx2 .db-row {
+  color: var(--muted);
+}
+
+/* =====================================================
+ * 2-1/2-2：車輛檢查項目膠囊 + 更多
+ * ===================================================== */
+
+.db-row--vehicle {
+  align-items: center;
+}
+
+/* 同一列：左車名 + 右膠囊（不換行） */
+.db-vrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* 車名：同列省略號，不換行 */
+.db-vname {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 膠囊：同列、不換行、不捲動（最多 4 顆） */
+.db-pills {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.db-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.04);
+  color: rgba(15, 23, 42, 0.78);
+  white-space: nowrap;
+}
+
+/* 顏色：淡色系（跟你整體風格一致，不搶） */
+.db-pill--verify {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+.db-pill--insurance {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.22);
+}
+.db-pill--emission {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.22);
+}
+.db-pill--drive {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.22);
+}
+.db-pill--xray {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+.db-pill--insulation {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.22);
+}
+.db-pill--muted {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+/* 2-3：活電工具檢驗 狀態膠囊（只用兩種字） */
+.db-pill--overdue {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.26);
+  color: rgba(185, 28, 28, 0.9);
+}
+
+.db-pill--soon {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.26);
+  color: rgba(133, 77, 14, 0.92);
+}
+
+.db-more {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.db-pill--more {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(15, 23, 42, 0.16);
+}
+
+.db-pill--more:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* =====================================================
+ * 2-1/2-2：車輛檢查項目膠囊 + 更多----結束
+ * ===================================================== */
+
+@media screen and (max-width: 1100px) {
+  .dashboard .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .dashboard :is(.dash-section__head, .db-card-head, .db-row) { flex-wrap: wrap; }
+  .dashboard :is(.dash-section__meta, .db-card-meta) { white-space: normal; }
+}
+@media screen and (max-width: 600px) {
+  .dashboard .dash-tx2 { grid-template-columns: minmax(0, 1fr); }
+}

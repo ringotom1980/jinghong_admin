@@ -1,0 +1,1306 @@
+<?php
+
+/**
+ * Path: app/services/VehicleService.php
+ * 說明: 車輛管理服務（基本資料 / 檢查 / 照片）
+ *
+ * DB tables:
+ * - vehicle_vehicles
+ * - vehicle_vehicle_types
+ * - vehicle_brands
+ * - vehicle_boom_types
+ * - vehicle_inspection_types
+ * - vehicle_vehicle_inspections
+ * - vehicle_vehicle_inspection_rules
+ *
+ * storage:
+ * - storage/uploads/vehicles/vehicle_{id}.jpg  (與 app/ 同層的 storage/)
+ */
+
+declare(strict_types=1);
+
+final class VehicleService
+{
+  /** 將到期門檻（天） */
+  private const DUE_SOON_DAYS = 30;
+
+  public static function getDicts(): array
+  {
+    $pdo = db();
+
+    $types = $pdo->query("
+      SELECT id, name, sort_no, is_enabled
+      FROM vehicle_vehicle_types
+      WHERE is_enabled = 1
+      ORDER BY sort_no ASC, id ASC
+    ")->fetchAll();
+
+    $brands = $pdo->query("
+      SELECT id, name, sort_no, is_enabled
+      FROM vehicle_brands
+      WHERE is_enabled = 1
+      ORDER BY sort_no ASC, id ASC
+    ")->fetchAll();
+
+    $boomTypes = $pdo->query("
+      SELECT id, name, sort_no, is_enabled
+      FROM vehicle_boom_types
+      WHERE is_enabled = 1
+      ORDER BY sort_no ASC, id ASC
+    ")->fetchAll();
+
+    $inspectionTypes = $pdo->query("
+      SELECT type_id, type_key, type_name, sort_no, is_enabled
+      FROM vehicle_inspection_types
+      WHERE is_enabled = 1
+      ORDER BY sort_no ASC, type_id ASC
+    ")->fetchAll();
+
+    return [
+      'types' => $types,
+      'brands' => $brands,
+      'boom_types' => $boomTypes,
+      'inspection_types' => $inspectionTypes,
+      'due_soon_days' => self::DUE_SOON_DAYS,
+    ];
+  }
+
+  /**
+   * 左側清單：vehicles + 檢查聚合（逾期/將到期/正常/免檢）
+   */
+  public static function listVehiclesWithInspectionAgg(): array
+  {
+    $pdo = db();
+
+    // 先撈 vehicles + 字典名稱（快）
+    $rows = $pdo->query("
+      SELECT
+        v.id,
+        v.vehicle_code,
+        v.plate_no,
+        v.owner_name,
+        v.user_name,
+        v.vehicle_type_id,
+        v.brand_id,
+        v.boom_type_id,
+        v.is_active,
+        UNIX_TIMESTAMP(v.updated_at) AS updated_ts,
+        vt.name AS type_name,
+        vb.name AS brand_name,
+        bt.name AS boom_type_name
+      FROM vehicle_vehicles v
+      LEFT JOIN vehicle_vehicle_types vt ON vt.id = v.vehicle_type_id
+      LEFT JOIN vehicle_brands vb ON vb.id = v.brand_id
+      LEFT JOIN vehicle_boom_types bt ON bt.id = v.boom_type_id
+      ORDER BY v.vehicle_code ASC
+    ")->fetchAll();
+
+    if (!$rows) {
+      return ['vehicles' => []];
+    }
+
+    // 再撈檢查狀態（用 rules 決定 required，沒 rule ＝ required）
+    $vehicleIds = array_map(static fn($r) => (int)$r['id'], $rows);
+    $in = implode(',', array_fill(0, count($vehicleIds), '?'));
+
+    $sql = "
+      SELECT
+        t.type_id,
+        t.type_key,
+        t.type_name,
+        v.id AS vehicle_id,
+        COALESCE(r.is_required, 1) AS is_required,
+        i.due_date
+      FROM vehicle_vehicles v
+      JOIN vehicle_inspection_types t ON t.is_enabled = 1
+      LEFT JOIN vehicle_vehicle_inspection_rules r
+        ON r.vehicle_id = v.id AND r.type_id = t.type_id
+      LEFT JOIN vehicle_vehicle_inspections i
+        ON i.vehicle_id = v.id AND i.type_id = t.type_id
+      WHERE v.id IN ($in)
+      ORDER BY v.id ASC, t.sort_no ASC, t.type_id ASC
+    ";
+
+    $st = $pdo->prepare($sql);
+    foreach ($vehicleIds as $idx => $vid) $st->bindValue($idx + 1, $vid, PDO::PARAM_INT);
+    $st->execute();
+    $inspRows = $st->fetchAll();
+
+    // 聚合
+    $byVehicle = [];
+    foreach ($vehicleIds as $vid) {
+      $byVehicle[$vid] = ['OVERDUE' => 0, 'DUE_SOON' => 0, 'OK' => 0, 'NA' => 0, 'UNSET' => 0];
+    }
+
+    $today = new DateTimeImmutable('today');
+    $soonDate = $today->modify('+' . self::DUE_SOON_DAYS . ' days');
+
+    foreach ($inspRows as $r) {
+      $vid = (int)$r['vehicle_id'];
+      $required = ((int)$r['is_required'] === 1);
+
+      if (!$required) {
+        $byVehicle[$vid]['NA']++;
+        continue;
+      }
+
+      $due = $r['due_date'] ? new DateTimeImmutable((string)$r['due_date']) : null;
+      if (!$due) {
+        $byVehicle[$vid]['UNSET']++;
+        continue;
+      }
+
+      if ($due < $today) $byVehicle[$vid]['OVERDUE']++;
+      else if ($due <= $soonDate) $byVehicle[$vid]['DUE_SOON']++;
+      else $byVehicle[$vid]['OK']++;
+    }
+
+    // 回填到 rows
+    foreach ($rows as &$v) {
+      $vid = (int)$v['id'];
+      $agg = $byVehicle[$vid] ?? ['OVERDUE' => 0, 'DUE_SOON' => 0, 'OK' => 0, 'NA' => 0, 'UNSET' => 0];
+
+      $v['overdue_count'] = (int)$agg['OVERDUE'];
+      $v['soon_count'] = (int)$agg['DUE_SOON'];
+      $v['ok_count'] = (int)$agg['OK'];
+      $v['na_count'] = (int)$agg['NA'];
+      $v['unset_count'] = (int)$agg['UNSET'];
+    }
+    unset($v);
+
+    return ['vehicles' => $rows];
+  }
+
+  /**
+   * 右側 bundle：vehicle + inspections(status) + rules(map)
+   */
+  public static function getVehicleBundle(int $vehicleId): ?array
+  {
+    $pdo = db();
+
+    $st = $pdo->prepare("
+      SELECT
+        v.*,
+        vt.name AS type_name,
+        vb.name AS brand_name,
+        bt.name AS boom_type_name
+      FROM vehicle_vehicles v
+      LEFT JOIN vehicle_vehicle_types vt ON vt.id = v.vehicle_type_id
+      LEFT JOIN vehicle_brands vb ON vb.id = v.brand_id
+      LEFT JOIN vehicle_boom_types bt ON bt.id = v.boom_type_id
+      WHERE v.id = ?
+      LIMIT 1
+    ");
+    $st->execute([$vehicleId]);
+    $v = $st->fetch();
+    if (!$v) return null;
+
+    // rules
+    $rst = $pdo->prepare("
+      SELECT type_id, is_required
+      FROM vehicle_vehicle_inspection_rules
+      WHERE vehicle_id = ?
+    ");
+    $rst->execute([$vehicleId]);
+    $rulesRows = $rst->fetchAll();
+
+    $rules = [];
+    foreach ($rulesRows as $rr) {
+      $rules[(string)$rr['type_id']] = (int)$rr['is_required'];
+    }
+
+    // inspections with computed status
+    $inspections = self::listInspectionsForVehicle($vehicleId);
+
+    // photo_url（對外可直接用；用 updated_at 做 cache-busting）
+    $v['photo_url'] = self::photoUrlFromRow($v);
+
+    return [
+      'vehicle' => $v,
+      'rules' => $rules,
+      'inspections' => $inspections,
+      'due_soon_days' => self::DUE_SOON_DAYS,
+    ];
+  }
+
+  public static function createVehicle(array $body): array
+  {
+    $pdo = db();
+
+    $vehicleCode = isset($body['vehicle_code']) ? trim((string)$body['vehicle_code']) : '';
+    if ($vehicleCode === '') {
+      throw new RuntimeException('vehicle_code 不可為空');
+    }
+    // ✅ 正規化：去空白、轉大寫、允許 A01 / A-01 → 一律 A-01
+    $vehicleCode = strtoupper(preg_replace('/\s+/', '', $vehicleCode));
+
+    // A01 → A-01
+    if (preg_match('/^[A-Z]\d{2}$/', $vehicleCode)) {
+      $vehicleCode = substr($vehicleCode, 0, 1) . '-' . substr($vehicleCode, 1, 2);
+    }
+
+    // 最終格式必須 A-01
+    if (!preg_match('/^[A-Z]-\d{2}$/', $vehicleCode)) {
+      throw new RuntimeException('車輛編號格式不正確（例：A-01）');
+    }
+
+    // 先擋重複（也會被 UNIQUE 擋，但這樣訊息更友善）
+    $stDup = $pdo->prepare("SELECT 1 FROM vehicle_vehicles WHERE vehicle_code = ? LIMIT 1");
+    $stDup->execute([$vehicleCode]);
+    if ($stDup->fetchColumn()) {
+      throw new RuntimeException('車輛編號已存在，請更換');
+    }
+
+    $plate = isset($body['plate_no']) ? trim((string)$body['plate_no']) : null;
+    $owner = isset($body['owner_name']) ? trim((string)$body['owner_name']) : null;
+    $user  = isset($body['user_name']) ? trim((string)$body['user_name']) : null;
+
+    $vehicleTypeId = self::toNullableInt($body['vehicle_type_id'] ?? null);
+    $brandId       = self::toNullableInt($body['brand_id'] ?? null);
+    $boomTypeId    = self::toNullableInt($body['boom_type_id'] ?? null);
+    $vehicleTypeNew = isset($body['vehicle_type_new']) ? trim((string)$body['vehicle_type_new']) : '';
+    $brandNew       = isset($body['brand_new']) ? trim((string)$body['brand_new']) : '';
+    $boomTypeNew    = isset($body['boom_type_new']) ? trim((string)$body['boom_type_new']) : '';
+
+    if ($vehicleTypeId === null && $vehicleTypeNew !== '') {
+      $vehicleTypeId = self::getOrCreateDictId($pdo, 'vehicle_vehicle_types', $vehicleTypeNew);
+    }
+    if ($brandId === null && $brandNew !== '') {
+      $brandId = self::getOrCreateDictId($pdo, 'vehicle_brands', $brandNew);
+    }
+    if ($boomTypeId === null && $boomTypeNew !== '') {
+      $boomTypeId = self::getOrCreateDictId($pdo, 'vehicle_boom_types', $boomTypeNew);
+    }
+
+    $tonnage = self::toNullableDecimal($body['tonnage'] ?? null);
+    $year    = self::toNullableInt($body['vehicle_year'] ?? null);
+
+    $vehiclePrice = self::toNullableDecimal($body['vehicle_price'] ?? null);
+    $boomPrice    = self::toNullableDecimal($body['boom_price'] ?? null);
+    $bucketPrice  = self::toNullableDecimal($body['bucket_price'] ?? null);
+    // ✅ 必填欄位保底（CREATE）
+    if (($plate ?? '') === '') throw new RuntimeException('車牌號碼為必填');
+    if (($owner ?? '') === '') throw new RuntimeException('車主為必填');
+
+    if ($vehicleTypeId === null) throw new RuntimeException('車輛類型為必填');
+    if ($brandId === null) throw new RuntimeException('廠牌為必填');
+    if ($boomTypeId === null) throw new RuntimeException('吊臂型式為必填');
+
+    // tonnage 目前是字串（DECIMAL 格式），用 float 判斷 > 0
+    if ($tonnage === null || (float)$tonnage <= 0) throw new RuntimeException('噸數為必填且需大於 0');
+
+    // year 是 int or null
+    if ($year === null) throw new RuntimeException('出廠年份為必填');
+    if ($year < 1980 || $year > 2100) throw new RuntimeException('出廠年份不正確（1980-2100）');
+
+    $isActive = isset($body['is_active']) ? (int)$body['is_active'] : 1;
+    $note     = isset($body['note']) ? trim((string)$body['note']) : null;
+
+    $st = $pdo->prepare("
+    INSERT INTO vehicle_vehicles
+      (vehicle_code, plate_no, vehicle_type_id, brand_id, boom_type_id,
+       owner_name, user_name, tonnage, vehicle_year,
+       vehicle_price, boom_price, bucket_price, is_active, note)
+    VALUES
+      (:vehicle_code, :plate_no, :vehicle_type_id, :brand_id, :boom_type_id,
+       :owner_name, :user_name, :tonnage, :vehicle_year,
+       :vehicle_price, :boom_price, :bucket_price, :is_active, :note)
+  ");
+
+    $st->execute([
+      ':vehicle_code' => $vehicleCode,
+      ':plate_no' => ($plate === '') ? null : $plate,
+      ':vehicle_type_id' => $vehicleTypeId,
+      ':brand_id' => $brandId,
+      ':boom_type_id' => $boomTypeId,
+      ':owner_name' => ($owner === '') ? null : $owner,
+      ':user_name' => ($user === '') ? null : $user,
+      ':tonnage' => $tonnage,
+      ':vehicle_year' => $year,
+      ':vehicle_price' => $vehiclePrice,
+      ':boom_price' => $boomPrice,
+      ':bucket_price' => $bucketPrice,
+      ':is_active' => ($isActive === 1) ? 1 : 0,
+      ':note' => ($note === '') ? null : $note,
+    ]);
+
+    $newId = (int)$pdo->lastInsertId();
+    $bundle = self::getVehicleBundle($newId);
+    if (!$bundle) {
+      throw new RuntimeException('新增成功但讀取失敗');
+    }
+    return $bundle;
+  }
+
+  public static function saveVehicle(int $id, array $body): array
+  {
+    $pdo = db();
+
+    // 基本防呆（你需要更嚴格再加）
+    $plate = isset($body['plate_no']) ? trim((string)$body['plate_no']) : null;
+    $owner = isset($body['owner_name']) ? trim((string)$body['owner_name']) : null;
+    $user = isset($body['user_name']) ? trim((string)$body['user_name']) : null;
+
+    $vehicleTypeId = self::toNullableInt($body['vehicle_type_id'] ?? null);
+    $brandId = self::toNullableInt($body['brand_id'] ?? null);
+    $boomTypeId = self::toNullableInt($body['boom_type_id'] ?? null);
+    // ✅ 支援「＋新增…」：EDIT 也允許用 *_new 自動建立字典並回填 ID
+    $vehicleTypeNew = isset($body['vehicle_type_new']) ? trim((string)$body['vehicle_type_new']) : '';
+    $brandNew       = isset($body['brand_new']) ? trim((string)$body['brand_new']) : '';
+    $boomTypeNew    = isset($body['boom_type_new']) ? trim((string)$body['boom_type_new']) : '';
+
+    if ($vehicleTypeId === null && $vehicleTypeNew !== '') {
+      $vehicleTypeId = self::getOrCreateDictId($pdo, 'vehicle_vehicle_types', $vehicleTypeNew);
+    }
+    if ($brandId === null && $brandNew !== '') {
+      $brandId = self::getOrCreateDictId($pdo, 'vehicle_brands', $brandNew);
+    }
+    if ($boomTypeId === null && $boomTypeNew !== '') {
+      $boomTypeId = self::getOrCreateDictId($pdo, 'vehicle_boom_types', $boomTypeNew);
+    }
+
+    $tonnage = self::toNullableDecimal($body['tonnage'] ?? null);
+    $year = self::toNullableInt($body['vehicle_year'] ?? null);
+
+    $vehiclePrice = self::toNullableDecimal($body['vehicle_price'] ?? null);
+    $boomPrice = self::toNullableDecimal($body['boom_price'] ?? null);
+    $bucketPrice = self::toNullableDecimal($body['bucket_price'] ?? null);
+    // ✅ 必填欄位保底（EDIT：更新也不可清空）
+    if (($plate ?? '') === '') throw new RuntimeException('車牌號碼為必填');
+    if (($owner ?? '') === '') throw new RuntimeException('車主為必填');
+
+    if ($vehicleTypeId === null) throw new RuntimeException('車輛類型為必填');
+    if ($brandId === null) throw new RuntimeException('廠牌為必填');
+    if ($boomTypeId === null) throw new RuntimeException('吊臂型式為必填');
+
+    if ($tonnage === null || (float)$tonnage <= 0) throw new RuntimeException('噸數為必填且需大於 0');
+
+    if ($year === null) throw new RuntimeException('出廠年份為必填');
+    if ($year < 1980 || $year > 2100) throw new RuntimeException('出廠年份不正確（1980-2100）');
+
+    $isActive = isset($body['is_active']) ? (int)$body['is_active'] : 1;
+    $note = isset($body['note']) ? trim((string)$body['note']) : null;
+
+    $st = $pdo->prepare("
+      UPDATE vehicle_vehicles
+      SET
+        plate_no = :plate_no,
+        vehicle_type_id = :vehicle_type_id,
+        brand_id = :brand_id,
+        boom_type_id = :boom_type_id,
+        owner_name = :owner_name,
+        user_name = :user_name,
+        tonnage = :tonnage,
+        vehicle_year = :vehicle_year,
+        vehicle_price = :vehicle_price,
+        boom_price = :boom_price,
+        bucket_price = :bucket_price,
+        is_active = :is_active,
+        note = :note
+      WHERE id = :id
+      LIMIT 1
+    ");
+
+    $st->execute([
+      ':plate_no' => ($plate === '') ? null : $plate,
+      ':vehicle_type_id' => $vehicleTypeId,
+      ':brand_id' => $brandId,
+      ':boom_type_id' => $boomTypeId,
+      ':owner_name' => ($owner === '') ? null : $owner,
+      ':user_name' => ($user === '') ? null : $user,
+      ':tonnage' => $tonnage,
+      ':vehicle_year' => $year,
+      ':vehicle_price' => $vehiclePrice,
+      ':boom_price' => $boomPrice,
+      ':bucket_price' => $bucketPrice,
+      ':is_active' => ($isActive === 1) ? 1 : 0,
+      ':note' => ($note === '') ? null : $note,
+      ':id' => $id
+    ]);
+
+    // 回傳最新 row（含字典名稱）
+    $bundle = self::getVehicleBundle($id);
+    if (!$bundle || !isset($bundle['vehicle'])) {
+      throw new RuntimeException('儲存成功但讀取失敗');
+    }
+
+    return $bundle['vehicle'];
+  }
+
+  /**
+   * 儲存單項檢查到期日（UPSERT）
+   * 回傳該車 inspections（含 status）
+   */
+  public static function saveInspectionDueDate(int $vehicleId, int $typeId, ?string $dueDate): array
+  {
+    $pdo = db();
+
+    // 若該項目不需要檢查，前端已 disabled；後端仍再保底允許寫入但不建議
+    $st = $pdo->prepare("
+      INSERT INTO vehicle_vehicle_inspections (vehicle_id, type_id, due_date)
+      VALUES (:vehicle_id, :type_id, :due_date)
+      ON DUPLICATE KEY UPDATE
+        due_date = VALUES(due_date),
+        updated_at = CURRENT_TIMESTAMP()
+    ");
+    $st->execute([
+      ':vehicle_id' => $vehicleId,
+      ':type_id' => $typeId,
+      ':due_date' => $dueDate
+    ]);
+
+    return self::listInspectionsForVehicle($vehicleId);
+  }
+
+  public static function saveInspectionRuleAndDate(int $vehicleId, int $typeId, int $isRequired, ?string $dueDate): array
+  {
+    $pdo = db();
+    $isRequired = ($isRequired === 1) ? 1 : 0;
+
+    // upsert rules
+    $st = $pdo->prepare("
+    INSERT INTO vehicle_vehicle_inspection_rules (vehicle_id, type_id, is_required)
+    VALUES (:vehicle_id, :type_id, :is_required)
+    ON DUPLICATE KEY UPDATE
+      is_required = VALUES(is_required)
+  ");
+    $st->execute([
+      ':vehicle_id' => $vehicleId,
+      ':type_id' => $typeId,
+      ':is_required' => $isRequired,
+    ]);
+
+    // 若不需檢查：同步把 due_date 清空（避免殘留）
+    if ($isRequired === 0) {
+      $st2 = $pdo->prepare("
+      INSERT INTO vehicle_vehicle_inspections (vehicle_id, type_id, due_date)
+      VALUES (:vehicle_id, :type_id, NULL)
+      ON DUPLICATE KEY UPDATE
+        due_date = NULL,
+        updated_at = CURRENT_TIMESTAMP()
+    ");
+      $st2->execute([
+        ':vehicle_id' => $vehicleId,
+        ':type_id' => $typeId,
+      ]);
+    } else {
+      // required=1：dueDate 一定有值（API 已擋）
+      $st3 = $pdo->prepare("
+      INSERT INTO vehicle_vehicle_inspections (vehicle_id, type_id, due_date)
+      VALUES (:vehicle_id, :type_id, :due_date)
+      ON DUPLICATE KEY UPDATE
+        due_date = VALUES(due_date),
+        updated_at = CURRENT_TIMESTAMP()
+    ");
+      $st3->execute([
+        ':vehicle_id' => $vehicleId,
+        ':type_id' => $typeId,
+        ':due_date' => $dueDate,
+      ]);
+    }
+
+    // 回傳：inspections + rules（讓前端 state 同步）
+    $inspections = self::listInspectionsForVehicle($vehicleId);
+
+    $rst = $pdo->prepare("
+    SELECT type_id, is_required
+    FROM vehicle_vehicle_inspection_rules
+    WHERE vehicle_id = ?
+  ");
+    $rst->execute([$vehicleId]);
+    $rulesRows = $rst->fetchAll();
+    $rules = [];
+    foreach ($rulesRows as $rr) $rules[(string)$rr['type_id']] = (int)$rr['is_required'];
+
+    return ['inspections' => $inspections, 'rules' => $rules];
+  }
+
+  /**
+   * 取得該車 inspections（帶 status 與 is_required）
+   */
+  public static function listInspectionsForVehicle(int $vehicleId): array
+  {
+    $pdo = db();
+
+    $st = $pdo->prepare("
+      SELECT
+        t.type_id,
+        t.type_key,
+        t.type_name,
+        t.sort_no,
+        v.id AS vehicle_id,
+        COALESCE(r.is_required, 1) AS is_required,
+        i.due_date
+      FROM vehicle_vehicles v
+      JOIN vehicle_inspection_types t ON t.is_enabled = 1
+      LEFT JOIN vehicle_vehicle_inspection_rules r
+        ON r.vehicle_id = v.id AND r.type_id = t.type_id
+      LEFT JOIN vehicle_vehicle_inspections i
+        ON i.vehicle_id = v.id AND i.type_id = t.type_id
+      WHERE v.id = ?
+      ORDER BY t.sort_no ASC, t.type_id ASC
+    ");
+    $st->execute([$vehicleId]);
+    $rows = $st->fetchAll();
+
+    $today = new DateTimeImmutable('today');
+    $soonDate = $today->modify('+' . self::DUE_SOON_DAYS . ' days');
+
+    foreach ($rows as &$r) {
+      $required = ((int)$r['is_required'] === 1);
+      if (!$required) {
+        $r['status'] = 'NA';
+        continue;
+      }
+
+      $due = $r['due_date'] ? new DateTimeImmutable((string)$r['due_date']) : null;
+      if (!$due) {
+        $r['status'] = 'UNSET';
+        continue;
+      }
+
+      if ($due < $today) $r['status'] = 'OVERDUE';
+      else if ($due <= $soonDate) $r['status'] = 'DUE_SOON';
+      else $r['status'] = 'OK';
+    }
+    unset($r);
+
+    return $rows;
+  }
+
+  /**
+   * 照片覆蓋上傳：storage/uploads/vehicles/vehicle_{id}.jpg
+   * 回傳 photo_url（含 cache-busting）
+   *
+   * ✅ 新增：若 DB 原本 photo_path 指向舊檔名（例如 KEQ-2562.jpg），在更新成功後刪除舊檔
+   */
+  public static function uploadVehiclePhoto(int $vehicleId, array $file): string
+  {
+    if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+      throw new RuntimeException('上傳檔案無效');
+    }
+
+    // 檔案大小
+    $size = (int)($file['size'] ?? 0);
+    if ($size <= 0) throw new RuntimeException('檔案大小為 0');
+    if ($size > 6 * 1024 * 1024) throw new RuntimeException('檔案過大（上限 6MB）');
+
+    $pdo = db();
+
+    // ✅ 先讀舊路徑（用於事後刪舊檔）
+    $oldPhotoPath = '';
+    $stOld = $pdo->prepare("SELECT photo_path FROM vehicle_vehicles WHERE id = ? LIMIT 1");
+    $stOld->execute([$vehicleId]);
+    $oldRow = $stOld->fetch();
+    if ($oldRow && isset($oldRow['photo_path'])) {
+      $oldPhotoPath = trim((string)$oldRow['photo_path']);
+    }
+
+    // 目標目錄：{projectRoot}/storage/uploads/vehicles
+    $projectRoot = JINGHONG_SHARED_ROOT; // app/services -> app -> project root
+    $dir = $projectRoot . '/storage/uploads/vehicles';
+    if (!is_dir($dir)) {
+      if (!mkdir($dir, 0775, true) && !is_dir($dir)) {
+        throw new RuntimeException('建立 storage 目錄失敗');
+      }
+    }
+
+    $newPhotoPath = 'storage/uploads/vehicles/vehicle_' . $vehicleId . '.jpg';
+    $targetFs = $projectRoot . '/' . $newPhotoPath;
+
+    // 轉 jpg（確保一致覆蓋）
+    $tmp = $file['tmp_name'];
+    $imgInfo = @getimagesize($tmp);
+    if (!$imgInfo) throw new RuntimeException('不支援的圖片格式');
+
+    $mime = (string)($imgInfo['mime'] ?? '');
+    $src = null;
+    if ($mime === 'image/jpeg') $src = @imagecreatefromjpeg($tmp);
+    else if ($mime === 'image/png') $src = @imagecreatefrompng($tmp);
+    else if ($mime === 'image/webp') $src = @imagecreatefromwebp($tmp);
+
+    if (!$src) throw new RuntimeException('圖片讀取失敗');
+
+    // 以原尺寸輸出 jpg（品質 85）
+    if (!@imagejpeg($src, $targetFs, 85)) {
+      imagedestroy($src);
+      throw new RuntimeException('寫入 JPG 失敗');
+    }
+    imagedestroy($src);
+
+    // DB 更新 photo_path
+    $st = $pdo->prepare("
+      UPDATE vehicle_vehicles
+      SET photo_path = :p
+      WHERE id = :id
+      LIMIT 1
+    ");
+    $st->execute([':p' => $newPhotoPath, ':id' => $vehicleId]);
+
+    // ✅ 刪除舊檔（安全白名單：只允許刪 storage/uploads/vehicles/ 內的檔）
+    if ($oldPhotoPath !== '' && $oldPhotoPath !== $newPhotoPath) {
+      $prefix = 'storage/uploads/vehicles/';
+      $oldNorm = ltrim($oldPhotoPath, '/');
+      if (str_starts_with($oldNorm, $prefix)) {
+        $oldFs = $projectRoot . '/' . $oldNorm;
+
+        // 防呆：避免路徑跳脫
+        $realBase = realpath($projectRoot . '/' . $prefix);
+        $realOld  = $oldFs && file_exists($oldFs) ? realpath($oldFs) : false;
+
+        if ($realBase && $realOld && str_starts_with($realOld, $realBase) && is_file($realOld)) {
+          @unlink($realOld);
+        }
+      }
+    }
+
+    // 回傳可直接顯示的 URL（走 BASE_URL）
+    return self::publicUrl($newPhotoPath) . '?v=' . (is_file($targetFs) ? (int)@filemtime($targetFs) : time());
+  }
+
+  /* ================================
+   * Repairs / Vendors（維修紀錄）
+   * ================================ */
+  public static function vehicleRepairList(array $filters = []): array
+  {
+    $pdo = db();
+
+    $key = isset($filters['key']) ? trim((string)$filters['key']) : '';
+
+    $where = '';
+    $params = [];
+
+    // key: YYYY-H1 / YYYY-H2 / YYYY
+    if ($key !== '') {
+      if (preg_match('/^(\d{4})-(H1|H2)$/', $key, $m)) {
+        $y = (int)$m[1];
+        $h = (string)$m[2];
+        $start = ($h === 'H1') ? sprintf('%04d-01-01', $y) : sprintf('%04d-07-01', $y);
+        $end   = ($h === 'H1') ? sprintf('%04d-06-30', $y) : sprintf('%04d-12-31', $y);
+
+        $where = 'WHERE h.repair_date BETWEEN ? AND ?';
+        $params = [$start, $end];
+      } else if (preg_match('/^\d{4}$/', $key)) {
+        $y = (int)$key;
+        $start = sprintf('%04d-01-01', $y);
+        $end   = sprintf('%04d-12-31', $y);
+
+        $where = 'WHERE h.repair_date BETWEEN ? AND ?';
+        $params = [$start, $end];
+      }
+    }
+
+    // 列表：header + vehicle + vendor
+    $sql = "
+    SELECT
+      h.id,
+      h.vehicle_id,
+      v.vehicle_code,
+      v.plate_no,
+      v.user_name,
+      h.repair_date,
+      h.repair_type,
+      h.mileage,
+      h.note,
+      h.team_amount_total,
+      h.company_amount_total,
+      h.grand_total,
+      vd.name AS vendor_name
+    FROM vehicle_repair_headers h
+    JOIN vehicle_vehicles v ON v.id = h.vehicle_id
+    LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
+    {$where}
+    ORDER BY h.repair_date DESC, h.id DESC
+  ";
+
+    if ($params) {
+      $st = $pdo->prepare($sql);
+      $st->execute($params);
+      $rows = $st->fetchAll();
+    } else {
+      $rows = $pdo->query($sql)->fetchAll();
+    }
+
+    if (!$rows) return ['rows' => []];
+
+    // items summary：一次撈所有 item（避免 N+1）
+    $ids = array_map(static fn($r) => (int)$r['id'], $rows);
+    $in = implode(',', array_fill(0, count($ids), '?'));
+
+    $st2 = $pdo->prepare("
+    SELECT repair_id, seq, content, team_amount, company_amount
+    FROM vehicle_repair_items
+    WHERE repair_id IN ($in)
+    ORDER BY repair_id ASC, seq ASC, id ASC
+  ");
+    foreach ($ids as $i => $id) $st2->bindValue($i + 1, $id, PDO::PARAM_INT);
+    $st2->execute();
+    $items = $st2->fetchAll();
+
+    $map = []; // rid => ['contents'=>[], 'tooltip_lines'=>[]]
+    foreach ($items as $it) {
+      $rid = (int)$it['repair_id'];
+      if (!isset($map[$rid])) $map[$rid] = ['contents' => [], 'tooltip_lines' => []];
+
+      $content = (string)($it['content'] ?? '');
+      $team = (float)($it['team_amount'] ?? 0);
+      $comp = (float)($it['company_amount'] ?? 0);
+
+      // summary 用（前三筆 + …）
+      $map[$rid]['contents'][] = $content;
+
+      // tooltip 用（一筆一列：更換皮帶(公司800、工班600)）
+      // 金額顯示成整數（和你列表一致）
+      $map[$rid]['tooltip_lines'][] =
+        $content . '(公司' . (string)round($comp) . '、工班' . (string)round($team) . ')';
+    }
+
+    foreach ($rows as &$r) {
+      $rid = (int)$r['id'];
+      $pack = $map[$rid] ?? ['contents' => [], 'tooltip_lines' => []];
+
+      $arr = $pack['contents'] ?? [];
+      $lines = $pack['tooltip_lines'] ?? [];
+
+      $N = 3;
+      $summary = '';
+      if ($arr) {
+        $pick = array_slice($arr, 0, $N);
+        $summary = implode('、', $pick);
+        if (count($arr) > $N) $summary .= '…';
+      }
+      $r['items_summary'] = $summary;
+
+      // ✅ 原生 title 支援換行：一筆一列
+      $r['items_tooltip'] = $lines ? implode("\n", $lines) : '';
+    }
+    unset($r);
+
+    return ['rows' => $rows];
+  }
+
+  public static function vehicleRepairCapsules(): array
+  {
+    $pdo = db();
+
+    $yNow = (int)date('Y');
+
+    // 依 年 + 半年 分組
+    $rows = $pdo->query("
+    SELECT
+      YEAR(repair_date) AS y,
+      CASE WHEN MONTH(repair_date) <= 6 THEN 1 ELSE 2 END AS h,
+      COUNT(*) AS cnt,
+      MIN(repair_date) AS min_d,
+      MAX(repair_date) AS max_d
+    FROM vehicle_repair_headers
+    GROUP BY YEAR(repair_date), CASE WHEN MONTH(repair_date) <= 6 THEN 1 ELSE 2 END
+    ORDER BY y DESC, h DESC
+  ")->fetchAll();
+
+    if (!$rows) return ['capsules' => []];
+
+    $yPrev = $yNow - 1;
+
+    // 收集：今年/去年 分半年，其它年度彙總整年
+    $half = [
+      $yNow  => ['H1' => null, 'H2' => null],
+      $yPrev => ['H1' => null, 'H2' => null],
+    ];
+
+    $years = []; // 只放 <= yNow-2 的年度整年彙總
+
+    foreach ($rows as $r) {
+      $y = (int)$r['y'];
+      $h = ((int)$r['h'] === 1) ? 'H1' : 'H2';
+      $cnt = (int)$r['cnt'];
+      $min = (string)$r['min_d'];
+      $max = (string)$r['max_d'];
+
+      if ($y === $yNow || $y === $yPrev) {
+        $half[$y][$h] = ['cnt' => $cnt, 'min' => $min, 'max' => $max];
+        continue;
+      }
+
+      // 2024(含)以前：整年
+      if (!isset($years[$y])) {
+        $years[$y] = ['cnt' => 0, 'min' => $min, 'max' => $max];
+      }
+      $years[$y]['cnt'] += $cnt;
+      if ($min !== '' && $years[$y]['min'] !== '' && $min < $years[$y]['min']) $years[$y]['min'] = $min;
+      if ($max !== '' && $years[$y]['max'] !== '' && $max > $years[$y]['max']) $years[$y]['max'] = $max;
+    }
+
+    $caps = [];
+
+    // 今年：H2 -> H1（最近優先）
+    if (!empty($half[$yNow]['H2']) && (int)$half[$yNow]['H2']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yNow . '-H2',
+        'label' => $yNow . '下半年',
+        'count' => (int)$half[$yNow]['H2']['cnt'],
+        'start' => $yNow . '-07-01',
+        'end' => $yNow . '-12-31',
+        'is_default' => 1
+      ];
+    }
+    if (!empty($half[$yNow]['H1']) && (int)$half[$yNow]['H1']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yNow . '-H1',
+        'label' => $yNow . '上半年',
+        'count' => (int)$half[$yNow]['H1']['cnt'],
+        'start' => $yNow . '-01-01',
+        'end' => $yNow . '-06-30',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 去年：H2 -> H1
+    if (!empty($half[$yPrev]['H2']) && (int)$half[$yPrev]['H2']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H2',
+        'label' => $yPrev . '下半年',
+        'count' => (int)$half[$yPrev]['H2']['cnt'],
+        'start' => $yPrev . '-07-01',
+        'end' => $yPrev . '-12-31',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+    if (!empty($half[$yPrev]['H1']) && (int)$half[$yPrev]['H1']['cnt'] > 0) {
+      $caps[] = [
+        'key' => $yPrev . '-H1',
+        'label' => $yPrev . '上半年',
+        'count' => (int)$half[$yPrev]['H1']['cnt'],
+        'start' => $yPrev . '-01-01',
+        'end' => $yPrev . '-06-30',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 2024(含)以前：整年（由新到舊）
+    krsort($years);
+    foreach ($years as $y => $info) {
+      $caps[] = [
+        'key' => (string)$y,
+        'label' => $y . '年',
+        'count' => (int)$info['cnt'],
+        'start' => $y . '-01-01',
+        'end' => $y . '-12-31',
+        'is_default' => (count($caps) === 0) ? 1 : 0
+      ];
+    }
+
+    // 保底：萬一沒 default
+    if ($caps) {
+      $hasDefault = false;
+      foreach ($caps as $c) {
+        if (!empty($c['is_default'])) {
+          $hasDefault = true;
+          break;
+        }
+      }
+      if (!$hasDefault) $caps[0]['is_default'] = 1;
+    }
+
+    return ['capsules' => $caps];
+  }
+
+  public static function vehicleRepairGet(int $repairId): array
+  {
+    $pdo = db();
+
+    $st = $pdo->prepare("
+      SELECT
+        h.id,
+        h.vehicle_id,
+        h.vendor_id,
+        h.repair_date,
+        h.repair_type,
+        h.mileage,
+        h.note,
+        h.team_amount_total,
+        h.company_amount_total,
+        h.grand_total,
+        vd.name AS vendor_name
+      FROM vehicle_repair_headers h
+      LEFT JOIN vehicle_repair_vendors vd ON vd.id = h.vendor_id
+      WHERE h.id = ?
+      LIMIT 1
+    ");
+    $st->execute([$repairId]);
+    $h = $st->fetch();
+    if (!$h) throw new RuntimeException('找不到該筆維修紀錄');
+
+    // vendor 單欄位定版：EDIT 回填「名稱」（較符合使用者直覺）
+    $vendor = '';
+    if (!empty($h['vendor_name'])) $vendor = (string)$h['vendor_name'];
+    else if (!empty($h['vendor_id'])) $vendor = (string)$h['vendor_id'];
+
+    $itemsSt = $pdo->prepare("
+      SELECT
+        seq, content, team_amount, company_amount
+      FROM vehicle_repair_items
+      WHERE repair_id = ?
+      ORDER BY seq ASC, id ASC
+    ");
+    $itemsSt->execute([$repairId]);
+    $items = $itemsSt->fetchAll();
+
+    return [
+      'header' => [
+        'id' => (int)$h['id'],
+        'vehicle_id' => (int)$h['vehicle_id'],
+        'repair_date' => (string)$h['repair_date'],
+        'vendor' => $vendor,
+        'repair_type' => (string)$h['repair_type'],
+        'mileage' => ($h['mileage'] === null) ? '' : (int)$h['mileage'],
+        'note' => (string)($h['note'] ?? ''),
+      ],
+      'items' => array_map(static function ($it) {
+        return [
+          'seq' => (int)$it['seq'],
+          'content' => (string)$it['content'],
+          'team_amount' => (float)$it['team_amount'],
+          'company_amount' => (float)$it['company_amount'],
+        ];
+      }, $items)
+    ];
+  }
+
+  public static function vehicleRepairSave(array $payload): array
+  {
+    $pdo = db();
+
+    $id = isset($payload['id']) ? (int)$payload['id'] : 0;
+    $header = (isset($payload['header']) && is_array($payload['header'])) ? $payload['header'] : [];
+    $items = (isset($payload['items']) && is_array($payload['items'])) ? $payload['items'] : [];
+
+    $vehicleId = isset($header['vehicle_id']) ? (int)$header['vehicle_id'] : 0;
+    $repairDate = isset($header['repair_date']) ? trim((string)$header['repair_date']) : '';
+    $repairType = isset($header['repair_type']) ? trim((string)$header['repair_type']) : '維修';
+    $vendor = isset($header['vendor']) ? trim((string)$header['vendor']) : '';
+    $mileage = isset($header['mileage']) ? trim((string)$header['mileage']) : '';
+    $note = isset($header['note']) ? trim((string)$header['note']) : '';
+
+    if ($vehicleId <= 0) throw new RuntimeException('請選擇車輛');
+    if ($repairDate === '') throw new RuntimeException('請選擇維修日期');
+    if ($vendor === '') throw new RuntimeException('請輸入維修廠商（id 或名稱）');
+    if ($repairType !== '維修' && $repairType !== '保養') throw new RuntimeException('維修類別不正確');
+
+    if (!$items) throw new RuntimeException('請至少新增 1 筆明細');
+
+    // vendor 單欄位定版：純數字 => vendor_id；文字 => upsert name
+    $vendorId = self::vehicleVendorUpsert($vendor)['vendor_id'];
+
+    // items 正規化 + 後端重算 totals（防前端竄改）
+    $normItems = [];
+    $teamTotal = 0.0;
+    $companyTotal = 0.0;
+
+    foreach ($items as $idx => $it) {
+      if (!is_array($it)) continue;
+
+      $seq = isset($it['seq']) ? (int)$it['seq'] : ($idx + 1);
+      $content = isset($it['content']) ? trim((string)$it['content']) : '';
+      if ($content === '') throw new RuntimeException('明細第 ' . ($idx + 1) . ' 筆：content 不可空白');
+
+      $team = isset($it['team_amount']) ? (float)$it['team_amount'] : 0.0;
+      $comp = isset($it['company_amount']) ? (float)$it['company_amount'] : 0.0;
+
+      // 允許 0；不做正負限制（你若要限制不可負再加）
+      $teamTotal += $team;
+      $companyTotal += $comp;
+
+      $normItems[] = [
+        'seq' => $seq,
+        'content' => $content,
+        'team_amount' => $team,
+        'company_amount' => $comp,
+      ];
+    }
+
+    if (!$normItems) throw new RuntimeException('明細資料不正確');
+
+    usort($normItems, static fn($a, $b) => ($a['seq'] <=> $b['seq']));
+
+    $grandTotal = $teamTotal + $companyTotal;
+
+    $pdo->beginTransaction();
+    try {
+      if ($id <= 0) {
+        $st = $pdo->prepare("
+          INSERT INTO vehicle_repair_headers
+            (vehicle_id, vendor_id, repair_date, repair_type, mileage, note,
+             team_amount_total, company_amount_total, grand_total)
+          VALUES
+            (:vehicle_id, :vendor_id, :repair_date, :repair_type, :mileage, :note,
+             :team_total, :company_total, :grand_total)
+        ");
+        $st->execute([
+          ':vehicle_id' => $vehicleId,
+          ':vendor_id' => $vendorId,
+          ':repair_date' => $repairDate,
+          ':repair_type' => $repairType,
+          ':mileage' => ($mileage === '') ? null : (int)$mileage,
+          ':note' => ($note === '') ? null : $note,
+          ':team_total' => number_format($teamTotal, 2, '.', ''),
+          ':company_total' => number_format($companyTotal, 2, '.', ''),
+          ':grand_total' => number_format($grandTotal, 2, '.', ''),
+        ]);
+        $id = (int)$pdo->lastInsertId();
+      } else {
+        // 更新 header
+        $st = $pdo->prepare("
+          UPDATE vehicle_repair_headers
+          SET
+            vehicle_id = :vehicle_id,
+            vendor_id = :vendor_id,
+            repair_date = :repair_date,
+            repair_type = :repair_type,
+            mileage = :mileage,
+            note = :note,
+            team_amount_total = :team_total,
+            company_amount_total = :company_total,
+            grand_total = :grand_total
+          WHERE id = :id
+          LIMIT 1
+        ");
+        $st->execute([
+          ':vehicle_id' => $vehicleId,
+          ':vendor_id' => $vendorId,
+          ':repair_date' => $repairDate,
+          ':repair_type' => $repairType,
+          ':mileage' => ($mileage === '') ? null : (int)$mileage,
+          ':note' => ($note === '') ? null : $note,
+          ':team_total' => number_format($teamTotal, 2, '.', ''),
+          ':company_total' => number_format($companyTotal, 2, '.', ''),
+          ':grand_total' => number_format($grandTotal, 2, '.', ''),
+          ':id' => $id,
+        ]);
+
+        // 清空舊 items（保持簡單可靠；repair_id 有 idx）
+        $del = $pdo->prepare("DELETE FROM vehicle_repair_items WHERE repair_id = ?");
+        $del->execute([$id]);
+      }
+
+      // 插入 items
+      $ins = $pdo->prepare("
+        INSERT INTO vehicle_repair_items
+          (repair_id, seq, content, team_amount, company_amount)
+        VALUES
+          (:repair_id, :seq, :content, :team_amount, :company_amount)
+      ");
+
+      foreach ($normItems as $it) {
+        $ins->execute([
+          ':repair_id' => $id,
+          ':seq' => (int)$it['seq'],
+          ':content' => (string)$it['content'],
+          ':team_amount' => number_format((float)$it['team_amount'], 2, '.', ''),
+          ':company_amount' => number_format((float)$it['company_amount'], 2, '.', ''),
+        ]);
+      }
+
+      $pdo->commit();
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+
+    // 回傳最新資料（給前端 toast / 或未來你要直接更新列表用）
+    return [
+      'id' => $id,
+      'team_amount_total' => number_format($teamTotal, 2, '.', ''),
+      'company_amount_total' => number_format($companyTotal, 2, '.', ''),
+      'grand_total' => number_format($grandTotal, 2, '.', ''),
+    ];
+  }
+
+  public static function vehicleRepairDelete(int $repairId): array
+  {
+    $pdo = db();
+
+    // 先確定存在（回傳更友善）
+    $st0 = $pdo->prepare("SELECT id FROM vehicle_repair_headers WHERE id = ? LIMIT 1");
+    $st0->execute([$repairId]);
+    if (!$st0->fetchColumn()) throw new RuntimeException('找不到該筆維修紀錄');
+
+    // 刪 header 即可（items 由 ON DELETE CASCADE 自動刪）
+    $st = $pdo->prepare("DELETE FROM vehicle_repair_headers WHERE id = ? LIMIT 1");
+    $st->execute([$repairId]);
+
+    return ['id' => $repairId];
+  }
+
+  public static function vehicleVendorSuggest(string $q): array
+  {
+    $pdo = db();
+    $q = trim($q);
+
+    if (preg_match('/^\d+$/', $q)) {
+      return ['rows' => []];
+    }
+
+    if ($q === '') {
+      $st = $pdo->prepare("
+    SELECT id, name, use_count, last_used_at
+    FROM vehicle_repair_vendors
+    WHERE is_active = 1
+    ORDER BY use_count DESC, last_used_at DESC, id DESC
+    LIMIT 10
+  ");
+      $st->execute();
+      return ['rows' => $st->fetchAll()];
+    }
+
+    $st = $pdo->prepare("
+      SELECT id, name, use_count, last_used_at
+      FROM vehicle_repair_vendors
+      WHERE is_active = 1
+        AND name LIKE ?
+      ORDER BY use_count DESC, last_used_at DESC, id DESC
+      LIMIT 10
+    ");
+    $st->execute(['%' . $q . '%']);
+    return ['rows' => $st->fetchAll()];
+  }
+
+  public static function vehicleVendorUpsert(string $nameOrId): array
+  {
+    $pdo = db();
+    $v = trim($nameOrId);
+    if ($v === '') throw new RuntimeException('vendor 不可空白');
+
+    // ✅ 規則：
+    // 1) 純數字：優先當作 vendor_id 嘗試找；若不存在 => 改當「名稱」自動建立（避免 500）
+    // 2) 非純數字：當作名稱 upsert
+
+    if (preg_match('/^\d+$/', $v)) {
+      $id = (int)$v;
+
+      // 先嘗試當作 vendor_id
+      $st = $pdo->prepare("SELECT id, name FROM vehicle_repair_vendors WHERE id = ? LIMIT 1");
+      $st->execute([$id]);
+      $row = $st->fetch();
+      if ($row) {
+        // ✅ 既有 id：順便累積使用次數（符合你的 use_count 設計）
+        $upd = $pdo->prepare("
+        UPDATE vehicle_repair_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
+        $upd->execute([(int)$row['id']]);
+
+        return ['vendor_id' => (int)$row['id'], 'vendor_name' => (string)$row['name']];
+      }
+
+      // ✅ 若 id 不存在：把「數字字串」當作名稱建立（避免 user 一直被 vendor_id 不存在 卡死）
+      // 例如你們有「廠商代碼=12」這種輸入習慣，也能正常用
+      $v = (string)$v; // 直接當 name
+    }
+
+    // ===== 文字（或落到這裡的數字名稱）=> name upsert =====
+    $pdo->beginTransaction();
+    try {
+      $st = $pdo->prepare("SELECT id, name, use_count FROM vehicle_repair_vendors WHERE name = ? LIMIT 1");
+      $st->execute([$v]);
+      $row = $st->fetch();
+
+      if ($row) {
+        $id = (int)$row['id'];
+        $upd = $pdo->prepare("
+        UPDATE vehicle_repair_vendors
+        SET use_count = use_count + 1,
+            last_used_at = CURRENT_TIMESTAMP(),
+            is_active = 1
+        WHERE id = ?
+        LIMIT 1
+      ");
+        $upd->execute([$id]);
+        $pdo->commit();
+        return ['vendor_id' => $id, 'vendor_name' => (string)$row['name']];
+      }
+
+      $ins = $pdo->prepare("
+      INSERT INTO vehicle_repair_vendors (name, is_active, use_count, last_used_at)
+      VALUES (:name, 1, 1, CURRENT_TIMESTAMP())
+    ");
+      $ins->execute([':name' => $v]);
+
+      $id = (int)$pdo->lastInsertId();
+      $pdo->commit();
+      return ['vendor_id' => $id, 'vendor_name' => $v];
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      throw $e;
+    }
+  }
+
+  /* ----------------- helpers ----------------- */
+
+  private static function photoUrlFromRow(array $v): string
+  {
+    $p = isset($v['photo_path']) ? trim((string)$v['photo_path']) : '';
+    if ($p === '') return '';
+
+    // ✅ 用檔案最後修改時間做 cache busting（最準，與 DB 無關）
+    $projectRoot = JINGHONG_SHARED_ROOT; // app/services -> app -> project root
+    $fs = $projectRoot . '/' . ltrim($p, '/');
+    $ts = (is_file($fs)) ? (int)@filemtime($fs) : 0;
+
+    // fallback：沒有檔案時才用 updated_at
+    if ($ts <= 0 && !empty($v['updated_at'])) {
+      $ts = (int)strtotime((string)$v['updated_at']);
+    }
+    if ($ts <= 0) $ts = time();
+
+    return self::publicUrl($p) . '?v=' . $ts;
+  }
+
+  private static function publicUrl(string $path): string
+  {
+    $base = base_url();
+    $base = ($base !== '') ? rtrim($base, '/') : '';
+    $path = '/' . ltrim($path, '/');
+    return $base . $path;
+  }
+
+  private static function toNullableInt($v): ?int
+  {
+    if ($v === null || $v === '') return null;
+    $n = (int)$v;
+    return ($n > 0) ? $n : null;
+  }
+
+  private static function toNullableDecimal($v): ?string
+  {
+    if ($v === null || $v === '') return null;
+    // 保留兩位（DB DECIMAL(14,2)）
+    $n = (float)$v;
+    return number_format($n, 2, '.', '');
+  }
+  private static function getOrCreateDictId(PDO $pdo, string $table, string $name): int
+  {
+    $name = trim($name);
+    if ($name === '') throw new RuntimeException('字典名稱不可為空');
+
+    // 先找
+    $st = $pdo->prepare("SELECT id FROM {$table} WHERE name = ? LIMIT 1");
+    $st->execute([$name]);
+    $id = (int)($st->fetchColumn() ?: 0);
+    if ($id > 0) return $id;
+
+    // 新增（is_enabled=1, sort_no=0）
+    $maxSt = $pdo->query("SELECT COALESCE(MAX(sort_no),0) FROM {$table}");
+    $maxSort = (int)$maxSt->fetchColumn();
+    $sortNo = $maxSort + 10;
+
+    $st2 = $pdo->prepare("INSERT INTO {$table} (name, sort_no, is_enabled) VALUES (?, ?, 1)");
+    $st2->execute([$name, $sortNo]);
+
+    return (int)$pdo->lastInsertId();
+  }
+}

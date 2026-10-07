@@ -1,0 +1,339 @@
+/* Path: Public/assets/css/mat_edit.css
+ * 說明: /mat/edit 本頁樣式（D 班管理）
+ * - 兩欄卡片
+ * - 左卡：對帳資料（日期 + 儲存 + 列表）
+ * - 右卡：分類材料歸屬（列表 + modal 編輯）
+ */
+
+.mat-edit .me-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.mat-edit .me-grid--2 .me-card {
+  grid-column: span 6;
+}
+
+@media (max-width: 980px) {
+  .mat-edit .me-grid--2 .me-card {
+    grid-column: span 12;
+  }
+}
+
+/* 版面不要縮在中間：跟 mat_issue 一樣放大可用寬度 */
+.mat-edit .content {
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 1200px) {
+  .mat-edit .content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+.mat-edit .me-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mat-edit .me-head__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 左卡：日期 + 儲存 */
+.mat-edit .me-recon-top {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mat-edit .me-recon-row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .mat-edit .me-recon-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mat-edit .me-field {
+  display: grid;
+  gap: 8px;
+}
+
+.mat-edit .me-label {
+  font-size: 14px;
+  font-weight: 850;
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.mat-edit .me-date {
+  height: 42px;
+  font-size: 15px;
+  font-weight: 520;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  padding: 10px 12px;
+}
+
+.mat-edit .me-date:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+/* 列表 */
+.mat-edit .me-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mat-edit .me-item {
+  display: grid;
+  grid-template-columns: 78px 1fr 140px 28px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mat-edit .me-item--noedit {
+  grid-template-columns: 1fr 140px;
+}
+
+.mat-edit .me-del {
+  width: 18px;
+  height: 18px;
+}
+
+.mat-edit .me-del-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mat-edit .me-del-text {
+  color: #dc2626;         /* 紅色 */
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;   /* 確保文字不會吃到點擊，只有 checkbox 有效 */
+}
+
+.mat-edit .me-name {
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.mat-edit .me-name-input {
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.mat-edit .me-qty {
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.mat-edit .me-qty[disabled] {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* 拖曳把手 */
+.mat-edit .me-drag {
+  cursor: grab;
+  user-select: none;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.mat-edit .me-item.is-dragging {
+  opacity: 0.7;
+  transform: scale(0.995);
+}
+
+/* 右卡：材料組合 */
+.mat-edit .me-mat {
+  display: grid;
+  gap: 10px;
+}
+
+.mat-edit .me-mat-item {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr auto;
+  gap: 10px;
+  align-items: center;
+
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 640px) {
+  .mat-edit .me-mat-item {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mat-edit .me-mat-codes {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.62);
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* modal table */
+.me-modal-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.me-modal-hint {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.me-modal-list {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 10px;
+}
+
+.me-modal-row {
+  display: grid;
+  grid-template-columns: 26px 110px 1fr 160px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.me-modal-row:last-child {
+  border-bottom: 0;
+}
+
+.me-modal-code {
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.86);
+}
+
+.me-modal-name {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.me-modal-badge {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.58);
+}
+
+.me-modal-row.is-disabled {
+  opacity: 0.55;
+}
+
+/* ===== mat/edit modal 寬度調整 ===== */
+.mat-edit .modal,
+.mat-edit .modal__dialog {
+  max-width: 980px;   /* 原本多半是 640~720，這裡放大 */
+  width: 92%;
+}
+
+/* ===== mat/edit modal 文字與可讀性微調（在既有規則上補強） ===== */
+
+/* 整體列表字級 */
+.mat-edit .me-modal-list {
+  font-size: 15px;      /* 原本 13 */
+  line-height: 1.6;
+}
+
+/* 每一列高度與呼吸感 */
+.mat-edit .me-modal-row {
+  padding: 10px 8px;    /* 原本 8px 6px，略放鬆 */
+}
+
+/* 材料編號：主視覺 */
+.mat-edit .me-modal-code {
+  font-size: 15px;      /* 保持穩重、不暴衝 */
+}
+
+/* 材料名稱：輔助資訊 */
+.mat-edit .me-modal-name {
+  font-size: 14px;
+}
+
+/* 禁選說明 */
+.mat-edit .me-modal-badge {
+  font-size: 13px;
+}
+
+@media screen and (max-width: 900px) {
+  .mat-edit .me-item--noedit { grid-template-columns: minmax(0, 1fr) 100px; }
+  .mat-edit .me-name { min-width: 0; overflow-wrap: anywhere; }
+  .mat-edit .me-item:not(.me-item--noedit) { grid-template-columns: 64px minmax(0, 1fr) 28px; }
+  .mat-edit .me-item:not(.me-item--noedit) .me-qty { grid-column: 2; grid-row: 2; width: 100%; }
+  .mat-edit .me-item:not(.me-item--noedit) .me-drag { grid-column: 3; grid-row: 1 / 3; }
+  .mat-edit .me-cm-row { min-width: 0; }
+}
+
+@media screen and (max-width: 900px) {
+  body:has(.mat-edit) .me-modal-row { grid-template-columns: 26px minmax(0, 1fr); }
+  body:has(.mat-edit) .me-modal-code { grid-column: 2; overflow-wrap: anywhere; }
+  body:has(.mat-edit) .me-modal-name { grid-column: 2; overflow-wrap: anywhere; }
+  body:has(.mat-edit) .me-modal-badge { grid-column: 2; }
+}
+
+@media screen and (max-width: 900px) {
+  .mat-edit .me-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .mat-edit .me-head h2 { margin: 0; min-width: 0; }
+  .mat-edit .me-head__title { display: block; }
+  .mat-edit .me-head__hint {
+    display: block;
+    margin-top: 6px;
+    font-size: var(--fs-sub);
+    line-height: 1.55;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .mat-edit .me-head__actions { gap: 8px; }
+  .mat-edit :is(.me-item, .me-mat-item) { padding: 8px 10px; gap: 6px; }
+  .mat-edit :is(.me-list, .me-mat) { gap: 8px; }
+  .mat-edit .me-mat-item > .btn { justify-self: start; }
+}

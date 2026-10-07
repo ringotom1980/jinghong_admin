@@ -1,0 +1,80 @@
+/* Path: Public/assets/css/ui_toast.css
+ * 說明: 全站 Toast 外觀（不塞 app.css）
+ */
+
+:root{
+  --toast-z: 2147483647;
+}
+
+.toast-wrap{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: var(--toast-z, 2147483647);
+  display: grid;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast{
+  pointer-events: auto;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 16px;
+  box-shadow: 0 14px 38px rgba(2,6,23,.14);
+  overflow: hidden;
+  min-width: 260px;
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.toast__row{
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: start;
+  gap: 10px;
+  padding: 12px 12px;
+}
+
+.toast__bar{
+  width: 10px;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(37,99,235,.22);
+  border: 1px solid rgba(37,99,235,.18);
+}
+
+.toast__title{
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.2;
+  color: rgba(15,23,42,.92);
+  margin: 0 0 4px 0;
+}
+
+.toast__msg{
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(15,23,42,.72);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.toast__close{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
+  color: rgba(15,23,42,.58);
+}
+.toast__close:hover{
+  background: rgba(15,23,42,.06);
+  color: rgba(15,23,42,.82);
+}
+
+/* semantic */
+.toast--success .toast__bar{ background: rgba(21,128,61,.22); border-color: rgba(21,128,61,.18); }
+.toast--info    .toast__bar{ background: rgba(37,99,235,.22); border-color: rgba(37,99,235,.18); }
+.toast--warning .toast__bar{ background: rgba(180,83,9,.22);  border-color: rgba(180,83,9,.18); }
+.toast--danger  .toast__bar{ background: rgba(190,18,60,.22); border-color: rgba(190,18,60,.18); }

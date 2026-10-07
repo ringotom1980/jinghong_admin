@@ -1,0 +1,596 @@
+/*
+ * Path: Public/assets/css/mat_stats.css
+ * 說明: mat/stats 統計頁專屬樣式
+ * 目標：占滿內容寬度（覆蓋 app.css 的 .content max-width）
+ */
+
+/* ✅ 只針對本頁：讓內容區滿版（不要動全站 .content） */
+.page.mat-stats .content {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+}
+
+/* 讓整頁至少撐滿（視覺不會上面一小塊、下面空一大片） */
+.page.mat-stats {
+  min-height: calc(100vh - 20px);
+}
+
+/* ===== Toolbar card ===== */
+.ms-toolbar {
+  width: 100%;
+}
+
+.ms-toolbar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ms-toolbar__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.ms-toolbar__date {
+  font-weight: 720;
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.ms-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===== Capsules ===== */
+.ms-capsules-wrap {
+  margin-top: 10px;
+}
+
+.ms-capsules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* ===== Shift filter ===== */
+.ms-filter {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: nowrap; /* ✅ 不換行 */
+  gap: 8px;
+  overflow-x: auto; /* ✅ 超出用橫向捲動 */
+  overflow-y: hidden;
+  padding-bottom: 2px; /* ✅ 避免捲動條貼到按鈕 */
+  -webkit-overflow-scrolling: touch;
+}
+.ms-filter::-webkit-scrollbar {
+  height: 8px;
+}
+.ms-filter::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.16);
+  border-radius: 999px;
+}
+
+.ms-filter__btn {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(15, 23, 42, 0.86);
+}
+
+/* ===== Personnel quick buttons (A-鄭建昇) ===== */
+.ms-filter__btn--person {
+  height: 28px; /* ✅ 比 A/B/C 更扁 */
+  padding: 0 10px;
+  border-radius: 999px; /* ✅ 做成膠囊，但不影響原本 */
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap; /* ✅ 不換行 */
+  max-width: 180px; /* ✅ 避免太長把整排擠爆 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* active 狀態：跟原本一致，不用另寫也可；你要更明顯可加這段 */
+.ms-filter__btn--person.is-active {
+  font-weight: 760;
+}
+
+.ms-filter__btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.26);
+}
+
+.ms-filter__btn.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.32);
+  color: rgba(30, 58, 138, 0.95);
+  font-weight: 720;
+}
+
+/* ===== Status ===== */
+.ms-status {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.ms-status__loading {
+  color: rgba(15, 23, 42, 0.66);
+  font-size: 14px;
+}
+
+.ms-status__error {
+  color: rgba(190, 18, 60, 0.86);
+  font-size: 14px;
+}
+
+/* ===== Content area (tables/cards inserted by JS) ===== */
+.ms-content {
+  margin-top: 14px;
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+
+/* 小螢幕收斂 padding */
+@media (max-width: 720px) {
+  .page.mat-stats .content {
+    padding: 10px 0 0;
+  }
+  .ms-toolbar__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ===== Sticky toolbar (under topbar) ===== */
+/* 讓統計工具列卡片捲動到 topbar 時固定 */
+.page.mat-stats .ms-toolbar {
+  position: sticky;
+  top: calc(var(--topbar-h));
+  z-index: 45; /* < topbar(50) 但 > 內容 */
+}
+
+/* sticky 時避免背景透明造成內容穿透 */
+.page.mat-stats .ms-toolbar.card {
+  background: #fff;
+}
+
+/* 視覺：黏住時看起來像浮在內容上（可微調） */
+.page.mat-stats .ms-toolbar.card {
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+}
+
+/* ✅ 黏住 topbar 時：上緣改直角，避免圓角透出底下內容 */
+.page.mat-stats .ms-toolbar.is-stuck.card {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* ===== Date capsules grouped by month (3 months per row, no horizontal scroll) ===== */
+
+/* 外層：改成 Grid，每列固定 3 個「月份群組」，超過自動換列 */
+.ms-capsules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* ✅ 每列 3 個月 */
+  gap: 10px;
+  padding: 6px 0;
+  overflow: visible; /* ✅ 不要橫向卷軸 */
+}
+
+/* 每個月份群組：做成卡片感（標題在上、日期在下） */
+.ms-capsules__month {
+  display: grid;
+  gap: 6px;
+  padding: 10px 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  min-width: 0; /* ✅ 防止內容撐爆造成卷軸 */
+}
+
+/* 月份標題：純文字 */
+.ms-capsules__month-title {
+  font-size: 13px;
+  font-weight: 720;
+  color: rgba(15, 23, 42, 0.65);
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+}
+
+/* 日期列：月份內日期多就換行（不會撐出橫向卷軸） */
+.ms-capsules__list {
+  display: flex;
+  flex-wrap: wrap; /* ✅ 日期太多就自動換行 */
+  align-items: center;
+  gap: 6px;
+}
+
+/* 日期膠囊：維持你原本樣式 */
+.ms-capsule {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ms-capsule:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(15, 23, 42, 0.3);
+}
+
+.ms-capsule.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: rgba(30, 58, 138, 0.95);
+  font-weight: 760;
+}
+
+/* ===== Stats section cards (A-F) ===== */
+/* 讓卡片標頭不要貼圓角邊界：標題往右內縮 */
+.page.mat-stats .ms-section__head {
+  padding: 10px 12px;
+}
+
+/* 讓標題本身不要有預設外距干擾 */
+.page.mat-stats .ms-section__title {
+  margin: 0;
+}
+
+/* 內容區也同步左右對齊（可選，但通常會更順） */
+.page.mat-stats .ms-section__body {
+  padding: 0 12px 12px;
+}
+
+/* 統計頁所有表格：淡外框 + 淡格線 */
+.ms-table-wrap .ms-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ms-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ms-table-wrap .ms-table thead th {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(15, 23, 42, 0.02);
+  /* ✅ 表頭文字置中 */
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 數值欄位內容置中（新/舊/合計等） */
+.ms-table-wrap .ms-table td.ms-td-num {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ms-table-wrap .ms-table th,
+.ms-table-wrap .ms-table td {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.ms-table-wrap .ms-table tr > *:last-child {
+  border-right: 0;
+}
+
+.ms-table-wrap .ms-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* 一般正數（黑色，維持現況） */
+.ms-pos {
+  color: inherit;
+}
+
+/* 負數（紅色） */
+.ms-neg {
+  color: #dc2626; /* red-600 */
+  font-weight: 600;
+}
+
+/* 領退合計（新）正數：藍色 */
+.ms-sum-pos {
+  color: #2563eb; /* blue-600 */
+  font-weight: 700;
+}
+
+/* 合計列（F班用） */
+.ms-table .ms-tr-sum td {
+  font-weight: 760;
+  background: rgba(15, 23, 42, 0.03);
+}
+
+@media (max-width: 900px), ((max-height: 560px) and (pointer: coarse)) {
+  body.mat-stats-page,
+  body:has(.page.mat-stats) {
+    background: var(--bg);
+  }
+
+  body.mat-stats-page .footer,
+  body:has(.page.mat-stats) .footer {
+    margin-left: 0;
+    border-left: 0;
+  }
+
+  .page.mat-stats {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100vw;
+    padding: 10px 0 calc(82px + env(safe-area-inset-bottom));
+    border-left: 0;
+
+  }
+
+  .page.mat-stats .page-head {
+    padding: 0 10px;
+  }
+
+  .page.mat-stats .content {
+    width: 100%;
+    max-width: 100vw;
+    padding: 0;
+
+  }
+
+  .page.mat-stats .ms-toolbar {
+    position: static;
+    top: auto;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100vw;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+  }
+
+  .page.mat-stats .card {
+    max-width: 100vw;
+  }
+
+  .page.mat-stats .ms-toolbar .card__head {
+    padding: 10px 12px 8px;
+  }
+
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: 44vh;
+    overflow: auto;
+    padding: 10px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ms-toolbar__title {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .ms-toolbar__actions {
+    width: 100%;
+  }
+
+  .ms-toolbar__actions .btn {
+    width: 100%;
+  }
+
+  .ms-capsules {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ms-capsules__month {
+    padding: 8px;
+  }
+
+  .ms-capsules__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .ms-capsule {
+    flex: 0 0 auto;
+  }
+
+  .ms-filter {
+    margin-top: 10px;
+    padding-bottom: 4px;
+  }
+
+  .ms-content {
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .page.mat-stats .ms-section {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .page.mat-stats .ms-section__head {
+    position: static;
+    top: auto;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .page.mat-stats .ms-section__title {
+    font-size: 16px;
+  }
+
+  .ms-table-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: auto;
+    overflow-y: visible;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ms-table-wrap .ms-table {
+    min-width: 720px;
+    width: 100%;
+    table-layout: fixed;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .ms-table-wrap .ms-table--b {
+    min-width: 980px;
+  }
+
+  .ms-table-wrap .ms-table--d {
+    min-width: 820px;
+  }
+
+  .ms-table-wrap .ms-table th,
+  .ms-table-wrap .ms-table td {
+    padding: 7px 8px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  /* Pin only material name: grouped rowspan headers must not freeze numeric columns. */
+  .ms-table-wrap .ms-table tr > .ms-td-name,
+  .ms-table-wrap .ms-table thead tr:first-child > th:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 160px;
+    background: #fff;
+    box-shadow: 1px 0 0 var(--line);
+  }
+  .ms-table-wrap .ms-table thead tr:first-child > th:nth-child(2) {
+    z-index: 3;
+    background: #f7f8fb;
+  }
+
+  .ms-td-name {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+.ms-mobile-shift-dock {
+  display: none;
+}
+
+@media (max-width: 900px), ((max-height: 560px) and (pointer: coarse)) {
+  .ms-mobile-shift-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--topbar-h);
+    z-index: 44;
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 18px rgba(2, 6, 23, 0.08);
+  }
+
+  .ms-mobile-shift-dock.is-visible {
+    display: block;
+  }
+
+  .ms-mobile-shift-dock[hidden] {
+    display: none !important;
+  }
+
+  .ms-mobile-shift-dock__inner {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ms-mobile-shift-dock__inner::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .ms-mobile-shift-dock .ms-filter__btn {
+    flex: 0 0 auto;
+    height: 32px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: 50vh;
+  }
+
+  .ms-table-wrap .ms-table th,
+  .ms-table-wrap .ms-table td {
+    padding: 6px 7px;
+    font-size: var(--fs-sub);
+  }
+}
+
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  .ms-capsule { min-height: 44px; height: auto; line-height: 1.4; padding-block: 8px; }
+  .ms-filter__btn, .ms-mobile-shift-dock .ms-filter__btn { min-height: 44px; height: auto; }
+}
+
+/* Screen filters keep complete labels; only the filter strip scrolls. */
+@media screen {
+  .ms-filter, .ms-mobile-shift-dock__inner { min-width: 0; max-width: 100%; }
+  .ms-filter__btn { flex: 0 0 auto; white-space: nowrap; }
+}
+
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  .ms-toolbar__head { flex-direction: row; flex-wrap: wrap; }
+  .ms-toolbar__actions { width: auto; flex: 0 0 auto; }
+  .ms-toolbar__actions .btn { width: auto; }
+  .page.mat-stats .ms-toolbar .card__body {
+    max-height: min(280px, 36dvh);
+  }
+  .ms-capsules { gap: 6px; padding-block: 0; }
+  .ms-capsules__month {
+    grid-template-columns: 82px minmax(0, 1fr);
+    align-items: center;
+    padding: 6px;
+  }
+  .ms-capsules__list { min-width: 0; padding: 3px; }
+  /* The wrapper owns horizontal scrolling; table clipping would defeat sticky cells. */
+  .ms-table-wrap .ms-table { overflow: visible; }
+}

@@ -1,0 +1,455 @@
+/*
+ * Path: Public/assets/css/pole_map.css
+ * 說明: 公開電桿地圖版面（頂部浮動工具列 + 滿版地圖）
+ */
+
+/* ===== Fullscreen map: no scroll ===== */
+html,
+body {
+  height: 100%;
+}
+
+body.pole-map-page {
+  margin: 0;
+  height: 100%;
+  overflow: hidden; /* ✅ 不要卷軸 */
+}
+
+/* 若你管理殼 .page 會帶出 padding/margin，這裡只針對公開頁 */
+body.public-page.pole-map-page {
+  overflow: hidden;
+}
+
+:root {
+  --vh: 1vh;
+} /* ★新增：放在檔案前段也可 */
+
+.pole-map {
+  position: relative;
+  width: 100%;
+  height: calc(var(--vh) * 100); /* ★取代 100vh，避免 iOS 鍵盤 bug */
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== Top floating bar ===== */
+/* 上方只放搜尋（永遠） */
+.pole-top {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  z-index: var(--z-content);
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* 子元件才可以點（外層 pointer-events:none） */
+.pole-top__left,
+.pole-top__center {
+  pointer-events: auto;
+}
+
+/* 底部 Dock：只排版，不要大白底面板 */
+.pole-top__left {
+  pointer-events: auto;
+
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: var(--z-content);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  /* ✅ 移除大白底框 */
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* 品牌：不要白底框，只保留排列 */
+.pole-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.pole-brand__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.pole-brand__text {
+  font-weight: 760;
+  letter-spacing: 0.02em;
+  color: rgba(15, 23, 42, 0.92);
+  white-space: nowrap;
+  font-size: 13px; /* ✅ 手機更不擠 */
+}
+
+.pole-login {
+  height: 36px;
+  border-radius: 999px;
+  font-weight: 750;
+  padding: 0 12px;
+}
+
+/* 中間搜尋 */
+.pole-top__center {
+  pointer-events: auto;
+  justify-self: center;
+  width: 100%;
+  max-width: 760px;
+  position: relative;
+}
+
+.pole-search {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 0;
+  padding: 0 6px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.pole-search__icon {
+  display: grid;
+  place-items: center;
+  color: rgba(15, 23, 42, 0.56);
+}
+
+.pole-search__input {
+  -webkit-text-size-adjust: 100%;
+  width: 100%;
+  height: 36px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px; /* ★iOS 必要：避免 focus 自動 zoom */
+  font-weight: 560;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* ✅ 移除 input[type=search] 內建 X（避免兩個 X） */
+.pole-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.pole-search__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.pole-search__clear {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background-color 180ms ease, border-color 180ms ease,
+    transform 180ms ease;
+}
+.pole-search__clear:hover {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.14);
+  transform: translateY(-0.5px);
+}
+/* ===== Picked meta under search ===== */
+.pole-picked {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.pole-picked__row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 2px 0;
+}
+
+.pole-picked__k {
+  font-size: 12px;
+  font-weight: 760;
+  color: rgba(15, 23, 42, 0.58);
+  letter-spacing: 0.06em;
+}
+
+.pole-picked__v {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.88);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* Suggest：浮層（不撐開下面地圖） */
+.pole-suggest {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 34px rgba(2, 6, 23, 0.14);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.pole-suggest__list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.pole-suggest__item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  outline: none;
+}
+.pole-suggest__item:hover,
+.pole-suggest__item:focus {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.pole-suggest__title {
+  font-weight: 760;
+  color: rgba(15, 23, 42, 0.92);
+  margin-bottom: 2px;
+}
+.pole-suggest__meta {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.58);
+}
+
+/* 右側導航（選到點後才顯示） */
+.pole-nav {
+  height: 44px;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.1);
+}
+/* 導航鍵：固定在 Dock 上方置中 */
+#poleNavBtn {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 72px; /* ✅ 在底部列上方（可微調 64~86） */
+  z-index: var(--z-content);
+}
+
+/* ===== Leaflet 控制項避開左上角品牌 ===== */
+.leaflet-top.leaflet-left {
+  top: 64px; /* 搜尋列 + 間距，視覺比較準 */
+}
+
+/* ✅ 只修這顆：避免被 .btn{display:inline-flex} 蓋掉 */
+#poleNavBtn[hidden] {
+  display: none !important;
+}
+/* 避免底部 dock 蓋住 attribution */
+.leaflet-control-attribution {
+  margin-bottom: 120px; /* dock 高度不同可微調 */
+}
+/* ===== Authed（管理殼）版：滿版地圖 + 工具列避開 topbar/rail ===== */
+body.app-page.pole-map-page .page {
+  /* nav.css 預設 page 有 padding，會把地圖縮小；這頁要拿掉 */
+  padding: 0 !important;
+  height: calc(100vh - var(--topbar-h)) !important;
+  overflow: hidden;
+}
+
+body.app-page.pole-map-page .pole-map {
+  height: 100% !important; /* 不用 100vh，避免被 topbar 影響 */
+}
+
+/* 工具列：往下避開 topbar，往右避開 rail */
+body.app-page.pole-map-page .pole-top {
+  top: calc(var(--topbar-h) + 12px);
+  left: calc(var(--rail-w) + 12px);
+  right: 12px;
+}
+
+/* 底部 dock 同樣避開 rail */
+body.app-page.pole-map-page .pole-top__left {
+  left: calc(var(--rail-w) + 12px);
+  right: 12px;
+}
+
+/* 導航鍵置中：中心點要以內容區（扣掉 rail）為準 */
+body.app-page.pole-map-page #poleNavBtn {
+  left: calc(50% + (var(--rail-w) / 2));
+}
+
+@media screen and (max-width: 900px), print and (max-width: 720px) {
+  body.pole-map-page {
+    overscroll-behavior: none;
+  }
+
+
+
+
+
+  body.app-page.pole-map-page .topbar__actions .btn {
+    height: 30px;
+  }
+
+
+
+  body.app-page.pole-map-page .page {
+    margin-left: 0;
+    padding: 0 !important;
+    height: calc(var(--vh) * 100 - var(--topbar-h)) !important;
+  }
+
+  body.app-page.pole-map-page .pole-top,
+  .pole-top {
+    top: calc(var(--topbar-h) + 8px);
+    left: 8px;
+    right: 8px;
+  }
+
+  body.public-page.pole-map-page .pole-top {
+    top: 8px;
+  }
+
+  .pole-top__center {
+    max-width: none;
+  }
+
+  .pole-search {
+    grid-template-columns: 38px 1fr 38px;
+    height: 42px;
+    padding: 0 4px;
+    border-radius: 10px;
+  }
+
+  .pole-search__input {
+    height: 34px;
+    font-size: 16px;
+  }
+
+  .pole-search__clear {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pole-picked {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    max-height: 27vh;
+    overflow: auto;
+  }
+
+  .pole-picked__row {
+    grid-template-columns: 38px 1fr;
+    gap: 8px;
+  }
+
+  .pole-suggest {
+    top: 50px;
+    border-radius: 10px;
+  }
+
+  .pole-suggest__list {
+    max-height: min(48vh, 360px);
+  }
+
+  .pole-top__left,
+  body.app-page.pole-map-page .pole-top__left {
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .pole-brand__text {
+    display: none;
+  }
+
+  .pole-brand__logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .pole-login {
+    height: 34px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
+
+  #poleNavBtn,
+  body.app-page.pole-map-page #poleNavBtn {
+    left: 50%;
+    bottom: calc(54px + env(safe-area-inset-bottom));
+    height: 40px;
+    width: min(260px, calc(100vw - 24px));
+    transform: translateX(-50%);
+  }
+
+  .leaflet-top.leaflet-left {
+    top: calc(var(--topbar-h) + 56px);
+  }
+
+  body.public-page.pole-map-page .leaflet-top.leaflet-left {
+    top: 58px;
+  }
+
+  .leaflet-control-attribution {
+    margin-bottom: 96px;
+    max-width: calc(100vw - 16px);
+    white-space: normal;
+  }
+}
+
+@media screen {
+  /* Leaflet has its own pane stack; contain it below the shared navigation. */
+  .map-canvas { isolation: isolate; z-index: 0; position: relative; }
+}
+@media screen and (max-width: 900px), screen and (max-height: 560px) and (pointer: coarse) {
+  body.app-page.pole-map-page #poleNavBtn {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .pole-suggest__list { max-height: min(320px, 35dvh); }
+  .pole-picked { max-height: 25dvh; }
+}

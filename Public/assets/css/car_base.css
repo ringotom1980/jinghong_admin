@@ -1,0 +1,719 @@
+/*
+ * Path: Public/assets/css/car_base.css
+ * 說明: 車輛基本資料頁樣式（左清單 + 右工作區）
+ */
+
+/* 左清單 + 右工作區都在可視區內；需要捲動時改成欄內捲動 */
+/* 車輛頁：整體不讓 body 捲（避免 sidebar 跟著捲） */
+body.page-enter{
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* main 只負責中間區域（扣掉 topbar + footer） */
+.page.car-base{
+  --topbar-h: 56px;
+  --footer-h: 56px; /* 你 footer 實際高度若不是 56px，改這裡 */
+
+  height: calc(100vh - var(--topbar-h) - var(--footer-h));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page.car-base .page-head{
+  flex: 0 0 auto;
+}
+
+.carb-shell{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  align-items: stretch; /* 兩欄同高 */
+}
+
+@media (max-width: 980px){
+  .carb-shell{ grid-template-columns: 1fr; }
+}
+
+/* LEFT */
+.carb-left{
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+  background: rgba(255,255,255,.82);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.carb-left__head{
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line-2);
+  background: linear-gradient(180deg, rgba(246,247,251,.92), rgba(255,255,255,0));
+}
+
+.carb-left__body{
+  position: relative;
+  padding: 10px;
+
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto; /* ✅ 左側清單欄內捲動 */
+}
+
+/* filters (pills fit text) */
+.carb-filters{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;   /* 置中排 */
+  align-items: center;
+}
+
+.carb-pill{
+  display: inline-flex;              /* ✅ 讓置中、對齊生效 */
+  align-items: center;
+  justify-content: center;
+
+  white-space: nowrap;               /* ✅ 不換行 */
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(255,255,255,.86);
+  color: rgba(15,23,42,.78);
+
+  font-weight: 700;
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.carb-pill:hover{
+  background: rgba(255,255,255,.96);
+  border-color: rgba(15,23,42,.20);
+  transform: translateY(-0.5px);
+}
+
+.carb-pill.is-active{
+  background: rgba(47,63,122,.12);
+  border-color: rgba(47,63,122,.26);
+  color: rgba(15,23,42,.92);
+}
+
+.carb-list{
+  display: grid;
+  gap: 8px;
+}
+
+.carb-item{
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.92);
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.carb-item:hover{
+  transform: translateY(-1px);
+  border-color: rgba(47,63,122,.22);
+  background: rgba(47,63,122,.06);
+}
+
+.carb-item.is-active{
+  border-color: rgba(47,63,122,.28);
+  background: rgba(47,63,122,.10);
+}
+
+/* list row: code | badges | plate (single line) */
+.carb-item__row{
+  display: grid;
+  grid-template-columns: 72px 1fr 96px;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;             /* 統一高度感 */
+}
+
+.carb-item__code{
+  font-weight: 760;
+  letter-spacing: .02em;
+  color: rgba(15,23,42,.92);
+  white-space: nowrap;
+}
+
+.carb-item__plate{
+  font-size: 13px;
+  color: rgba(15,23,42,.64);
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.carb-item__meta{
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;            /* ✅ 不允許換行：兩顆同列 */
+  overflow: visible;            /* ✅ 不裁切 */
+  line-height: 1;
+  min-width: 0;                 /* ✅ 防止 grid/flex 計算怪異 */
+}
+
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.7);
+  font-size: 12px;
+  font-weight: 680;
+  color: rgba(15,23,42,.72);
+  white-space: nowrap;
+}
+
+.badge--over{ border-color: rgba(190,18,60,.22); background: rgba(190,18,60,.10); color: #7f1d1d; }
+.badge--soon{ border-color: rgba(180,83,9,.22); background: rgba(180,83,9,.10); color: #78350f; }
+
+.carb-empty, .carb-loading{
+  text-align: center;
+  color: rgba(15,23,42,.58);
+  font-weight: 800;
+  padding: 14px 10px;
+}
+
+/* RIGHT */
+.carb-right{
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ✅ 右側載入遮罩（選車載入中） */
+.carb-right{
+  position: relative; /* overlay 需要定位基準 */
+}
+
+/* ✅ 預設一律隱藏（不靠 hidden） */
+.carb-right .carb-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: none;                 /* ✅ 關鍵：預設不顯示 */
+  place-items: center;
+  background: rgba(255,255,255,.62);
+  backdrop-filter: blur(2px);
+}
+
+/* ✅ 只有 loading 時才顯示遮罩 */
+.carb-right.is-loading .carb-overlay{
+  display: grid;                 /* ✅ 關鍵：只有這時候才顯示 */
+}
+
+/* ✅ 保險：就算有人用 hidden，也一定隱藏 */
+.carb-right .carb-overlay[hidden]{
+  display: none !important;
+}
+
+.carb-overlay__panel{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.92);
+  box-shadow: var(--shadow-sm);
+  font-weight: 900;
+  color: rgba(15,23,42,.78);
+  font-size: 13px;
+}
+
+.carb-spinner{
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(15,23,42,.18);
+  border-top-color: rgba(15,23,42,.62);
+  animation: carbSpin .8s linear infinite;
+}
+
+@keyframes carbSpin{
+  to { transform: rotate(360deg); }
+}
+
+/* loading 時避免右側內容被點到 */
+.carb-right.is-loading{
+  pointer-events: none;
+}
+
+.carb-right__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-2);
+  background: linear-gradient(180deg, rgba(246,247,251,.92), rgba(255,255,255,0));
+}
+
+.carb-title__main{
+  font-size: 18px;
+  font-weight: 760;
+  color: rgba(15,23,42,.92);
+  letter-spacing: .02em;
+}
+
+.carb-title__sub{
+  margin-top: 3px;
+  font-size: 13px;
+  color: rgba(15,23,42,.62);
+  font-weight: 700;
+}
+
+.carb-actions{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ✅ car/base 保險：不管全站 btn 怎麼寫，hidden 一律隱藏 */
+.carb-actions [hidden]{
+  display: none !important;
+}
+
+/* tabs */
+.carb-tabs{
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.carb-tab{
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.76);
+  border-radius: 999px;
+  height: 34px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  color: rgba(15,23,42,.72);
+}
+
+.carb-tab:hover{
+  background: rgba(255,255,255,.92);
+  border-color: rgba(15,23,42,.16);
+}
+
+.carb-tab.is-active{
+  background: rgba(47,63,122,.12);
+  border-color: rgba(47,63,122,.24);
+  color: rgba(15,23,42,.92);
+}
+
+.carb-tab:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.carb-panels{
+  padding: 14px 16px 16px 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto; /* ✅ 右側內容區欄內捲動 */
+}
+
+.carb-panel{ display: none; }
+.carb-panel.is-active{ display: block; }
+
+/* ===== Detail split: photo (1/3) + fields (2/3) ===== */
+.carb-detailSplit{
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* 左 1/3 右 2/3 */
+  gap: 14px;
+  align-items: start;
+}
+
+.carb-detailPhoto{
+  min-width: 0;
+}
+
+.carb-detailFields{
+  min-width: 0;
+}
+
+/* 讓照片更像固定比例縮圖，避免 img 高度忽大忽小 */
+.carb-detailPhoto .carb-photo__imgWrap{
+  min-height: 220px;            /* 可依你需求調整 */
+}
+
+.carb-detailPhoto .carb-photo__imgWrap img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;          /* 保留全圖，不裁切 */
+}
+
+/* 按鈕改成直覺：滿寬、上下排列（你也可改回橫排） */
+.carb-detailPhoto .carb-photo__actions{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.carb-detailPhoto .carb-photo__actions .btn{
+  width: 100%;
+  justify-content: center;
+}
+
+/* RWD：小於 980px 變上下排列 */
+@media (max-width: 980px){
+  .carb-detailSplit{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* form */
+.carb-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 980px){
+  .carb-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px){
+  .carb-grid{ grid-template-columns: 1fr; }
+}
+
+.carb-field{ display: grid; gap: 6px; }
+.carb-field--full{ grid-column: 1 / -1; }
+.carb-field--row{ grid-column: 1 / -1; padding-top: 2px; }
+
+.carb-hint{
+  font-size: 12px;
+  color: rgba(15,23,42,.56);
+  line-height: 1.45;
+}
+
+.carb-switch{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 900;
+  color: rgba(15,23,42,.82);
+  user-select: none;
+}
+.carb-switch input{ width: 18px; height: 18px; }
+
+/* inspections */
+.carb-insp{
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 980px){
+  .carb-insp{ grid-template-columns: 1fr; }
+}
+
+.carb-insp__summary{
+  padding: 12px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  background: rgba(255,255,255,.86);
+}
+
+.carb-insp__summaryHead{
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.carb-insp__summaryHead h3{
+  font-size: 15px;
+  font-weight: 760;
+  color: rgba(15,23,42,.92);
+}
+
+.carb-insp__legend{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag{
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(15,23,42,.70);
+  background: rgba(255,255,255,.7);
+}
+.tag--ok{ border-color: rgba(21,128,61,.22); background: rgba(21,128,61,.10); color: #065f46; }
+.tag--soon{ border-color: rgba(180,83,9,.22); background: rgba(180,83,9,.10); color: #78350f; }
+.tag--over{ border-color: rgba(190,18,60,.22); background: rgba(190,18,60,.10); color: #7f1d1d; }
+.tag--na{ border-color: rgba(100,116,139,.22); background: rgba(100,116,139,.10); color: #334155; }
+
+.carb-insp__summaryBody{ display: grid; gap: 8px; }
+
+.carb-insp__sumRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line-2);
+  background: rgba(255,255,255,.82);
+}
+
+.carb-insp__sumKey{ font-weight: 720; color: rgba(15,23,42,.86); }
+.carb-insp__sumVal{ font-weight: 720; color: rgba(15,23,42,.72); }
+
+.carb-insp__tableWrap .table{ border-radius: 16px; }
+
+/* photo */
+.carb-photo__preview{
+  padding: 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  background: rgba(255,255,255,.86);
+}
+
+.carb-photo__imgWrap{
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(15,23,42,.03);
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+}
+
+.carb-photo__imgWrap img{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.carb-photo__empty{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: rgba(15,23,42,.60);
+  display: none !important;
+}
+
+.carb-photo__actions{
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 手機版：不鎖整頁高度（保留你的需求） */
+@media (max-width: 980px){
+  body.page-enter{
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .page.car-base{
+    height: auto;
+    overflow: visible;
+    min-height: auto;
+    padding-bottom: 82px;
+  }
+
+  .carb-shell{
+    flex: none;
+    min-height: auto;
+    align-items: start;
+  }
+
+  .carb-left,
+  .carb-right{
+    min-height: auto;
+  }
+}
+
+/* ===== Detail split (photo left / fields right) ===== */
+.carb-detailSplit{
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* 左 1/3 右 2/3 */
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 980px){
+  .carb-detailSplit{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LEFT photo column keep nice width */
+.carb-detailPhoto{
+  min-width: 0;
+}
+
+/* ===== Section title (淡分隔線 + 置中文字) ===== */
+.carb-sectionTitle{
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0 0 10px 0;
+  padding: 6px 0;
+}
+
+.carb-sectionTitle::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(15,23,42,.10);  /* 淡分隔線 */
+  transform: translateY(-50%);
+}
+
+.carb-sectionTitle > span{
+  position: relative;
+  z-index: 1;
+  padding: 0 10px;                 /* 讓文字蓋住線 */
+  background: rgba(255,255,255,.86); /* 與 card 背景一致感 */
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 999px;
+
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: rgba(15,23,42,.62);
+}
+
+/* 只在 car/base：footer 固定在視窗底部 */
+.page.car-base + .footer{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+}
+
+@media (max-width: 980px){
+  .page.car-base + .footer{
+    position: static;
+  }
+}
+
+/* 檢查項目表格：標題與內容置中 */
+.carb-insp__table th,
+.carb-insp__table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* ===== Inspections: switch (need / not need) ===== */
+.carb-insp-toggle { display: inline-flex; align-items: center; }
+
+.carb-switch2{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.carb-switch2 input{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.carb-switch2__track{
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.18);
+  border: 1px solid rgba(15,23,42,0.14);
+  position: relative;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.carb-switch2__thumb{
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  box-shadow: 0 4px 10px rgba(15,23,42,0.18);
+  transition: left .15s ease;
+}
+
+.carb-switch2 input:checked + .carb-switch2__track{
+  background: rgba(37,99,235,0.85); /* primary-ish */
+  border-color: rgba(37,99,235,0.65);
+}
+
+.carb-switch2 input:checked + .carb-switch2__track .carb-switch2__thumb{
+  left: 22px;
+}
+
+.carb-switch2__text{
+  font-size: 14px;
+  color: rgba(15,23,42,0.78);
+  min-width: 42px;
+}
+
+.carb-switch2 input:focus-visible + .carb-switch2__track{
+  outline: 2px solid rgba(37,99,235,0.35);
+  outline-offset: 2px;
+}
+
+.carb-switch2:active .carb-switch2__thumb{
+  width: 20px;
+}
+
+@media screen and (max-width: 980px), screen and (max-height: 560px) and (pointer: coarse) {
+  body.page-enter:has(.page.car-base) { height: auto; overflow: visible; }
+  .page.car-base { height: auto; overflow: visible; min-height: calc(100dvh - var(--topbar-h)); }
+  .carb-shell { grid-template-columns: minmax(0, 1fr); }
+  .carb-left__body { max-height: min(360px, 35dvh); }
+  .carb-right { overflow: visible; }
+  .carb-workspace { overflow: visible; }
+  .carb-item__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .carb-item__meta { grid-column: 1 / -1; grid-row: 2; flex-wrap: wrap; }
+  .carb-item__code { white-space: normal; overflow-wrap: anywhere; }
+}
+@media screen and (max-width: 980px) {
+  .carb-right__head { flex-wrap: wrap; }
+  .carb-actions { flex-wrap: wrap; }
+  .carb-panels { overflow: visible; }
+}

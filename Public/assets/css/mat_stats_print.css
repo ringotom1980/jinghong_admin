@@ -1,0 +1,221 @@
+/* Path: Public/assets/css/mat_stats_print.css
+ * 說明: 統計頁列印（只印 A-F 表格內容）
+ * 需求：
+ * 1) A4 橫式
+ * 2) 列印抬頭：LOGO + 境宏工程有限公司領退料統計（放進 table thead，跨頁重複）
+ * 3) 每一班從新的一頁開始
+ * 4) 頁碼：放棄（不做）
+ */
+
+@page {
+  size: A4 landscape;
+  margin: 10mm 5mm;
+}
+
+@media print {
+  /* 顏色盡量保留（仍需使用者列印選擇彩色/背景） */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* 先把整頁都隱藏 */
+  /* body * {
+    visibility: hidden !important;
+  } */
+
+  /* 只讓列印區可見 */
+  /* #msPrintArea,
+  #msPrintArea * {
+    visibility: visible !important;
+  } */
+  /* 只印 msPrintArea，其它一律不佔版面 */
+  body > *:not(#msPrintArea) {
+    display: none !important;
+  }
+
+  #msPrintArea {
+    display: block !important;
+  }
+
+  /* 列印區定位到頁面左上 */
+  #msPrintArea {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    width: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ===== 列印：取消圓角 + 取消陰影 + 取消非表格框線 ===== */
+  #msPrintArea .card,
+  #msPrintArea .ms-section,
+  #msPrintArea .ms-table-wrap {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+  }
+
+  /* 班別卡片原本的 head/body 也不要框線 */
+  #msPrintArea .ms-section__head,
+  #msPrintArea .ms-section__body {
+    border: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+  }
+
+  /* ===== 只有表格要框線 ===== */
+  #msPrintArea table {
+    /* Screen-only fixed columns must not change report pagination. */
+    table-layout: auto;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #9a9a9a !important;
+    border-radius: 0 !important;
+  }
+
+  #msPrintArea .ms-td-name {
+    width: auto;
+  }
+
+  /*每個表格內格子內距設定*/
+  #msPrintArea th,
+  #msPrintArea td {
+    border: 1.2px solid #9a9a9a !important;
+    padding: 2px 4px !important;
+    vertical-align: middle;
+  }
+
+  /* ✅ thead 跨頁重複（核心） */
+  #msPrintArea thead {
+    display: table-header-group;
+  }
+
+  #msPrintArea tfoot {
+    display: table-footer-group;
+  }
+
+  /* 避免某些列被切開（注意：太嚴格可能導致大片留白，但通常可接受） */
+  #msPrintArea tr,
+  #msPrintArea td,
+  #msPrintArea th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 每一班（每個 .ms-section）從新的一頁開始 */
+  #msPrintArea .ms-section {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #msPrintArea .ms-section:not(:first-of-type) {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  /* ===== 列印抬頭（插在 thead 的第一列） =====
+     這一列本身：不要格線（你要求只有表格格線，抬頭不要框線）
+  */
+  #msPrintArea tr.ms-print-thead th.ms-print-thead-cell {
+    border: 0 !important;
+    padding: 0 0 8px 0 !important;
+
+    /* 1) 標題靠左：避免 th 預設置中 */
+    text-align: left !important;
+
+    /* 2) 遮掉抬頭區的 table 外框線（上/左/右） */
+    position: relative !important;
+    background: #fff !important;
+  }
+
+  /* 遮掉抬頭區上/左/右三條外框線（你紅線那三條） */
+  #msPrintArea tr.ms-print-thead th.ms-print-thead-cell::before {
+    content: "";
+    position: absolute;
+    top: -3px; /* 蓋住上框線 */
+    left: -3px; /* 蓋住左框線 */
+    right: -3px; /* 蓋住右框線 */
+    bottom: 0; /* 不往下蓋到下一列表頭 */
+    background: #fff;
+    z-index: 0;
+  }
+
+  /* 讓抬頭內容浮在白底遮罩上 */
+  #msPrintArea .ms-print-thead-wrap {
+    position: relative;
+    z-index: 1;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 0 8px 0 !important;
+
+    /* 3) 抬頭底下那條線取消：不加任何 border-bottom */
+    border-bottom: 0 !important;
+  }
+
+  #msPrintArea .ms-print-logo {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: contain !important;
+  }
+
+  #msPrintArea .ms-print-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  #msPrintArea .ms-print-meta {
+    font-size: 12px !important;
+    color: #444 !important;
+    margin-top: 4px !important;
+  }
+
+  /* 只縮小：B班的「筆數」欄位（列印專用） */
+  #msPrintArea table.ms-table--b td.ms-td-count {
+    font-size: 10px !important; /* 你要多小再調 */
+  }
+}
+
+/* Preserve the original narrow-paper column sizing independently of screen UI. */
+@media print and (max-width: 900px) {
+  #msPrintArea .ms-table th:nth-child(1),
+  #msPrintArea .ms-table td:nth-child(1) {
+    width: 46px !important;
+    min-width: 46px;
+  }
+  #msPrintArea .ms-table th:nth-child(2),
+  #msPrintArea .ms-table td:nth-child(2) {
+    min-width: 140px;
+    max-width: 180px;
+  }
+  #msPrintArea .ms-table thead tr:not(:first-child) th {
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+/* Keep a reusable snapshot without duplicating the on-screen report. */
+@media screen {
+  #msPrintArea { display: none; }
+}
+@media print {
+  html, body { display: block !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+  #msPrintArea { position: static; }
+  #msPrintArea .ms-content { display: block; width: auto; max-width: none; margin: 0; }
+  #msPrintArea :is(.ms-section, .ms-table-wrap) { overflow: visible !important; max-width: none !important; }
+  #msPrintArea .ms-section { break-inside: auto !important; page-break-inside: auto !important; }
+  #msPrintArea .ms-table { min-width: 0 !important; }
+  #msPrintArea :is(th, td) { position: static !important; font-size: 15px; }
+}

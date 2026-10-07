@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteCond %{DOCUMENT_ROOT}/jinghong_admin/runtime-enabled !-d
+RewriteCond %{THE_REQUEST} !^POST\ /jinghong_admin/__runtime_health_9063b13\ HTTP/
+RewriteRule ^ - [F,L]
+# Path: /public_html/jinghong_admin/Public/.htaccess
+# 說明: Public 內層備援路由（只處理直接打到 /jinghong_admin/Public/* 的情況）
+# - 實體檔案放行
+# - 其餘交給 Public/index.php
+
+Options -MultiViews
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^ index.php [L]

@@ -1,0 +1,74 @@
+/* Path: Public/assets/css/pole_geolocate.css
+ * 說明: 公開電桿地圖 - 目前位置 marker（logo + 心臟跳動擴散）
+ */
+
+.pole-mypos-icon{
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* 容器 */
+.pole-mypos{
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+/* 中心點（logo） */
+.pole-mypos__dot{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  border: 2px solid rgba(37,99,235,.35);
+  box-shadow: 0 10px 26px rgba(2,6,23,.18);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+/* logo */
+.pole-mypos__logo{
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* 若沒給 logoUrl，退化成小圓點 */
+.pole-mypos__fallbackDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(37,99,235,.92);
+}
+
+/* pulse 擴散 */
+.pole-mypos__pulse{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(37,99,235,.20);
+  animation: polePulse 1.8s ease-out infinite;
+  filter: blur(0.2px);
+}
+
+/* 第二圈延遲，像 Google 那樣連續擴散 */
+.pole-mypos__pulse--2{
+  animation-delay: .9s;
+  background: rgba(37,99,235,.14);
+}
+
+@keyframes polePulse{
+  0%   { transform: translate(-50%, -50%) scale(.25); opacity: .9; }
+  70%  { transform: translate(-50%, -50%) scale(1.15); opacity: .12; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0; }
+}

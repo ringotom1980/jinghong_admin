@@ -1,0 +1,136 @@
+/*
+ * Path: Public/assets/css/login.css
+ * 說明: 登入頁樣式（簡約卡片、置中、輸入框/訊息區）
+ * - 只處理 login.php 的視覺；互動由 login.js
+ * - 色票與全站一致（淡粉系 + 藍為主互動）
+ */
+
+.auth-shell{
+  min-height: calc(100vh - 56px);
+  display: grid;
+  place-items: center;
+  padding: 26px 14px;
+}
+
+.auth-card{
+  width: min(460px, 92vw);
+  border-radius: 18px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 18px 52px rgba(2, 6, 23, .14);
+  backdrop-filter: blur(10px);
+  padding: 18px 18px 16px 18px;
+}
+
+.auth-brand{
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 8px 6px 14px 6px;
+}
+
+/* 登入頁 Logo 圖片版（浮起、有質感） */
+.auth-logo-img{
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  object-fit: contain;
+  display: block;
+
+  /* 中性淡灰框 + 透明白底 */
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.78);
+
+  /* ✅ 立體浮起感（核心） */
+  box-shadow:
+    0 12px 32px rgba(2, 6, 23, 0.18),
+    0 4px 10px rgba(2, 6, 23, 0.08);
+
+  /* ✅ 與全站動效一致 */
+  transition:
+    box-shadow 240ms cubic-bezier(.2,.8,.2,1),
+    transform 240ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* 微互動：更有「浮起來」的感覺（不晃、不廉價） */
+.auth-logo-img:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 42px rgba(2, 6, 23, 0.22),
+    0 6px 14px rgba(2, 6, 23, 0.10);
+}
+
+.auth-title{
+  font-size: 20px;              /* ⬅ 明顯放大 */
+  font-weight: 800;             /* ⬅ Windows 穩定 */
+  letter-spacing: .06em;
+}
+
+.auth-sub{
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(15,23,42,.65);
+}
+
+.auth-form{
+  display: grid;
+  gap: 12px;
+  padding: 0x;
+}
+
+/* login 專用：調整按鈕尺寸（顏色走 app.css 全局） */
+.auth-form .btn{
+  width: 100%;
+  height: 44px;
+  border-radius: 15px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.auth-public{
+  display: grid;
+  justify-items: center;
+  margin: 10px 0 6px 0;
+}
+
+/* 公開入口按鈕也滿版 */
+.auth-public .btn{
+  width: 100%;
+  height: 40px;
+  border-radius: 14px;
+}
+
+.auth-label{
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(15,23,42,.72);
+  font-weight: 700;
+}
+
+.auth-label input{
+  height: 42px;
+  border-radius: 14px;
+}
+
+.auth-msg{
+  min-height: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(220, 38, 38, .92);
+  padding: 2px 2px 0 2px;
+}
+
+.auth-foot{
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(15,23,42,.46);
+}
+
+/* 登出/登入共用：置中 spinner */
+.auth-spinner{
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}

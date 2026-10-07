@@ -1,0 +1,337 @@
+/* Path: Public/assets/css/car_repairs.css
+ * 說明: 維修紀錄列表頁
+ */
+
+.car-repairs .cr-shell {
+  padding: 0;
+}
+
+.cr-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.cr-kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.cr-kpi__label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cr-kpi__value {
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+/* ===== Repairs Capsules（時間膠囊）===== */
+
+.cr-caps {
+  margin-top: 10px;
+  padding: 10px 16px 0 16px; /* 與 cr-body 左右對齊 */
+}
+
+/* 膠囊列容器 */
+.cr-caps__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 單一膠囊（button） */
+.cr-cap {
+  appearance: none;
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(15, 23, 42, 0.86);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cr-cap:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+/* 作用中膠囊 */
+.cr-cap.is-active {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(30, 58, 138, 0.98);
+}
+
+/* ===== Capsules 類型識別：半年 vs 整年 ===== */
+/* 整年：維持現況（只加 class 不改視覺），避免破壞既有一致性 */
+/* .cr-cap--year {} */
+
+/* 半年：非 active 就帶「淡藍辨識」讓使用者一眼知道是半年 */
+.cr-cap--half {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* 半年 hover：沿用你 hover 風格，但稍微偏藍（仍然很淡） */
+.cr-cap--half:hover {
+  border-color: rgba(37, 99, 235, 0.32);
+  background: rgba(37, 99, 235, 0.10);
+}
+
+/* 半年 active：在你原本 active 藍底上再加深一點點，維持辨識 */
+.cr-cap--half.is-active {
+  border-color: rgba(37, 99, 235, 0.48);
+  background: rgba(37, 99, 235, 0.18);
+}
+
+/* 半年筆數顏色：跟著偏藍，避免看起來像一般白底 */
+.cr-cap--half .cr-cap__count {
+  color: rgba(30, 58, 138, 0.70);
+}
+
+/* 半年 active 筆數：沿用你 is-active 但更清楚 */
+.cr-cap--half.is-active .cr-cap__count {
+  color: rgba(30, 58, 138, 0.86);
+}
+/* ===== Capsules 類型識別 結束 ===== */
+
+/* 筆數 */
+.cr-cap__count {
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(15, 23, 42, 0.55);
+}
+
+.cr-cap.is-active .cr-cap__count {
+  color: rgba(30, 58, 138, 0.8);
+}
+
+/* 載入提示 */
+.cr-caps__hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ===== Repairs Capsules 結束===== */
+
+.cr-body {
+  padding: 14px 16px 16px 16px;
+}
+
+.cr-tableWrap {
+  position: relative;
+  overflow: auto;
+}
+
+.cr-table {
+  min-width: 1280px;
+}
+
+/* ===== Repairs Table: 百分比欄寬（colgroup）===== */
+/* 說明：
+ * - 只作用在 .cr-table（不影響其他 table）
+ * - table-layout: fixed 才能讓百分比穩定
+ * - 內容若過長，交給既有 .cr-summary/.cr-note ellipsis 控制
+ */
+.cr-table {
+  table-layout: fixed;
+}
+
+/* 項次 */
+.cr-table col.cr-col--no {
+  width: 4%;
+}
+
+/* 車輛編號 */
+.cr-table col.cr-col--code {
+  width: 7%;
+}
+
+/* 車牌 */
+.cr-table col.cr-col--plate {
+  width: 7%;
+}
+
+/* 維修日期 */
+.cr-table col.cr-col--date {
+  width: 8%;
+}
+
+/* 維修廠商 */
+.cr-table col.cr-col--vendor {
+  width: 12%;
+}
+
+/* 類別 */
+.cr-table col.cr-col--type {
+  width: 6%;
+}
+
+/* 里程 */
+.cr-table col.cr-col--mileage {
+  width: 6%;
+}
+
+/* 使用人 */
+.cr-table col.cr-col--user {
+  width: 8%;
+}
+
+/* 維修項目摘要 */
+.cr-table col.cr-col--summary {
+  width: 20%;
+}
+
+/* 維修金額 */
+.cr-table col.cr-col--total {
+  width: 7%;
+}
+
+/* 工班負擔 */
+.cr-table col.cr-col--team {
+  width: 7%;
+}
+
+/* 公司負擔 */
+.cr-table col.cr-col--company {
+  width: 7%;
+}
+
+/* 備註 */
+.cr-table col.cr-col--note {
+  width: 10%;
+}
+
+/* 操作 */
+.cr-table col.cr-col--actions {
+  width: 8%;
+}
+/* ===== Repairs Table: 百分比欄寬（colgroup）結束===== */
+
+.cr-table td {
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.cr-table td.num,
+.cr-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cr-table td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ===== 表格內容/表頭置中（摘要欄例外靠左）===== */
+.cr-table th,
+.cr-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 例外：摘要欄內容靠左（td 本身） */
+.cr-table td.summary {
+  text-align: left;
+}
+
+/* num / actions 維持原本規則（你原本已經有） */
+/* .cr-table td.num, .cr-table th.num { text-align:right; ... } */
+/* .cr-table td.actions { text-align:right; ... } */
+
+/* 讓摘要 div 明確靠左（避免被其他規則影響） */
+.cr-summary {
+  text-align: left;
+}
+
+/* 讓備註 div 明確置中（避免 div 預設靠左看起來像沒置中） */
+.cr-note {
+  text-align: center;
+}
+/* ===== 表格內容/表頭置中（摘要欄例外靠左）結束===== */
+
+.cr-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.cr-empty,
+.cr-loading {
+  padding: 14px 6px 4px 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.cr-badge--maint {
+  border-color: rgba(37, 99, 235, 0.24);
+  background: rgba(37, 99, 235, 0.1);
+  color: rgba(30, 58, 138, 0.95);
+}
+
+.cr-badge--repair {
+  border-color: rgba(180, 83, 9, 0.26);
+  background: rgba(180, 83, 9, 0.1);
+  color: rgba(120, 53, 15, 0.95);
+}
+
+.cr-summary {
+  color: rgba(15, 23, 42, 0.76);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+
+.cr-note {
+  color: rgba(15, 23, 42, 0.66);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+/* ===== 維修紀錄列表：整列 hover 效果 ===== */
+.cr-table tbody tr {
+  transition: background-color .15s ease;
+}
+
+.cr-table tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.04); /* 淡灰藍，和你整站色系一致 */
+}
+
+.cr-table tbody tr:hover td.num {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* ===== 維修紀錄列表：整列 hover 效果 結束 ===== */

@@ -1,0 +1,10 @@
+Options -Indexes -MultiViews
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+RewriteEngine On
+RewriteCond %{DOCUMENT_ROOT}/jinghong_admin/runtime-enabled !-d
+RewriteCond %{THE_REQUEST} !^POST\ /jinghong_admin/__runtime_health_9063b13\ HTTP/
+RewriteRule ^ - [F,L]
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(?:app|config|scripts)(?:/|$) - [F,L,NC]

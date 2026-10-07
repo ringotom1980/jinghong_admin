@@ -1,0 +1,266 @@
+/* Path: Public/assets/css/car_stats_print.css
+ * 說明: 車輛維修統計｜列印專用樣式（外掛）
+ */
+
+/* 邊界更小（佔版面更大） */
+@page {
+  size: A4 landscape;
+  /* 列印邊界 */
+  margin: 6mm 6mm 6mm 6mm;
+
+  @bottom-right {
+    content: "第 " counter(page) " 頁";
+    font-size: 11px;
+  }
+}
+
+html,
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC",
+    sans-serif;
+  color: #111;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.print-head {
+  position: static; /* ✅ 取消 fixed，不要覆蓋內容 */
+  height: auto; /* ✅ 不要硬塞 14mm */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 2mm;
+  margin: 0;
+  border-bottom: none;
+  background: transparent; /* ✅ thead 內不需要白底蓋住 */
+}
+
+.print-head__logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.print-head__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+/*右側車號/車牌 + 版頭排版*/
+.print-head--vehicle {
+  justify-content: space-between;
+}
+
+.print-head__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.print-head__right {
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  margin-left: 12px;
+}
+/*右側車號/車牌 + 版頭排版-結束*/
+
+.sec {
+  margin: 10px 0 14px;
+}
+
+h3 {
+  margin: 10px 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th,
+td {
+  border: 1px solid #d9d9d9;
+  padding: 7px 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+th {
+  background: #f5f6f8;
+  text-align: center;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* 對齊工具 */
+.ta-r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ta-c {
+  text-align: center;
+}
+.ta-l {
+  text-align: left;
+}
+
+/* 你指定：編號、公司負擔、工班負擔、維修金額 標題置中
+   （其實 th 預設置中已做到，但保險） */
+th.col-code,
+th.col-company,
+th.col-team,
+th.col-grand {
+  text-align: center !important;
+}
+
+/* 你指定：編號、車牌底下 td 置中 */
+td.col-code,
+td.col-plate {
+  text-align: center;
+}
+
+/* 車牌欄寬，且不要換行 */
+th.col-plate,
+td.col-plate {
+  width: 82px; /* 你可以再加到 100~120 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 編號欄寬，避免被擠壓 */
+th.col-code,
+td.col-code {
+  width: 46px;
+  white-space: nowrap;
+}
+
+/* 公司負擔 / 工班負擔 / 維修金額：各自欄寬（可自行調整） */
+th.col-company,
+td.col-company {
+  width: 72px;
+  white-space: nowrap;
+}
+th.col-team,
+td.col-team {
+  width: 72px;
+  white-space: nowrap;
+}
+th.col-grand,
+td.col-grand {
+  width: 78px;
+  white-space: nowrap;
+}
+
+/* 列印時避免表格標題列被切開 */
+thead {
+  display: table-header-group;
+}
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ✅ thead 的「文件標題列」不需要格線（左/右/上） */
+thead tr.print-head-row > th {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  background: #fff !important;
+}
+
+/* ✅ 欄寬定錨列：不顯示、不佔高度、不留格線，但保留欄寬計算 */
+thead tr.col-guard th {
+  padding: 0 !important;
+  border: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  background: transparent !important;
+}
+
+/* 合計列視覺 */
+tr.sum-row td {
+  font-weight: 800;
+  background: #fff;
+}
+
+@media print {
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+/* ===== all_details：每台車一頁 ===== */
+@media print {
+  .sec--vehicle {
+    break-after: page;
+    page-break-after: always;
+  }
+  .sec--vehicle:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
+
+/* ===== all_details(各車維修明細表)：8欄 欄寬（可自行調整）===== */
+th.col-no,
+td.col-no {
+  width: 40px;
+}
+th.col-date,
+td.col-date {
+  width: 92px;
+}
+th.col-vendor,
+td.col-vendor {
+  width: 110px;
+}
+th.col-type,
+td.col-type {
+  width: 46px;
+}
+th.col-detail,
+td.col-detail {
+  width: auto;
+} /* 主欄位：吃剩餘寬 */
+th.col-company,
+td.col-company {
+  width: 70px;
+}
+th.col-team,
+td.col-team {
+  width: 70px;
+}
+th.col-grand,
+td.col-grand {
+  width: 70px;
+}
+
+/* 明細欄位換行策略 */
+td.col-detail {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* th/td 對齊分流（你要求可區分） */
+th.col-detail {
+  text-align: center;
+} /* 表頭置中 */
+td.col-detail {
+  text-align: left;
+} /* 內容靠左 */
+/* ===== all_details(各車維修明細表)：8欄 欄寬（可自行調整）結束===== */
+/* Twelve-month summaries use the paper width without reducing type size. */
+.print--summary :is(th, td) { padding-inline: 4px; }
