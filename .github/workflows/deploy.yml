@@ -1,9 +1,13 @@
-name: Deploy to FTP
+name: FTP rollback (manual only)
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
+    inputs:
+      ref:
+        description: Source ref for manual FTP rollback
+        required: true
+        default: 9063b13f15d43ef3613d16d6cbac1e8e2596b2ab
+        type: string
 
 jobs:
   deploy:
@@ -12,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       # 避免把敏感檔案帶上（即使 .gitignore 沒上版控，仍加一道保險）
       - name: Remove sensitive files (safety)
@@ -61,3 +67,10 @@ jobs:
             # 不要覆蓋伺服器上的車輛圖片與匯入暫存
             storage/uploads/**
             storage/import/**
+            storage/**
+            vendor/**
+            .htaccess
+            app/env.php
+            tools/**
+            runtime-release/**
+            runtime-enabled/**

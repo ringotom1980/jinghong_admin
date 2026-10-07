@@ -1,0 +1,45 @@
+# Install manually once at public_html/jinghong_admin/.htaccess BEFORE Git setup.
+# Preserve original bytes. Start with runtime-enabled/ ABSENT.
+Options -Indexes -MultiViews
+RewriteEngine On
+RewriteBase /jinghong_admin/
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(?:app|config|scripts|vendor|runtime-enabled)(?:/|$) - [F,L,NC]
+
+# Runtime has its own inherited authorization gate; real APIs stay closed until
+# runtime-enabled/ exists. Internal rewrite paths must survive another pass.
+RewriteRule ^runtime-release/Public(?:/|$) - [L]
+RewriteRule ^runtime-release/version\.txt$ - [L]
+RewriteRule ^runtime-release(?:/|$) - [F,L,NC]
+
+# Keep both existing image URL forms. Everything else in storage is private.
+RewriteRule ^uploads/(.+\.jpe?g)$ storage/uploads/$1 [L,NC]
+RewriteRule ^uploads(?:/|$) - [F,L,NC]
+RewriteRule ^storage/uploads/(.+\.jpe?g)$ - [L,NC]
+RewriteRule ^storage(?:/|$) - [F,L,NC]
+
+# The only exposed runtime endpoint before activation. No body/query/token.
+RewriteRule ^__runtime_health_9063b13$ runtime-release/Public/migration_health.php [L]
+
+# Skip exactly seven runtime routing rules while the parent gate is absent.
+RewriteCond %{DOCUMENT_ROOT}/jinghong_admin/runtime-enabled !-d
+RewriteRule ^ - [S=7]
+RewriteRule ^assets/(.*)$ runtime-release/Public/assets/$1 [L,NC]
+RewriteRule ^Public/assets/(.*)$ runtime-release/Public/assets/$1 [L,NC]
+RewriteRule ^Public/(.+\.php)$ runtime-release/Public/$1 [L,NC,QSA]
+RewriteRule ^api/(.+)\.php$ runtime-release/Public/api/$1.php [L,NC,QSA]
+RewriteRule ^api/(.+)$ runtime-release/Public/api/$1.php [L,NC,QSA]
+RewriteRule ^version\.txt$ runtime-release/version.txt [L]
+RewriteRule ^ runtime-release/Public/index.php [L]
+
+# Existing application routing remains active until the gate is enabled.
+RewriteRule ^assets/(.*)$ /jinghong_admin/Public/assets/$1 [L,NC]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^api/(.+)\.php$ /jinghong_admin/Public/api/$1.php [L,NC,QSA]
+RewriteRule ^api/(.+)$ /jinghong_admin/Public/api/$1.php [L,NC,QSA]
+RewriteRule ^ /jinghong_admin/Public/index.php [L]

@@ -1,0 +1,52 @@
+name: Publish Hostinger Runtime
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+concurrency:
+  group: jinghong-runtime
+  cancel-in-progress: false
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Generate runtime only
+        run: python3 tools/generate_runtime.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/jinghong-runtime"
+      - name: Lint generated PHP without executing it
+        run: find "$RUNNER_TEMP/jinghong-runtime" -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Initialize orphan once, then publish fast-forward commits
+        env:
+          OUTPUT: ${{ runner.temp }}/jinghong-runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
+          destination=$(git remote get-url origin)
+          authorization=$(git config --get http.https://github.com/.extraheader)
+          runtime_tip=$(git ls-remote origin refs/heads/runtime | cut -f1)
+          cd "$OUTPUT"
+          git init --initial-branch=runtime
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git remote add origin "$destination"
+          if [ -n "$runtime_tip" ]; then
+            git -c "http.https://github.com/.extraheader=$authorization" fetch --no-tags origin refs/heads/runtime:refs/remotes/origin/runtime
+            git update-ref refs/heads/runtime "$(git rev-parse refs/remotes/origin/runtime)"
+            git read-tree HEAD
+          fi
+          git add --all
+          if git rev-parse --verify HEAD >/dev/null 2>&1 && git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Runtime from $GITHUB_SHA"
+          latest_main=$(git -c "http.https://github.com/.extraheader=$authorization" ls-remote origin refs/heads/main | cut -f1)
+          test "$latest_main" = "$GITHUB_SHA"
+          git -c "http.https://github.com/.extraheader=$authorization" push origin HEAD:runtime
