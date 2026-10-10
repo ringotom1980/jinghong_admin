@@ -240,8 +240,6 @@ body.login-page .auth-form .btn--primary {
   box-shadow: 5px 5px 12px #bfc8d7, -5px -5px 12px #ffffff;
   transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
-body.login-page .auth-form .btn--primary:hover { background: #3a4a86; }
-body.login-page .auth-form .btn--primary:active { transform: translateY(1px); background: #2b396f; box-shadow: inset 3px 3px 7px #202c56, inset -3px -3px 7px #3c4e8d; }
 body.login-page .auth-public { margin-top: 27px; padding-top: 20px; border-top: 1px solid #ccd4df; box-shadow: inset 0 1px 0 #ffffff; }
 body.login-page .auth-public .btn {
   display: flex;
@@ -259,8 +257,6 @@ body.login-page .auth-public .btn {
   text-decoration: none;
   transition: background 180ms ease;
 }
-body.login-page .auth-public .btn:hover,
-body.login-page .auth-public .btn:active { background: #dfe5ee; }
 body.login-page .auth-foot { margin-top: 19px; color: #607087; font-size: 11px; }
 @keyframes login-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 480px) {
@@ -275,4 +271,87 @@ body.login-page .auth-foot { margin-top: 19px; color: #607087; font-size: 11px; 
   body.login-page .auth-form .btn,
   body.login-page .auth-public .btn { transition: none; }
   body.login-page .auth-form .btn--primary:active { transform: none; }
+}
+
+/* SVG pathLength keeps the light moving around the complete rounded perimeter. */
+body.login-page .auth-focus-ring {
+  position: absolute;
+  inset: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  overflow: visible;
+  pointer-events: none;
+  visibility: hidden;
+}
+body.login-page .auth-focus-ring rect {
+  fill: none;
+  stroke: #3a78d8;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-dasharray: 16 84;
+  stroke-dashoffset: 0;
+}
+body.login-page .auth-field input:focus ~ .auth-focus-ring { visibility: visible; }
+body.login-page .auth-field input:focus ~ .auth-focus-ring rect {
+  animation: login-border-orbit 2400ms linear infinite;
+}
+@keyframes login-border-orbit {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -100; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.login-page .auth-field input:focus ~ .auth-focus-ring rect {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+
+/* Hover is a mouse interaction; touch gets pressed feedback without sticky hover. */
+body.login-page .auth-form .btn,
+body.login-page .auth-public .btn {
+  transform: none;
+  filter: none;
+  transition: background-color 200ms ease, border-color 200ms ease,
+              box-shadow 200ms ease, transform 200ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  body.login-page .auth-form .btn--primary:not(:disabled):not(.is-loading):hover {
+    background-color: #405696;
+    box-shadow: 6px 8px 16px #b8c3d6, -5px -5px 12px #ffffff;
+    transform: translateY(-2px);
+  }
+  body.login-page .auth-public .btn:not([aria-disabled="true"]):not(.is-loading):hover {
+    background-color: #d5deec;
+    border-color: #a9b9d1;
+    box-shadow: 4px 5px 10px #c8d1df, -4px -4px 10px #ffffff;
+    transform: translateY(-2px);
+  }
+}
+body.login-page .auth-form .btn--primary:not(:disabled):not(.is-loading):is(:active, .is-pressed) {
+  transform: translateY(1px);
+  background-color: #2b396f;
+  box-shadow: inset 3px 3px 7px #202c56, inset -3px -3px 7px #3c4e8d;
+}
+body.login-page .auth-public .btn:not([aria-disabled="true"]):not(.is-loading):is(:active, .is-pressed) {
+  transform: translateY(1px);
+  background-color: #cdd7e7;
+  box-shadow: inset 3px 3px 7px #bcc7d7, inset -3px -3px 7px #f7faff;
+}
+body.login-page .auth-form .btn:focus-visible,
+body.login-page .auth-public .btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 4px;
+}
+body.login-page .auth-form .btn:disabled,
+body.login-page .auth-form .btn.is-loading,
+body.login-page .auth-public .btn.is-loading {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.login-page .auth-form .btn,
+  body.login-page .auth-public .btn { transition: none; }
+  body.login-page .auth-form .btn--primary:not(:disabled):not(.is-loading):is(:hover, :active),
+  body.login-page .auth-public .btn:not([aria-disabled="true"]):not(.is-loading):is(:hover, :active, .is-pressed) {
+    transform: none;
+  }
 }

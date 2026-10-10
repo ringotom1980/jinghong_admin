@@ -66,10 +66,16 @@ if (isset($_GET['return'])) {
       <div class="auth-field">
         <input id="loginUsername" type="text" name="username" autocomplete="username" placeholder=" " required />
         <label for="loginUsername">帳號</label>
+        <svg class="auth-focus-ring" aria-hidden="true" focusable="false">
+          <rect width="100%" height="100%" rx="13" ry="13" pathLength="100" />
+        </svg>
       </div>
       <div class="auth-field auth-field--password">
         <input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder=" " required />
         <label for="loginPassword">密碼</label>
+        <svg class="auth-focus-ring" aria-hidden="true" focusable="false">
+          <rect width="100%" height="100%" rx="13" ry="13" pathLength="100" />
+        </svg>
         <button id="passwordToggle" class="auth-password-toggle" type="button" aria-label="顯示密碼" aria-pressed="false">顯示</button>
       </div>
 
