@@ -47,7 +47,7 @@ if (isset($_GET['return'])) {
 <!doctype html>
 <html lang="zh-Hant">
 <?php require __DIR__ . '/partials/head.php'; ?>
-<body class="login-page">
+<body class="login-page" data-version="<?= htmlspecialchars($version, ENT_QUOTES) ?>">
 
 <main class="auth-shell">
   <section class="auth-card">
@@ -91,7 +91,6 @@ if (isset($_GET['return'])) {
       </a>
     </div>
 
-    <div class="auth-foot"><?= htmlspecialchars($version, ENT_QUOTES) ?></div>
   </section>
 </main>
 
