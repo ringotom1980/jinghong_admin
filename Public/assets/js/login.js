@@ -8,6 +8,17 @@ document.addEventListener('DOMContentLoaded', function () {
   var msgEl = document.getElementById('loginMessage');
   if (!form) return;
 
+  var inFlight = false;
+  var password = document.getElementById("loginPassword");
+  var toggle = document.getElementById("passwordToggle");
+  if (password && toggle) toggle.addEventListener("click", function () {
+    var showing = password.type === "password";
+    password.type = showing ? "text" : "password";
+    toggle.textContent = showing ? "隱藏" : "顯示";
+    toggle.setAttribute("aria-label", showing ? "隱藏密碼" : "顯示密碼");
+    toggle.setAttribute("aria-pressed", String(showing));
+  });
+
   function setMsg(text, type) {
     msgEl.textContent = text || '';
     msgEl.className = 'auth-msg ' + (type || '');
@@ -21,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (inFlight) return;
 
     var u = form.username.value.trim();
     var p = form.password.value.trim();
@@ -30,6 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    inFlight = true;
+    form.setAttribute("aria-busy", "true");
     disableForm(true);
     setMsg('');
     var submitBtn = form.querySelector('button[type="submit"]');
@@ -49,6 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!j.success) {
           setMsg(j.error || '登入失敗', 'error');
           if (submitBtn && window.UI && UI.motion && UI.motion.loading) UI.motion.loading.off(submitBtn);
+          inFlight = false;
+          form.setAttribute("aria-busy", "false");
           disableForm(false);
           return;
         }
@@ -57,6 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(() => {
         setMsg('伺服器錯誤，請稍後再試', 'error');
         if (submitBtn && window.UI && UI.motion && UI.motion.loading) UI.motion.loading.off(submitBtn);
+        inFlight = false;
+        form.setAttribute("aria-busy", "false");
         disableForm(false);
       });
   });

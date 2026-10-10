@@ -47,7 +47,7 @@ if (isset($_GET['return'])) {
 <!doctype html>
 <html lang="zh-Hant">
 <?php require __DIR__ . '/partials/head.php'; ?>
-<body>
+<body class="login-page">
 
 <main class="auth-shell">
   <section class="auth-card">
@@ -56,34 +56,34 @@ if (isset($_GET['return'])) {
            src="<?= asset('assets/img/brand/JH_logo.png') ?>"
            alt="境宏工程有限公司"
            width="64" height="64" />
-      <div class="auth-title">境宏工程有限公司管理系統</div>
-      <div class="auth-sub">請使用帳號密碼登入</div>
-    </div>
-
-    <!-- 公開入口：不登入也可用 -->
-    <div class="auth-public">
-      <a class="btn btn--secondary" href="<?= htmlspecialchars($base . '/pole-map', ENT_QUOTES) ?>">
-        前往公開電桿地圖(不須登入)
-      </a>
+      <div class="auth-title">境宏工程有限公司</div>
+      <div class="auth-sub">管理系統登入</div>
     </div>
 
     <form id="loginForm" class="auth-form" method="post" action="javascript:void(0)">
       <input type="hidden" name="return" value="<?= htmlspecialchars($return, ENT_QUOTES, 'UTF-8') ?>" />
 
-      <label class="auth-label">
-        <span>帳號</span>
-        <input type="text" name="username" autocomplete="username" required />
-      </label>
+      <div class="auth-field">
+        <input id="loginUsername" type="text" name="username" autocomplete="username" placeholder=" " required />
+        <label for="loginUsername">帳號</label>
+      </div>
+      <div class="auth-field auth-field--password">
+        <input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder=" " required />
+        <label for="loginPassword">密碼</label>
+        <button id="passwordToggle" class="auth-password-toggle" type="button" aria-label="顯示密碼" aria-pressed="false">顯示</button>
+      </div>
 
-      <label class="auth-label">
-        <span>密碼</span>
-        <input type="password" name="password" autocomplete="current-password" required />
-      </label>
-
-      <div id="loginMessage" class="auth-msg"></div>
+      <div id="loginMessage" class="auth-msg" role="status" aria-live="polite"></div>
 
       <button type="submit" class="btn btn--primary">登入</button>
     </form>
+
+    <!-- 公開入口：不登入也可用 -->
+    <div class="auth-public">
+      <a class="btn btn--secondary" href="<?= htmlspecialchars($base . '/pole-map', ENT_QUOTES) ?>">
+        免登入查看電桿地圖
+      </a>
+    </div>
 
     <div class="auth-foot"><?= htmlspecialchars($version, ENT_QUOTES) ?></div>
   </section>
