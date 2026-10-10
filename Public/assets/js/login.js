@@ -8,6 +8,20 @@ document.addEventListener('DOMContentLoaded', function () {
   var msgEl = document.getElementById('loginMessage');
   if (!form) return;
 
+  // Touch browsers may defer :active until release; provide immediate pressed feedback.
+  document.querySelectorAll('.auth-form .btn, .auth-public .btn').forEach(function (button) {
+    function clearPress() { button.classList.remove('is-pressed'); }
+    button.addEventListener('pointerdown', function (event) {
+      if (event.pointerType !== 'mouse' && !button.disabled && !button.classList.contains('is-loading')) {
+        button.classList.add('is-pressed');
+      }
+    }, { passive: true });
+    ['pointerup', 'pointercancel', 'pointerleave', 'lostpointercapture', 'blur'].forEach(function (event) {
+      button.addEventListener(event, clearPress);
+    });
+    window.addEventListener('blur', clearPress);
+  });
+
   var inFlight = false;
   var password = document.getElementById("loginPassword");
   var toggle = document.getElementById("passwordToggle");
