@@ -58,6 +58,9 @@ function asset(string $path): string
   </script>
 
   <link rel="icon" type="image/png" href="<?= asset('assets/img/brand/JH_logo.png') ?>" />
+  <link rel="apple-touch-icon" sizes="180x180" href="<?= asset('assets/img/brand/apple-touch-icon.png') ?>" />
+  <link rel="apple-touch-icon" sizes="167x167" href="<?= asset('assets/img/brand/apple-touch-icon-167.png') ?>" />
+  <link rel="apple-touch-icon" sizes="152x152" href="<?= asset('assets/img/brand/apple-touch-icon-152.png') ?>" />
 
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
