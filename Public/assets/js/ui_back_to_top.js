@@ -25,7 +25,9 @@
     btn.type = 'button';
     btn.className = 'ui-top';
     btn.setAttribute('aria-label', '回到頂端');
-    btn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+    btn.innerHTML = '<svg class="ui-top__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg><span class="ui-top__text" aria-hidden="true">回到頂端</span>';
+    btn.tabIndex = -1;
+    btn.setAttribute('aria-hidden', 'true');
     document.body.appendChild(btn);
     return btn;
   }
@@ -45,11 +47,14 @@
 
     function update() {
       var y = getScrollTop();
-      if (y > after) btn.classList.add('is-show');
-      else btn.classList.remove('is-show');
+      var shown = y > after;
+      btn.classList.toggle('is-show', shown);
+      btn.tabIndex = shown ? 0 : -1;
+      btn.setAttribute('aria-hidden', String(!shown));
     }
 
     btn.addEventListener('click', function () {
+      btn.blur(); // Do not leave keyboard focus on a button that will hide at the top.
       var top = 0;
       if (targetEl) {
         // 回到指定元素的頂部（留 12px 間距）
@@ -57,7 +62,8 @@
         top = getScrollTop() + rect.top - 12;
         if (top < 0) top = 0;
       }
-      window.scrollTo({ top: top, behavior: 'smooth' });
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: top, behavior: reduced ? 'instant' : 'smooth' });
     });
 
     window.addEventListener('scroll', update, { passive: true });

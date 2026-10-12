@@ -54,6 +54,32 @@
       });
   }
 
+  // Limited to file uploads; the rest of the site keeps the existing fetch wrapper.
+  global.apiUploadForm = function (url, formData, observers) {
+    observers = observers || {};
+    return new Promise(function (resolve) {
+      var xhr = new XMLHttpRequest();
+      function notify(name, value) {
+        try { if (typeof observers[name] === 'function') observers[name](value); } catch (_) { /* UI observers cannot break transport. */ }
+      }
+      function failure(message) { resolve({ success: false, data: null, error: message }); }
+      xhr.open('POST', joinUrl(url), true);
+      // Same-origin session cookies are sent by XHR by default, like credentials:same-origin.
+      xhr.withCredentials = false;
+      xhr.upload.onprogress = function (event) { notify('progress', event); };
+      xhr.upload.onload = function () { notify('processing'); };
+      xhr.onload = function () {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch (_) { failure('API 回傳非 JSON（可能 302/HTML）'); }
+      };
+      xhr.onerror = function () { failure('Network error'); };
+      xhr.onabort = function () { failure('上傳連線中斷'); };
+      xhr.ontimeout = function () { failure('上傳連線逾時'); };
+      // Browser owns the multipart boundary; no new tokens or headers are introduced.
+      try { xhr.send(formData); } catch (error) { failure(error.message || 'Network error'); }
+    });
+  };
+
   global.apiRequest = request;
   global.apiGet = function (url, params) {
     // params -> querystring

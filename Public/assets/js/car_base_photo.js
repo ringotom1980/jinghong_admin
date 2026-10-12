@@ -7,12 +7,6 @@
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
-  function setBtnLoading(btn, on) {
-    if (!btn) return;
-    btn.classList.toggle('is-loading', !!on);
-    btn.disabled = !!on;
-  }
-
   var Mod = {
     app: null,
     img: null,
@@ -23,6 +17,9 @@
     _pickedFile: null,
 
     init: function (app) {
+      if (this._onFileChange && this.file) this.file.removeEventListener('change', this._onFileChange);
+      if (this._onUploadClick && this.uploadBtn) this.uploadBtn.removeEventListener('click', this._onUploadClick);
+      if (this._uploadUI) this._uploadUI.dispose();
       this.app = app;
 
       this.img = qs('#carbPhotoImg');
@@ -30,11 +27,13 @@
       this.file = qs('#carbPhotoFile');
       this.pickBtn = null;
       this.uploadBtn = qs('#carbPhotoUploadBtn');
+      this._uploadUI = UI.motion.upload.attach(this.uploadBtn, { lock: [this.file] });
 
       var self = this;
 
       if (this.file) {
-        this.file.addEventListener('change', function () {
+        this.file.addEventListener('change', this._onFileChange = function () {
+          self._uploadUI.invalidate();
           var f = self.file.files && self.file.files[0] ? self.file.files[0] : null;
           self._pickedFile = f || null;
 
@@ -59,7 +58,7 @@
       }
 
       if (this.uploadBtn) {
-        this.uploadBtn.addEventListener('click', function () {
+        this.uploadBtn.addEventListener('click', this._onUploadClick = function () {
           if (self.uploadBtn.disabled) return;
 
           // ✅ 尚未選檔：等同「更換照片」→ 打開檔案挑選器
@@ -78,6 +77,8 @@
 
     setEnabled: function (enabled) {
       enabled = !!enabled;
+      if (!enabled && this._uploadUI) this._uploadUI.invalidate();
+      if (enabled && this._uploadUI && this._uploadUI.isBusy()) return;
 
       // pickBtn 已不給用，但保留防呆
       if (this.pickBtn) this.pickBtn.disabled = true;
@@ -93,6 +94,7 @@
     },
 
     bindData: function (payload) {
+      if (this._uploadUI) this._uploadUI.invalidate();
       payload = payload || {};
       var v = payload.vehicle || null;
 
@@ -174,17 +176,24 @@
       fd.append('id', String(vid));
       fd.append('photo', this._pickedFile);
 
-      setBtnLoading(this.uploadBtn, true);
+      var picked = this._pickedFile;
+      var run = this._uploadUI.begin();
+      if (!run) return;
 
-      return apiPostForm('/api/car/car_photo_upload', fd)
+      var serverSucceeded = false;
+      return apiUploadForm('/api/car/car_photo_upload', fd, { progress: run.progress, processing: run.processing })
         .then(function (j) {
-          setBtnLoading(self.uploadBtn, false);
+          if (!run.isCurrent()) return;
+          if (Number(self.app.state.activeId) !== vid || self._pickedFile !== picked) { self._uploadUI.invalidate(); return; }
 
           if (!j || !j.success) {
+            run.finish('error', '上傳失敗，可重試');
             Toast && Toast.show({ type: 'danger', title: '上傳失敗', message: (j && j.error) ? j.error : '未知錯誤' });
             return;
           }
 
+          serverSucceeded = true;
+          run.finish('success', '照片已更新');
           Toast && Toast.show({ type: 'success', title: '已更新', message: '照片已覆蓋上傳' });
 
           // 更新 state.active.vehicle.photo_url
@@ -210,7 +219,9 @@
 
         })
         .catch(function (e) {
-          setBtnLoading(self.uploadBtn, false);
+          if (!run.isCurrent()) return;
+          if (serverSucceeded) { Toast && Toast.show({ type: 'warning', title: '照片已更新', message: '畫面更新失敗，請重新整理' }); return; }
+          run.finish('error', '上傳失敗，可重試');
           Toast && Toast.show({ type: 'danger', title: '上傳失敗', message: (e && e.message) ? e.message : '未知錯誤' });
         });
     }
