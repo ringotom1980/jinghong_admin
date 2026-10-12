@@ -1,43 +1,33 @@
-/* Path: Public/assets/css/ui_back_to_top.css
- * 說明: 共用「回頂端」浮動按鈕
- */
-
+/* One shared button; keep its original bottom-center position, anchor its right edge. */
 .ui-top {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%) translateY(8px);
-  z-index: 60;
-
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.14);
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-
-  transition: opacity .18s ease, transform .18s ease;
+  position:fixed;
+  left:auto;
+  right:calc(50% - 22px);
+  bottom:calc(18px + env(safe-area-inset-bottom, 0px));
+  transform:translateY(8px);
+  z-index:60;
+  box-sizing:border-box;
+  width:44px;
+  height:44px;
+  padding:0;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.35);
+  background:linear-gradient(135deg,#405f9c,#2f3f7a);
+  color:white;
+  box-shadow:0 4px 14px rgba(47,63,122,.22);
+  cursor:pointer;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 180ms ease,transform 180ms ease,width 220ms ease,box-shadow 180ms ease;
 }
-
-.ui-top.is-show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
+.ui-top.is-show { opacity:1; transform:translateY(0); pointer-events:auto; }
+.ui-top__arrow { position:absolute; left:12px; top:12px; width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.ui-top__text { position:absolute; right:12px; top:50%; transform:translateY(-50%); max-width:0; overflow:hidden; opacity:0; white-space:nowrap; font-size:14px; font-weight:600; line-height:20px; transition:opacity 180ms ease,max-width 220ms ease; }
+.ui-top:focus-visible { outline:2px solid #2563eb; outline-offset:3px; }
+@media (hover:hover) and (pointer:fine) {
+  .ui-top.is-show:is(:hover,:focus-visible) { width:114px; box-shadow:0 7px 20px rgba(47,63,122,.3); }
+  .ui-top.is-show:is(:hover,:focus-visible) .ui-top__text { max-width:64px; opacity:1; }
 }
-
-.ui-top:hover {
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
-}
-
-.ui-top i {
-  font-size: 16px;
+@media (prefers-reduced-motion:reduce) {
+  .ui-top,.ui-top__text { transition:none; }
 }

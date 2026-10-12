@@ -13,7 +13,9 @@
     app: null,
 
     init: function (app) {
+      if (this._uploadUI) this._uploadUI.dispose();
       this.app = app;
+      this._uploadUI = UI.motion.upload.attach(app.els.btnImport, { lock: [app.els.files, app.els.date] });
       if (app.els.files) this.unsaved = global.UnsavedChanges.watch('issue-files', { root: app.els.files.parentElement,
         busy: function () { return !!app.els.btnImport.disabled; } });
     },
@@ -36,10 +38,8 @@
       var btn = (this.app && this.app.els) ? this.app.els.btnImport : null;
       var draft = this.unsaved;
       var saved = draft.capture();
-      if (btn) {
-        btn.classList.add('is-loading');
-        btn.disabled = true;
-      }
+      var run = this._uploadUI.begin();
+      if (!run) return;
 
       var fd = new FormData();
       fd.append('withdraw_date', d);
@@ -47,13 +47,17 @@
         fd.append('files[]', input.files[i]);
       }
 
-      apiPostForm('/api/mat/issue_import', fd)
+      var serverSucceeded = false;
+      apiUploadForm('/api/mat/issue_import', fd, { progress: run.progress, processing: run.processing })
         .then(function (j) {
+          if (!run.isCurrent()) return;
           if (!j || !j.success) {
+            run.finish('error', '匯入失敗，可重試');
             MatIssueApp.toast('danger', '匯入失敗', j && j.error ? j.error : 'issue_import');
             return;
           }
 
+          serverSucceeded = true;
           var r = j.data || {};
           var sum = r.summary || {};
           var msg = ''
@@ -61,7 +65,9 @@
             + '、略過 ' + String(sum.skipped || 0)
             + '、錯誤 ' + String(sum.errors || 0);
 
-          MatIssueApp.toast('success', '匯入完成', msg, 2600);
+          var needsAttention = !!r.has_missing_shift || Number(sum.errors || 0) > 0 || Number(sum.skipped || 0) > 0 || Number(sum.inserted || 0) === 0;
+          run.finish(needsAttention ? 'notice' : 'success', r.has_missing_shift ? '已匯入，待補班別' : (Number(sum.errors || 0) > 0 ? '部分完成，請看摘要' : (Number(sum.inserted || 0) === 0 ? '沒有匯入資料' : (Number(sum.skipped || 0) > 0 ? '已匯入，含略過資料' : '匯入完成'))));
+          MatIssueApp.toast(needsAttention ? 'warning' : 'success', needsAttention ? '匯入結果' : '匯入完成', msg, 2600);
           // ✅ (1) 匯入成功後清空檔案 input（避免殘留、避免重複送出同一批檔案）
           var fileInput = Mod.app && Mod.app.els ? Mod.app.els.files : null;
           if (fileInput && draft.capture() === saved) {
@@ -92,14 +98,12 @@
           }
         })
         .catch(function (err) {
+          if (!run.isCurrent()) return;
+          if (serverSucceeded) { MatIssueApp.toast('warning', '資料已匯入', '畫面更新失敗，請重新整理'); return; }
+          run.finish('error', '匯入失敗，可重試');
           MatIssueApp.toast('danger', '匯入失敗', (err && err.message) ? err.message : 'network_error');
-        })
-        .finally(function () {
-          if (btn) {
-            btn.classList.remove('is-loading');
-            btn.disabled = false;
-          }
         });
+
     }
   };
 
