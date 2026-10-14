@@ -21,7 +21,12 @@ function asset(string $path): string
   $path = ltrim($path, '/');
 
   $full = __DIR__ . '/../' . $path;
-  $v = is_file($full) ? (string)filemtime($full) : (string)time();
+  // File content, rather than upload timestamps, identifies each asset version.
+  static $versions = [];
+  if (!isset($versions[$full])) {
+    $versions[$full] = is_file($full) ? substr(hash_file('sha256', $full), 0, 16) : 'missing';
+  }
+  $v = $versions[$full];
 
   $prefix = ($base !== '') ? rtrim($base, '/') . '/' : '/';
   return $prefix . $path . '?v=' . $v;
