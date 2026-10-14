@@ -127,10 +127,13 @@
       this._savingRequest = request;
       this.applyLockState();
       var btn = qs('#meBtnSaveRecon');
+      var action = UI.motion.action.begin(btn);
+      var outcome = false;
       var label = btn ? btn.textContent : '';
       if (btn) { btn.setAttribute('aria-busy', 'true'); btn.textContent = '儲存中…'; }
       function releaseSave() {
         if (Mod._savingRequest !== request) return;
+        if (action) action.finish(outcome);
         Mod._savingRequest = null;
         if (btn) { btn.removeAttribute('aria-busy'); btn.textContent = label; }
         Mod.applyLockState();
@@ -152,6 +155,7 @@
 
         // ✅ 你的後端回 need_confirm（不是 confirm_required）
         if (j.data && j.data.need_confirm) {
+          outcome = 'cancel';
           releaseSave();
           if (global.Modal && global.Modal.confirmChoice) {
             global.Modal.confirmChoice(
@@ -168,6 +172,7 @@
           return false;
         }
 
+        outcome = true;
         if (global.Toast) global.Toast.show({ type: 'success', title: '已儲存', message: '對帳資料已更新' });
         if (Mod.unsaved) Mod.unsaved.dispose();
         Mod.unsaved = null;

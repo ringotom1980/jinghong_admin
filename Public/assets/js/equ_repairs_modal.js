@@ -528,12 +528,16 @@
       // ✅ 鎖住按鈕（避免 DB 慢時連點造成多次交易/timeout）
       var btn = this.els && this.els.saveBtn;
       var oldTxt = btn ? btn.textContent : '';
+      var savingDraft = this.unsaved;
+      var action = UI.motion.action.begin(btn, { current: function () { return self.unsaved === savingDraft; } });
+      var outcome = false;
       if (btn) {
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         btn.textContent = '儲存中…';
       }
       function releaseSave() {
+        if (action) action.finish(outcome);
         self.state._saving = false;
         if (btn) {
           btn.disabled = false;
@@ -550,6 +554,7 @@
         var err = this.validate();
         if (err) {
           Toast && Toast.show({ type: 'warning', title: '缺少資料', message: err });
+          outcome = 'cancel';
           releaseSave();
           return;
         }
@@ -569,6 +574,9 @@
             return false;
           }
 
+          outcome = true;
+          var updatedId = j.data && j.data.id || payload.id;
+          if (updatedId) UI.motion.updated.arm(self.app, ['tr[data-id="' + Number(updatedId) + '"]']);
           Toast && Toast.show({ type: 'success', title: '已存檔', message: '紀錄已更新' });
 
           // 關閉 modal

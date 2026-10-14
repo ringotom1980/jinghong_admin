@@ -97,6 +97,7 @@
       // ✅ 保底：先立即打開（避免只剩遮罩）
       bd.classList.add('is-open');
       panel.classList.add('is-open');
+      if (global.UI && UI.motion.dialog) UI.motion.dialog.enter(bd);
 
       // ✅ 再用 rAF 觸發動畫（兼容 motion.css）
       requestAnimationFrame(function () {
@@ -116,6 +117,7 @@
       if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
           if (confirming || Modal._current !== bd) return;
+          var action = null;
           confirming = true;
           confirmBtn.disabled = true;
           confirmBtn.setAttribute('aria-busy', 'true');
@@ -128,15 +130,17 @@
 
               // ✅ Promise 支援：resolve 後再決定關不關
               if (isPromise(r)) {
+                action = global.UI && UI.motion.action ? UI.motion.action.begin(confirmBtn) : null;
                 confirmBtn.textContent = '處理中…';
                 Promise.resolve(r).then(function (v) {
+                  if (action) action.finish(v !== false);
                   if (v === false) return;
                   if (bd._unsaved) {
                     bd._unsaved.markClean(saved);
                     if (bd._unsaved.isDirty()) return;
                   }
                   Modal.close(bd); // 只關閉發出請求的 dialog
-                }).catch(function () { /* caller handles feedback */ }).finally(releaseConfirm);
+                }).catch(function () { if (action) action.finish(false); /* caller handles feedback */ }).finally(releaseConfirm);
                 return;
               }
 
@@ -144,6 +148,7 @@
             } catch (e) { shouldClose = false; }
           }
 
+          if (action) action.finish(shouldClose);
           releaseConfirm();
           if (shouldClose) Modal.close(bd);
         });
@@ -281,6 +286,8 @@
       if (!bd) return;
       if (bd._unsaved) bd._unsaved.dispose();
 
+      if (global.UI && UI.motion.dialog) UI.motion.dialog.exit(bd);
+      bd.style.display = 'none';
       bd.classList.remove('is-open');
       bd.classList.add('is-leave');
 

@@ -79,7 +79,7 @@
         if (!btn) return;
         e.preventDefault();
         var key = btn.getAttribute('data-es-key') || '';
-        if (!key || key === self.state.activeKey) return;
+        if (!key || (key === self.state.activeKey && !self.state._loadError)) return;
         self.setActiveKey(key);
       });
 
@@ -90,7 +90,7 @@
         var vid = tr.getAttribute('data-vendor-id');
         if (!vid) return;
         var id = parseInt(vid, 10);
-        if (!id || id === self.state.activeVendorId) return;
+        if (!id || (id === self.state.activeVendorId && !self.state._detailError)) return;
         self.setActiveVendor(id);
       });
 
@@ -104,8 +104,11 @@
 
     loadInit: function () {
       var self = this;
+      var summary = UI.motion.region.begin(this, 'summary', this.els.summaryBody);
+      var detail = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
 
-      apiGet('/api/equ/equ_stats', {}).then(function (j) {
+      return apiGet('/api/equ/equ_stats', {}).then(function (j) {
+        if (!summary.current() || !detail.current()) return;
         if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入失敗');
         var d = j.data || {};
 
@@ -121,69 +124,76 @@
         if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVendorId, fmtInt);
         if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
 
-        self.updateMeta();
+        self.updateMeta(); summary.done(); detail.done();
       }).catch(function (err) {
+        if (!summary.current() || !detail.current()) return;
         toast('error', '工具維修統計載入失敗', err && err.message ? err.message : String(err));
         self.renderEmpty();
-      });
+      }).finally(function () { summary.done(false); detail.done(false); });
     },
 
     setActiveKey: function (key) {
       var self = this;
       this.state.activeKey = key;
-
+      this.state._loadError = false;
+      this.state._summaryPending = true;
       if (global.EquStatsCapsules) global.EquStatsCapsules.setActive(this.els.capsules, key);
-
-      this.els.summaryBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
-      this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
-
-      apiGet('/api/equ/equ_stats_summary', { key: key }).then(function (j) {
-        if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入彙總失敗');
-        var rows = (j.data && j.data.rows) ? j.data.rows : [];
-        self.state.summaryRows = rows;
-
-        var first = rows && rows.length ? rows[0] : null;
-        self.state.activeVendorId = first ? (first.vendor_id || null) : null;
-
+      var summary = UI.motion.region.begin(this, 'summary', this.els.summaryBody);
+      var detail = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
+      return apiGet('/api/equ/equ_stats_summary', { key: key }).then(function (j) {
+        if (!summary.current()) return;
+        if (!j || !j.success) throw new Error((j && j.error) || '載入彙總失敗');
+        self.state.summaryRows = (j.data && j.data.rows) || [];
+        var first = self.state.summaryRows[0];
+        self.state.activeVendorId = first ? first.vendor_id : null;
         if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVendorId, fmtInt);
-        self.updateMeta();
-
+        summary.done(); self.state._summaryPending = false; self.updateMeta();
         if (!self.state.activeVendorId) {
           self.state.detailsRows = [];
           if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, [], fmtInt);
-          self.updateMeta();
-          return;
+          detail.done(); self.updateMeta(); return;
         }
-
         return apiGet('/api/equ/equ_stats_details', { key: key, vendor_id: self.state.activeVendorId });
-      }).then(function (j2) {
-        if (!j2) return;
-        if (!j2.success) throw new Error(j2.error || '載入明細失敗');
-        var rows2 = (j2.data && j2.data.rows) ? j2.data.rows : [];
-        self.state.detailsRows = rows2;
+      }).then(function (j) {
+        if (!j || !summary.current() || !detail.current()) return;
+        if (!j.success) throw new Error(j.error || '載入明細失敗');
+        self.state.detailsRows = (j.data && j.data.rows) || [];
         if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
-        self.updateMeta();
+        self.updateMeta(); detail.done();
       }).catch(function (err) {
-        toast('error', '切換期間失敗', err && err.message ? err.message : String(err));
-      });
+        if (!summary.current() || !detail.current()) return;
+        self.state._loadError = true;
+        if (self.state._summaryPending) {
+          self.state.summaryRows = []; self.state.activeVendorId = null;
+          if (global.EquStatsSummary) global.EquStatsSummary.render(self.els.summaryBody, [], null, fmtInt);
+        }
+        if (detail.current()) {
+          self.state.detailsRows = [];
+          if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, [], fmtInt);
+          detail.done(false);
+        }
+        self.updateMeta(); toast('error', '切換期間失敗', err && err.message ? err.message : String(err));
+      }).finally(function () { if (summary.current()) { summary.done(false); self.state._summaryPending = false; } });
     },
 
-    setActiveVendor: function (vendorId) {
-      var self = this;
-      this.state.activeVendorId = vendorId;
-
-      if (global.EquStatsSummary) global.EquStatsSummary.setActive(this.els.summaryBody, vendorId);
-      this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="es-empty">載入中…</td></tr>';
-
-      apiGet('/api/equ/equ_stats_details', { key: this.state.activeKey, vendor_id: vendorId }).then(function (j) {
-        if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入明細失敗');
-        var rows = (j.data && j.data.rows) ? j.data.rows : [];
-        self.state.detailsRows = rows;
+    setActiveVendor: function (recordId) {
+      if (this.state._summaryPending) return;
+      var self = this, key = this.state.activeKey;
+      this.state.activeVendorId = recordId; this.state._detailError = false;
+      if (global.EquStatsSummary) global.EquStatsSummary.setActive(this.els.summaryBody, recordId);
+      var request = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
+      return apiGet('/api/equ/equ_stats_details', { key: key, vendor_id: recordId }).then(function (j) {
+        if (!request.current()) return;
+        if (!j || !j.success) throw new Error((j && j.error) || '載入明細失敗');
+        self.state.detailsRows = (j.data && j.data.rows) || [];
         if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
-        self.updateMeta();
+        self.updateMeta(); request.done();
       }).catch(function (err) {
-        toast('error', '切換廠商失敗', err && err.message ? err.message : String(err));
-      });
+        if (!request.current()) return;
+        self.state._detailError = true; self.state.detailsRows = [];
+        if (global.EquStatsDetails) global.EquStatsDetails.render(self.els.detailsBody, [], fmtInt);
+        self.updateMeta(); toast('error', '切換明細失敗', err && err.message ? err.message : String(err));
+      }).finally(function () { request.done(false); });
     },
 
     updateMeta: function () {

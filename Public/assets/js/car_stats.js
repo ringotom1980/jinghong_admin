@@ -91,7 +91,7 @@
                 if (!btn) return;
                 e.preventDefault();
                 var key = btn.getAttribute('data-cs-key') || '';
-                if (!key || key === self.state.activeKey) return;
+                if (!key || (key === self.state.activeKey && !self.state._loadError)) return;
                 self.setActiveKey(key);
             });
 
@@ -102,7 +102,7 @@
                 var vid = tr.getAttribute('data-vehicle-id');
                 if (!vid) return;
                 var id = parseInt(vid, 10);
-                if (!id || id === self.state.activeVehicleId) return;
+                if (!id || (id === self.state.activeVehicleId && !self.state._detailError)) return;
                 self.setActiveVehicle(id);
             });
 
@@ -139,7 +139,10 @@
 
         loadInit: function () {
             var self = this;
-            apiGet('/api/car/car_stats', {}).then(function (j) {
+            var summary = UI.motion.region.begin(this, 'summary', this.els.summaryBody);
+            var detail = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
+            return apiGet('/api/car/car_stats', {}).then(function (j) {
+                if (!summary.current() || !detail.current()) return;
                 if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入失敗');
                 var d = j.data || {};
 
@@ -155,69 +158,77 @@
                 if (global.CarStatsSummary) global.CarStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVehicleId, fmtInt);
                 if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
 
-                self.updateMeta();
+                self.updateMeta(); summary.done(); detail.done();
             }).catch(function (err) {
+                if (!summary.current() || !detail.current()) return;
                 toast('error', '維修統計載入失敗', err && err.message ? err.message : String(err));
                 self.renderEmpty();
-            });
+            }).finally(function () { summary.done(false); detail.done(false); });
         },
 
-        setActiveKey: function (key) {
-            var self = this;
-            this.state.activeKey = key;
+    setActiveKey: function (key) {
+      var self = this;
+      this.state.activeKey = key;
+      this.state._loadError = false;
+      this.state._summaryPending = true;
+      if (global.CarStatsCapsules) global.CarStatsCapsules.setActive(this.els.capsules, key);
+      var summary = UI.motion.region.begin(this, 'summary', this.els.summaryBody);
+      var detail = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
+      return apiGet('/api/car/car_stats_summary', { key: key }).then(function (j) {
+        if (!summary.current()) return;
+        if (!j || !j.success) throw new Error((j && j.error) || '載入彙總失敗');
+        self.state.summaryRows = (j.data && j.data.rows) || [];
+        var first = self.state.summaryRows[0];
+        self.state.activeVehicleId = first ? first.vehicle_id : null;
+        if (global.CarStatsSummary) global.CarStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVehicleId, fmtInt);
+        summary.done(); self.state._summaryPending = false; self.updateMeta();
+        if (!self.state.activeVehicleId) {
+          self.state.detailsRows = [];
+          if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, [], fmtInt);
+          detail.done(); self.updateMeta(); return;
+        }
+        return apiGet('/api/car/car_stats_details', { key: key, vehicle_id: self.state.activeVehicleId });
+      }).then(function (j) {
+        if (!j || !summary.current() || !detail.current()) return;
+        if (!j.success) throw new Error(j.error || '載入明細失敗');
+        self.state.detailsRows = (j.data && j.data.rows) || [];
+        if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
+        self.updateMeta(); detail.done();
+      }).catch(function (err) {
+        if (!summary.current() || !detail.current()) return;
+        self.state._loadError = true;
+        if (self.state._summaryPending) {
+          self.state.summaryRows = []; self.state.activeVehicleId = null;
+          if (global.CarStatsSummary) global.CarStatsSummary.render(self.els.summaryBody, [], null, fmtInt);
+        }
+        if (detail.current()) {
+          self.state.detailsRows = [];
+          if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, [], fmtInt);
+          detail.done(false);
+        }
+        self.updateMeta(); toast('error', '切換期間失敗', err && err.message ? err.message : String(err));
+      }).finally(function () { if (summary.current()) { summary.done(false); self.state._summaryPending = false; } });
+    },
 
-            if (global.CarStatsCapsules) global.CarStatsCapsules.setActive(this.els.capsules, key);
-            this.els.summaryBody.innerHTML = '<tr><td colspan="7" class="cs-empty">載入中…</td></tr>';
-            this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="cs-empty">載入中…</td></tr>';
-
-            apiGet('/api/car/car_stats_summary', { key: key }).then(function (j) {
-                if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入彙總失敗');
-                var rows = (j.data && j.data.rows) ? j.data.rows : [];
-                self.state.summaryRows = rows;
-
-                var first = rows && rows.length ? rows[0] : null;
-                self.state.activeVehicleId = first ? (first.vehicle_id || null) : null;
-
-                if (global.CarStatsSummary) global.CarStatsSummary.render(self.els.summaryBody, self.state.summaryRows, self.state.activeVehicleId, fmtInt);
-                self.updateMeta();
-
-                if (!self.state.activeVehicleId) {
-                    self.state.detailsRows = [];
-                    if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, [], fmtInt);
-                    self.updateMeta();
-                    return;
-                }
-
-                return apiGet('/api/car/car_stats_details', { key: key, vehicle_id: self.state.activeVehicleId });
-            }).then(function (j2) {
-                if (!j2) return;
-                if (!j2.success) throw new Error(j2.error || '載入明細失敗');
-                var rows2 = (j2.data && j2.data.rows) ? j2.data.rows : [];
-                self.state.detailsRows = rows2;
-                if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
-                self.updateMeta();
-            }).catch(function (err) {
-                toast('error', '切換期間失敗', err && err.message ? err.message : String(err));
-            });
-        },
-
-        setActiveVehicle: function (vehicleId) {
-            var self = this;
-            this.state.activeVehicleId = vehicleId;
-
-            if (global.CarStatsSummary) global.CarStatsSummary.setActive(this.els.summaryBody, vehicleId);
-            this.els.detailsBody.innerHTML = '<tr><td colspan="6" class="cs-empty">載入中…</td></tr>';
-
-            apiGet('/api/car/car_stats_details', { key: this.state.activeKey, vehicle_id: vehicleId }).then(function (j) {
-                if (!j || !j.success) throw new Error((j && j.error) ? j.error : '載入明細失敗');
-                var rows = (j.data && j.data.rows) ? j.data.rows : [];
-                self.state.detailsRows = rows;
-                if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
-                self.updateMeta();
-            }).catch(function (err) {
-                toast('error', '切換車輛失敗', err && err.message ? err.message : String(err));
-            });
-        },
+    setActiveVehicle: function (recordId) {
+      if (this.state._summaryPending) return;
+      var self = this, key = this.state.activeKey;
+      this.state.activeVehicleId = recordId; this.state._detailError = false;
+      if (global.CarStatsSummary) global.CarStatsSummary.setActive(this.els.summaryBody, recordId);
+      var request = UI.motion.region.begin(this, 'detail', this.els.detailsBody);
+      return apiGet('/api/car/car_stats_details', { key: key, vehicle_id: recordId }).then(function (j) {
+        if (!request.current()) return;
+        if (!j || !j.success) throw new Error((j && j.error) || '載入明細失敗');
+        self.state.detailsRows = (j.data && j.data.rows) || [];
+        if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, self.state.detailsRows, fmtInt);
+        self.updateMeta(); request.done();
+      }).catch(function (err) {
+        if (!request.current()) return;
+        self.state._detailError = true; self.state.detailsRows = [];
+        if (global.CarStatsDetails) global.CarStatsDetails.render(self.els.detailsBody, [], fmtInt);
+        self.updateMeta(); toast('error', '切換明細失敗', err && err.message ? err.message : String(err));
+      }).finally(function () { request.done(false); });
+    },
 
         updateMeta: function () {
             var key = this.state.activeKey || '';

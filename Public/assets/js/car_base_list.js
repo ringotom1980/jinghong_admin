@@ -181,6 +181,7 @@
       }
 
       listEl.innerHTML = html;
+      UI.motion.updated.apply(app, listEl);
       this.setActive(app.state.activeId);
     },
 

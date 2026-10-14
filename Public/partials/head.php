@@ -83,4 +83,5 @@ function asset(string $path): string
 
   <!-- Shared screen components follow page styles; print styles remain authoritative. -->
   <link rel="stylesheet" href="<?= asset('assets/css/ui_system.css') ?>" />
+  <link rel="stylesheet" href="<?= asset('assets/css/ui_feedback.css') ?>" />
 </head>
