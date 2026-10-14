@@ -21,7 +21,6 @@ $globalJs = [
   'assets/js/ui_unsaved.js',
   'assets/js/ui_dialog_focus.js',
   'assets/js/ui_motion.js',
-  'assets/js/ui_feedback.js',
   'assets/js/nav.js',
   'assets/js/auth_me.js',
 ];

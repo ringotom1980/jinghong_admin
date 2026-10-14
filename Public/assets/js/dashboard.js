@@ -67,14 +67,14 @@
         return base + path;
     }
 
-    // 你系統的漂亮網址若已做好，就把這裡改成 /modules/...；目前先保守沿用你現有路徑
+    // Canonical routes select the active runtime templates, never retained Public PHP files.
     var ROUTES = {
-        mat_stats: toUrl('/Public/modules/mat/stats.php'),
-        mat_issue: toUrl('/Public/modules/mat/issue.php'),
-        mat_edit_b: toUrl('/Public/modules/mat/edit.php'),
-        car_base: toUrl('/Public/modules/car/base.php'),
-        car_stats: toUrl('/Public/modules/car/stats.php'),
-        hot_assign: toUrl('/Public/modules/hot/assign.php'),
+        mat_stats: toUrl('/mat/stats'),
+        mat_issue: toUrl('/mat/issue'),
+        mat_edit_b: toUrl('/mat/edit'),
+        car_base: toUrl('/car/base'),
+        car_stats: toUrl('/car/stats'),
+        hot_assign: toUrl('/hot/assign'),
     };
 
     /* =====================================================
