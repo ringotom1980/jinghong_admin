@@ -124,18 +124,24 @@
         reload: function () {
             var self = this;
             var d = self.state.withdraw_date;
+            var request = UI.motion.region.begin(this, 'stats', this.els.content, { notice: false });
+            var loadingTimer;
             if (!d) {
+                request.done(false);
                 self.setLoading(false);
                 self.setError('缺少查詢日期');
                 return;
             }
 
-            self.setLoading(true);
+            self.setLoading(false); self.setError('');
+            loadingTimer = setTimeout(function () { if (request.current()) self.setLoading(true); }, 150);
 
             // 統計總控 API（你現在 debug 回傳就是這包）
             var url = '/api/mat/stats?withdraw_date=' + encodeURIComponent(d) + '&shift=' + encodeURIComponent(self.state.shift || 'ALL');
 
-            global.apiGet(url).then(function (j) {
+            return global.apiGet(url).then(function (j) {
+                if (!request.current()) return;
+                clearTimeout(loadingTimer);
                 self.setLoading(false);
 
                 if (!j || !j.success) {
@@ -156,6 +162,7 @@
                         shift: self.state.shift || 'ALL'
                     });
                 }
+                request.done();
                 // ✅ 若 URL 帶 #A/#D/#F...，render 後定位（找不到就短暫重試；找到才清空）
                 if (self.state.jumpHash) {
                     (function () {
@@ -163,6 +170,7 @@
                         var tries = 0;
 
                         function tryScroll() {
+                            if (!request.current()) return;
                             tries++;
 
                             var el = document.getElementById(id);
@@ -176,7 +184,7 @@
                             self.state.jumpHash = '';
 
                             if (el.scrollIntoView) {
-                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
                                 setTimeout(function () { global.scrollBy(0, -90); }, 50);
                             }
                         }
@@ -186,8 +194,12 @@
                 }
 
             }).catch(function (e) {
+                if (!request.current()) return;
                 self.setLoading(false);
                 self.setError((e && e.message) ? e.message : 'Network error');
+            }).finally(function () {
+                clearTimeout(loadingTimer); request.done(false);
+                if (request.current()) self.setLoading(false);
             });
         }
     };

@@ -171,13 +171,16 @@
 
       if (key === undefined || key === null) key = self.state.activeKey || '';
 
-      self.setLoading(true);
+      var request = UI.motion.region.begin(this, 'list', this.els.tbody, { notice: false });
+      self.setLoading(false);
+      var loadingTimer = setTimeout(function () { if (request.current()) self.setLoading(true); }, 150);
       self.setEmpty(false);
 
       var url = '/api/equ/equ_repair_list';
       if (key) url += '?key=' + encodeURIComponent(key);
 
-      global.apiGet(url).then(function (j) {
+      return global.apiGet(url).then(function (j) {
+        if (!request.current()) return;
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '載入失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           self.state.list = [];
@@ -192,10 +195,16 @@
 
         if (self.els.totalCount) self.els.totalCount.textContent = String(rows.length || 0);
         if (global.EquRepairsList) global.EquRepairsList.render(rows);
+        UI.motion.updated.apply(self, self.els.tbody);
+        request.done();
 
         self.setEmpty(!rows.length);
+      }).catch(function (err) {
+        if (request.current() && global.Toast) Toast.show({ type: 'danger', title: '載入失敗', message: err.message || '請重試' });
       }).finally(function () {
-        self.setLoading(false);
+        clearTimeout(loadingTimer);
+        request.done(false);
+        if (request.current()) self.setLoading(false);
       });
     }
   };

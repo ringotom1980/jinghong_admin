@@ -59,21 +59,29 @@
       this.syncTitleAndDeleteAllBtn();
 
       var d = (this.app && this.app.state) ? this.app.state.withdraw_date : '';
+      var root = this.app && this.app.els && this.app.els.batches;
+      var request = UI.motion.region.begin(this, 'batches', root);
       if (!d) {
+        request.done(false);
         if (this.app && this.app.els && this.app.els.batches) {
           this.app.els.batches.innerHTML = '<div class="mi-note">請先選擇領退日期</div>';
         }
         return;
       }
 
-      apiGet('/api/mat/issue_files?withdraw_date=' + encodeURIComponent(d)).then(function (j) {
+      return apiGet('/api/mat/issue_files?withdraw_date=' + encodeURIComponent(d)).then(function (j) {
+        if (!request.current()) return;
         if (!j || !j.success) {
           if (global.MatIssueApp) MatIssueApp.toast('danger', '載入失敗', j && j.error ? j.error : 'issue_files');
           return;
         }
         var rows = (j.data && j.data.batches) ? j.data.batches : [];
         Mod.render(rows);
-      });
+        UI.motion.updated.apply(Mod.app, root);
+        request.done();
+      }).catch(function (err) {
+        if (request.current() && global.MatIssueApp) MatIssueApp.toast('danger', '載入失敗', err.message || '請重試');
+      }).finally(function () { request.done(false); });
     },
 
     render: function (rows) {

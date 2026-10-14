@@ -340,7 +340,7 @@
 
     onSave: function () {
       var self = this;
-      if (!global.apiPost) return false;
+      if (!global.apiPost || this._saving) return false;
 
       this.syncHeaderFromForm();
       if (global.CarRepairItems) global.CarRepairItems.syncRowsToState();
@@ -358,12 +358,15 @@
       var draft = this._bd && this._bd._unsaved;
       var saved = draft ? draft.capture() : null;
 
-      return global.apiPost('/api/car/car_repair_save', payload).then(function (j) {
+      this._saving = true;
+      return Promise.resolve().then(function () { return global.apiPost('/api/car/car_repair_save', payload); }).then(function (j) {
         if (!j || !j.success) {
           Toast && Toast.show({ type: 'danger', title: '存檔失敗', message: (j && j.error) ? j.error : '未知錯誤' });
           return false;
         }
 
+        var updatedId = j.data && j.data.id || payload.id;
+        if (updatedId) UI.motion.updated.arm(self.app, ['tr[data-id="' + Number(updatedId) + '"]']);
         Toast && Toast.show({ type: 'success', title: '已存檔', message: '維修紀錄已更新' });
 
         // ✅ 存檔後必須重載膠囊：才會把「新年度/新半年」膠囊即時補上，並用 defaultKey 觸發正確列表
@@ -373,7 +376,10 @@
         if (draft) draft.markClean(saved);
         return !draft || !draft.isDirty();
 
-      });
+      }).catch(function (err) {
+        if (global.Toast) Toast.show({ type: 'danger', title: '存檔失敗', message: err.message || '請重試' });
+        return false;
+      }).finally(function () { self._saving = false; });
     }
   };
 

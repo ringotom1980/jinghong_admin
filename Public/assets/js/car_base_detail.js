@@ -374,6 +374,7 @@
       var self = this;
       var app = this.app;
       var btn = app.els.saveBtn;
+      if (this._saving) return false;
 
       var mode = (app && app.state) ? String(app.state.mode || 'VIEW') : 'VIEW';
       if (mode !== 'CREATE' && mode !== 'EDIT') return;
@@ -476,6 +477,8 @@
       // EDIT 必須有 id
       if (mode === 'EDIT' && !payload.id) return;
 
+      var action = UI.motion.action.begin(btn, { current: function () { return savedSeq === app.state.reqSeq && draft === app.unsaved; } });
+      this._saving = true;
       setBtnLoading(btn, true);
       var draft = app.unsaved;
       var saved = draft ? draft.capture() : null;
@@ -485,6 +488,7 @@
 
       return apiPost(url, payload)
         .then(function (j) {
+          if (action) action.finish(!!(j && j.success));
           setBtnLoading(btn, false);
 
           if (!j || !j.success) {
@@ -492,6 +496,7 @@
             return;
           }
 
+          if (j.data && j.data.vehicle) UI.motion.updated.arm(app, ['[data-id="' + Number(j.data.vehicle.id) + '"]']);
           Toast && Toast.show({
             type: 'success',
             title: '已儲存',
@@ -539,9 +544,10 @@
 
         })
         .catch(function (e) {
+          if (action) action.finish(false);
           setBtnLoading(btn, false);
           Toast && Toast.show({ type: 'danger', title: '儲存失敗', message: (e && e.message) ? e.message : '未知錯誤' });
-        });
+        }).finally(function () { self._saving = false; });
     }
   };
 

@@ -67,13 +67,10 @@
       panel.classList.add('is-leave');
     }
 
-    window.setTimeout(function () {
-      bd.hidden = true;
-      bd.classList.remove('is-leave');
-      if (!document.querySelector('.modal-backdrop.is-open:not([hidden])')) {
-        document.body.classList.remove('modal-open');
-      }
-    }, 220);
+    // State/focus close immediately; shared inert decoration owns the exit.
+    bd.hidden = true;
+    bd.classList.remove('is-leave');
+    if (!document.querySelector('.modal-backdrop.is-open:not([hidden])')) document.body.classList.remove('modal-open');
   }
 
   function bindCloseModalButtons() {
@@ -371,18 +368,19 @@
     reloadTools: function () {
       var self = this;
       var itemId = self.state.activeItemId;
-      if (!itemId) return Promise.resolve(true);
+      var request = UI.motion.region.begin(this, 'tools', this.els.tbTools);
+      if (!itemId) { request.done(false); return Promise.resolve(true); }
 
       var seq = ++this.state.reqSeq;
 
       return this.apiGet(API_HOT_TOOLS, { action: 'tools', item_id: itemId })
         .then(function (r) {
-          if (seq !== self.state.reqSeq) return;
+          if (seq !== self.state.reqSeq || !request.current()) return;
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '載入工具失敗');
 
           self.state.tools = (r.data && r.data.tools) ? r.data.tools : [];
-          self.renderTools();
-        });
+          self.renderTools(); request.done();
+        }).catch(function (e) { if (request.current()) toastErr(e.message || '載入工具失敗'); }).finally(function () { request.done(false); });
     },
 
     syncActiveItem: function () {
@@ -598,6 +596,7 @@
 
     saveItemsEdit: function () {
       var self = this;
+      if (this.state.itemsSaving) return false;
       if (this.state.itemsMode !== 'EDIT') return;
 
       // 從 tbody 取 input 值（由 hot_tools_items.js 產生）
@@ -619,15 +618,20 @@
 
       var draft = this.itemsDraft;
       var saved = draft.capture();
-      this.apiPost(API_HOT_TOOLS, { action: 'item_update', rows: rows })
+      var action = UI.motion.action.begin(this.els.btnItemSave, { current: function () { return self.itemsDraft === draft; } });
+      var outcome = false; this.state.itemsSaving = true;
+      return this.apiPost(API_HOT_TOOLS, { action: 'item_update', rows: rows })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
+          outcome = true;
           toastOk('已儲存分類');
           draft.markClean(saved);
           if (self.itemsDraft !== draft || draft.isDirty()) return;
           self.setItemsMode('VIEW');
           self.reloadItemsKeepActive();
-        });
+        }).catch(function (e) { toastErr(e.message || '儲存失敗'); }).finally(function () {
+        self.state.itemsSaving = false; if (action) action.finish(outcome);
+      });
     },
 
     /* =========================
@@ -729,12 +733,14 @@
       var draft = this.els.modalToolAdd._unsaved;
       var saved = draft.capture();
       var btn = this.els.btnToolAddSubmit;
+      var action = UI.motion.action.begin(btn, { current: function () { return self.state.toolAddVersion === version; } }); var outcome = false;
       var label = btn ? btn.innerHTML : '';
       this.state.toolAddSaving = true;
       if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = '新增中…'; }
       return Promise.resolve().then(function () { return self.apiPost(API_HOT_TOOLS, payload); })
         .then(function (r) {
           if (!r || !r.success) return toastErr(r && r.error ? r.error : '新增工具失敗');
+          outcome = true;
           draft.markClean(saved);
           if (self.state.toolAddVersion === version && !draft.isDirty()) closeModal('modalToolAdd', true);
           toastOk('已新增工具');
@@ -744,6 +750,7 @@
         }).catch(function (e) {
           toastErr(e && e.message ? e.message : '新增工具失敗');
         }).finally(function () {
+          if (action) action.finish(outcome);
           self.state.toolAddSaving = false;
           if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = label; }
         });
@@ -751,6 +758,7 @@
 
     saveToolsEdit: function () {
       var self = this;
+      if (this.state.toolsSaving) return false;
       if (this.state.toolsMode !== 'EDIT') return;
       if (!this.state.activeItemId) return toastErr('請先選取左側分類');
 
@@ -775,17 +783,22 @@
 
       var draft = this.toolsDraft;
       var saved = draft.capture();
-      this.apiPost(API_HOT_TOOLS, {
+      var action = UI.motion.action.begin(this.els.btnToolSave, { current: function () { return self.toolsDraft === draft; } });
+      var outcome = false; this.state.toolsSaving = true;
+      return this.apiPost(API_HOT_TOOLS, {
         action: 'tool_update',
         item_id: this.state.activeItemId,
         rows: rows
       }).then(function (r) {
         if (!r || !r.success) return toastErr(r && r.error ? r.error : '儲存失敗');
+        outcome = true;
         toastOk('已儲存工具');
         draft.markClean(saved);
         if (self.toolsDraft !== draft || draft.isDirty()) return;
         self.setToolsMode('VIEW');
         self.reloadItemsKeepActive(); // counts 可能變（內部會再 reloadTools）
+      }).catch(function (e) { toastErr(e.message || '儲存失敗'); }).finally(function () {
+        self.state.toolsSaving = false; if (action) action.finish(outcome);
       });
     }
   };

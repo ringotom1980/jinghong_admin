@@ -264,22 +264,63 @@ final class MatIssueService
         $tmp = $f['tmp_name'] ?? '';
         $name = $f['name'] ?? '';
         $err  = $f['error'] ?? UPLOAD_ERR_NO_FILE;
+        $originalFilename = basename((string)$name);
+        $fileLabel = $originalFilename !== '' ? $originalFilename : '未命名檔案';
 
         if ($err !== UPLOAD_ERR_OK || !is_string($tmp) || $tmp === '' || !is_file($tmp)) {
-          $sumErrors++;
-          continue;
+          throw new RuntimeException('檔案「' . $fileLabel . '」上傳無效，本次匯入未寫入，原有批次已保留。');
         }
 
-        $originalFilename = basename((string)$name);
+        if ($originalFilename === '') {
+          throw new RuntimeException('匯入檔案缺少檔名，本次匯入未寫入，原有批次已保留。');
+        }
         $fileType = strtoupper(substr($originalFilename, 0, 1));
         if ($fileType === '' || strlen($fileType) !== 1) $fileType = 'T';
 
-        // 同日+同檔名：重新匯入 → 刪舊批次
+        // Content must be a real Excel workbook, not IOFactory's CSV/HTML fallback.
+        // Parse before touching the old batch; the request transaction also restores
+        // earlier files if a later validation or write fails.
+        $spreadsheet = null;
+        try {
+          $reader = null;
+          foreach (['Xlsx', 'Xls'] as $readerType) {
+            $candidate = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($readerType);
+            if ($candidate->canRead($tmp)) {
+              $reader = $candidate;
+              break;
+            }
+          }
+          if ($reader === null) {
+            throw new RuntimeException('Unsupported Excel content');
+          }
+          $spreadsheet = $reader->load($tmp);
+          $parser = $manager->getParser($fileType);
+          $rows = $parser->parse($spreadsheet->getSheet(0));
+        } catch (Throwable $e) {
+          throw new RuntimeException('檔案「' . $fileLabel . '」不是可讀取的 XLS／XLSX，或資料解析失敗。本次匯入未寫入，原有批次已保留。', 0, $e);
+        } finally {
+          if ($spreadsheet !== null) $spreadsheet->disconnectWorksheets();
+        }
+
+        $validRows = [];
+        foreach ($rows as $r) {
+          if (!is_array($r) || trim((string)($r['material_number'] ?? '')) === '') {
+            $sumSkipped++;
+            continue;
+          }
+          $validRows[] = $r;
+        }
+        if (!$validRows) {
+          throw new RuntimeException('檔案「' . $fileLabel . '」沒有有效材料資料（請確認表頭及材料編號）。本次匯入未寫入，原有批次已保留。');
+        }
+
+        // Only validated, nonempty workbooks may replace same-date/same-name batches.
         $dupSt = $pdo->prepare(
           "SELECT batch_id
              FROM mat_issue_batches
             WHERE withdraw_date = ?
-              AND original_filename = ?"
+              AND original_filename = ?
+            FOR UPDATE"
         );
         $dupSt->execute([$withdrawDate, $originalFilename]);
         $dupRows = $dupSt->fetchAll();
@@ -301,14 +342,6 @@ final class MatIssueService
         $batchId = (int)$pdo->lastInsertId();
         $batchIds[] = $batchId;
 
-        // parse
-        $parser = $manager->getParser($fileType);
-
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($tmp);
-        $sheet = $spreadsheet->getSheet(0);
-
-        $rows = $parser->parse($sheet);
-
         $ins = $pdo->prepare(
           "INSERT INTO mat_issue_items
            (batch_id, withdraw_date, voucher, material_number, material_name,
@@ -317,15 +350,10 @@ final class MatIssueService
            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
-        foreach ($rows as $r) {
+        foreach ($validRows as $r) {
           $voucher = (string)($r['voucher'] ?? '');
           $mn = (string)($r['material_number'] ?? '');
           $mname = (string)($r['material_name'] ?? '');
-
-          if ($mn === '') {
-            $sumSkipped++;
-            continue;
-          }
 
           $shift = self::lookupShiftByMaterial($mn);
           if ($shift === null || $shift === '') {

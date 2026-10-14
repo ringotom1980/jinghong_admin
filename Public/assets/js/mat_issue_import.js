@@ -77,6 +77,7 @@
 
           // ✅ 存本次匯入 batch_ids（本次匯入範圍）
           var batchIds = r.batch_ids || [];
+          if (batchIds.length) UI.motion.updated.arm(Mod.app, batchIds.map(function (id) { return '[data-batch-id="' + Number(id) + '"]'; }));
           if (Mod.app && Mod.app.state) {
             Mod.app.state.last_import_batch_ids = batchIds;
           }

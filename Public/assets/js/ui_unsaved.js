@@ -107,7 +107,7 @@
     if (url.origin !== global.location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
     if (!dirty().length) return;
     e.preventDefault(); e.stopImmediatePropagation();
-    request(function () { navigationAllowed = true; global.location.assign(url.href); });
+    request(function () { navigationAllowed = true; if (global.UI && UI.motion.navigation) UI.motion.navigation.start(); global.location.assign(url.href); });
   }, true);
   global.UnsavedChanges = { watch: watch, snapshot: snapshot, request: request, update: update, isDirty: function () { return dirty().length > 0; } };
 })(window);
